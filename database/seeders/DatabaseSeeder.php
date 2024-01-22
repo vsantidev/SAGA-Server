@@ -15,16 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'firstname' => 'SerVer',
-            'lastname' => 'Nier',
-            'email' => 'Servertest@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('topsecret'),
-            'username' => 'SerVer',
-            'birthday' => '2017/02/23',
-            'role'=> 'animateur',
-        ]);
+        // User::factory()->create([
+        //     'firstname' => 'SerVer',
+        //     'lastname' => 'Nier',
+        //     'email' => 'Servertest@example.com',
+        //     'email_verified_at' => now(),
+        //     'password' => Hash::make('topsecret'),
+        //     'birthday' => '2017/02/23',
+        //     'type'=> 'animateur',
+        // ]);
 
         User::factory()->create([
             'firstname' => 'Tsuyu',
@@ -32,21 +31,19 @@ class DatabaseSeeder extends Seeder
             'email' => 'tsuyuwolf@example.com',
             'email_verified_at' => now(),
             'password' => Hash::make('wolfsecret'),
-            'username' => 'Tsuyu',
             'birthday' => '1987/09/04',
-            'role'=> 'admin',
+            'type'=> 'admin',
         ]);
 
-        User::factory()->create([
-            'firstname' => 'Lulu',
-            'lastname' => 'Lemon',
-            'email' => 'LuluLemon@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('lulusecret'),
-            'username' => 'Lulu',
-            'birthday' => '2000/05/29',
-            'role'=> 'membre',
-        ]);
+        // User::factory()->create([
+        //     'firstname' => 'Lulu',
+        //     'lastname' => 'Lemon',
+        //     'email' => 'LuluLemon@example.com',
+        //     'email_verified_at' => now(),
+        //     'password' => Hash::make('lulusecret'),
+        //     'birthday' => '2000/05/29',
+        //     'type'=> 'membre',
+        // ]);
 
     }
 }

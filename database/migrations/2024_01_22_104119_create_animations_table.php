@@ -18,9 +18,9 @@ return new class extends Migration
             $table->longText('content');
             $table->string('picture');
             $table->string('animateur');
-            $table->int('fight');
-            $table->int('reflection');
-            $table->int('roleplay');
+            $table->integer('fight');
+            $table->integer('reflection');
+            $table->integer('roleplay');
             $table->string('type_animation');
             $table->foreignIdFor(Evenement::class)->constrained;
             // $table->foreignIdFor()

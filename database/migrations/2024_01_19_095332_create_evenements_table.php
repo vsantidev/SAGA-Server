@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('title');
             $table->string('subtitle');
             $table->mediumText('content');
-            $table->datetimes('date_opening');
-            $table->datetimes('date_ending');
+            $table->datetime('date_opening');
+            $table->datetime('date_ending');
             $table->string('flag')->nullable();
             $table->string('display')->nullable();
             $table->string('attachment');
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->mediumText('announcement');
             $table->boolean('hide_announcement');
             $table->boolean('hide_animation');
-            $table->string('yurl_event');
+            $table->string('url_event');
             $table->string('url_inscritpion');
             $table->foreignIdFor(Site::class)->constrained;
             $table->timestamps();
@@ -38,7 +38,8 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\Evenement::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
             $table->boolean('organisateurs');
-            $table->primary(['convention_id', 'user_id']);
+            $table->boolean('rewards');
+            $table->primary(['evenement_id', 'user_id']);
         });
     }
 
