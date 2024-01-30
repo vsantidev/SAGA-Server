@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -12,47 +13,10 @@ use function Laravel\Prompts\info;
 
 class AuthController extends Controller
 {
-    public function createuser(Request $request)
-    {
-        Log::info("---CREA USER---");
-        $request->validate([
-            'lastname'=> 'required|string|max:255',
-            'firstname'=> 'required|string|max:255',
-            'birthday'=> 'required',
-            'email'=> 'required|string|email|max:255|unique:users',
-            /*'password' => [
-                'required',
-                // 'confirmed',
-                'string',
-                'min:10',             // doit comporter au moins 10 caractères
-                'regex:/[a-z]/',      // doit contenir au moins une lettre minuscule
-                'regex:/[A-Z]/',      // doit contenir au moins une lettre majuscule
-                'regex:/[0-9]/',      // doit contenir au moins un chiffre
-                'regex:/[@$!%*#?&]/', // doit contenir un caractère spécial
-            ],*/
-        ]);
-
-        Log::info($request);
-
-        $user = User::create([
-            'lastname' => $request->lastname,
-            'firstname' => $request->firstname,
-            'email' => $request->email,
-            'birthday' => $request->birthday,
-            'password' => bcrypt("MotDePasse1!"),
-            'type' => $request->type,
-        ]);
-
-        return response()->json([
-            'user' => $user,
-            'message' => 'Inscription réussie !'
-        ], 201);
-        Log::info($user);
-    }
-
+    
     public function login(Request $request)
     {
-
+        Log::info("---LOGIN---");
         $user = User::where('email', $request->email)->first();
 
         if ($user && Hash::check($request->password, $user->password)) {
@@ -64,7 +28,7 @@ class AuthController extends Controller
                 'user' => $user, 
             ]);
         } else {
-            return response()->json(['error' => 'Email ou mot de passe incorrect'], 401);
+            return response()->json(['error login' => 'Email ou mot de passe incorrect'], 401);
         }
 
 
@@ -82,10 +46,37 @@ class AuthController extends Controller
         // return response()->json(['user' => $user, 'token' => $token]);
     }
 
+    public function dashboard(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $userData = [
+            'id' => $user->id,
+            'firstname' => $user->firstname,
+            'lastname' => $user->lastname,
+            // 'pseudo' => $user->username,
+            // 'email' => $user->email,
+            // 'birthday' => $user->birthday,
+            // 'password' => $user->password,
+            'role' => $user->role
+
+        ];
+        return response()->json(['success' => $userData]);
+
+    }
+
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
-        return response()->json(['message' => 'Logged out']);
+        return response()->json(['Le message de la voix off' => 'Logged out']);
     }
+
+    // public function logout(Request $request): JsonResponse
+    // {
+    //     $request->session()->invalidate();
+
+    //     $request->session()->regenerateToken();
+
+    //     return response()->json('Successfully logged out');
+    // }
 
 }
