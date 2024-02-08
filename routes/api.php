@@ -16,11 +16,24 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// returns the home page with all posts
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
+    // adds a user to the database
     Route::post('/useradd', [UserController::class, 'useradd']);
+    // returns the form for adding a user
+    Route::get('/userlist', [UserController::class, 'userlist']);
+    // returns a page that shows a full user
+    Route::get('/userprofile/{id}', [UserController::class, 'userShow']);
+    // returns the form for editing a user
+
+    // updates a user
+    Route::put('/userprofile/{id}', [UserController::class, 'userUpdate']);
+    // deletes a user
+    Route::delete('/userlist', [UserController::class, 'userDelete']);
     Route::get('/dashboard', [UserController::class, 'dashboard']);
+
 
 });
 
