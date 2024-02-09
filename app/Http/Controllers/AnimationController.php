@@ -4,15 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Animation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 class AnimationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function animationIndex()
     {
-        //
+        Log::info("--- ANIMATION INDEX ---");
+
+        
     }
 
     /**
