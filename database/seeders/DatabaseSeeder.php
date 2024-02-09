@@ -26,24 +26,26 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         User::factory()->create([
-            'firstname' => 'Tsuyu',
             'lastname' => 'Wyvern',
+            'firstname' => 'Tsuyu',
+            'birthday' => '1987/09/04',
             'email' => 'tsuyuwolf@example.com',
             'email_verified_at' => now(),
             'password' => Hash::make('wolfsecret'),
-            'birthday' => '1987/09/04',
-            'type'=> 'admin',
+            'presentation' => 'The AïeAdministrator',
+            'type' => 'admin',
         ]);
 
-        // User::factory()->create([
-        //     'firstname' => 'Lulu',
-        //     'lastname' => 'Lemon',
-        //     'email' => 'LuluLemon@example.com',
-        //     'email_verified_at' => now(),
-        //     'password' => Hash::make('lulusecret'),
-        //     'birthday' => '2000/05/29',
-        //     'type'=> 'membre',
-        // ]);
+        User::factory()->create([
+            'lastname' => 'Senai',
+            'firstname' => 'Koro',
+            'birthday' => '1995/05/29',
+            'email' => 'Koro.Sensei@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('Y@mete1'),
+            'presentation' => 'The teacher mystery',
+            'type' => 'membre',
+        ]);
 
     }
 }
