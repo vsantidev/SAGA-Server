@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AnimationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
+    // --------------- USER ---------------
     // adds a user to the database
     Route::post('/useradd', [UserController::class, 'useradd']);
     // returns the form for adding a user
@@ -32,10 +35,20 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::put('/userprofile/{id}', [UserController::class, 'userUpdate']);
     // deletes a user
     Route::delete('/userlist', [UserController::class, 'userDelete']);
-    Route::get('/dashboard', [UserController::class, 'dashboard']);
+    Route::get('/dashboard', [AuthController::class, 'dashboard']); 
+});
+
+// --------------- ANIMATIONS ---------------
+Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
+
+    // returns the form for adding an animation
+    Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
+    // adds an animation to the database
+    Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
 
 
 });
+
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
