@@ -15,10 +15,10 @@ class UserController extends Controller
     {
         Log::info("---CREA USER---");
         $request->validate([
-            'lastname'=> 'required|string|max:255',
-            'firstname'=> 'required|string|max:255',
-            'birthday'=> 'required',
-            'email'=> 'required|string|email|max:255|unique:users',
+            'lastname' => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'birthday' => 'required',
+            'email' => 'required|string|email|max:255|unique:users',
             /*'password' => [
                 'required',
                 // 'confirmed',

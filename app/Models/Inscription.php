@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Inscription extends Model
 {
     use HasFactory;
+
+    // RELATION AVEC LA TABLE USER
+    public function users()
+    {
+        return $this->hasOne(User::class);
+    }
 }

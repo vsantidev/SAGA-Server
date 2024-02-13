@@ -20,18 +20,18 @@ return new class extends Migration
             $table->string('title',255);
             $table->longText('content');
             $table->string('picture')->nullable();
-            $table->string('animateur');
-            $table->integer('fight');
-            $table->integer('reflection');
-            $table->integer('roleplay');
-            $table->string('type_animation');
-            $table->datetime('open_time');
-            $table->datetime('closed_time');
-            $table->integer('capacity');
+            $table->integer('capacity')->nullable();
+            $table->integer('fight')->nullable();
+            $table->integer('reflection')->nullable();
+            $table->integer('roleplay')->nullable();
+            $table->string('type_animation')->nullable();
+            $table->datetime('open_time')->nullable();
+            $table->datetime('closed_time')->nullable();
+            $table->boolean('validate')->default(false);
             $table->foreignIdFor(User::class)->constrained;
-            $table->foreignIdFor(Room::class)->constrained;
-            $table->foreignIdFor(Evenement::class)->constrained;
-            $table->foreignIdFor(Type_animation::class)->constrained;
+            $table->foreignIdFor(Room::class)->nullable();
+            $table->foreignIdFor(Evenement::class)->nullable(); //Dois-être obligatoire après la création des évènements
+            $table->foreignIdFor(Type_animation::class)->nullable();  //Dois-être obligatoire après la création des évènements
             $table->timestamps();
         });
 
