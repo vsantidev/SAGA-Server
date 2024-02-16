@@ -19,13 +19,16 @@ class AuthController extends Controller
         Log::info("---LOGIN---");
         $user = User::where('email', $request->email)->first();
 
+
+        Log::info($user);
         if ($user && Hash::check($request->password, $user->password)) {
             // Utilisation de Sanctum pour créer un jeton d'accès
             $token = $user->createToken(time())->plainTextToken;
             Log::info($token);
             return response()->json([
                 'token' => $token,
-                'user' => $user, 
+                'user' => $user,
+                'user_id' => $user->id 
             ]);
         } else {
             return response()->json(['error login' => 'Email ou mot de passe incorrect'], 401);
@@ -54,10 +57,10 @@ class AuthController extends Controller
             'firstname' => $user->firstname,
             'lastname' => $user->lastname,
             // 'pseudo' => $user->username,
-            // 'email' => $user->email,
+            'email' => $user->email,
             // 'birthday' => $user->birthday,
             // 'password' => $user->password,
-            'role' => $user->role
+            'type' => $user->role
 
         ];
         return response()->json(['success' => $userData]);

@@ -45,8 +45,9 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
     // adds an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
-
-
+    // returns a page that shows a full animation
+    Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
+    Route::put('/animationShow/{id}', [AnimationController::class, 'animationUpdate']);
 });
 
 

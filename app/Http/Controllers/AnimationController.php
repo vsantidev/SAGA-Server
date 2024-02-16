@@ -18,7 +18,7 @@ class AnimationController extends Controller
     public function animationIndex()
     {
         Log::info("--- ANIMATION INDEX ---");
-        return Animation::select('id', 'title', 'content')->get();
+        return Animation::select('id', 'title', 'content', 'created_at')->get();
 
         // Récupère les type d'animations associés à l'ID de la table animations
         // $type_animations = DB::table('Type_animations')->where('type_animations.animations_id', $id)->get();
@@ -83,7 +83,7 @@ class AnimationController extends Controller
     /**
      * Display the specified resource.
      */
-    public function animationShow(Animation $animation, Int $id)
+    public function animationShow(Request $request, Int $id): JsonResponse
     {   
         // Récupère les type d'animations associés à l'ID de la table animations
         // $type_animations = DB::table('Type_animations')->where('type_animations.animations_id', $id)->get();
@@ -91,6 +91,48 @@ class AnimationController extends Controller
         // return response()->json([
         //     'type_animations' => $type_animations
         // ]);
+
+        // Récupère le user par son ID
+        $animationShow = Animation::find($id);
+
+        Log::info("---Function : AnimationShow connected---");
+        // $userShow = $request->user();
+
+        $animationData = [
+            'id' => $animationShow->id,
+            'title' => $animationShow->title,
+            'content' => $animationShow->content,
+            'picture' => $animationShow->picture,
+            'capacity' => $animationShow->capacity,
+            'fight' => $animationShow->fight,
+            'reflection' => $animationShow->reflection,
+            'roleplay' => $animationShow->roleplay,
+            'type_animation' => $animationShow->type_animation,
+            'open_time' => $animationShow->open_time,
+            'closed_time' => $animationShow->closed_time
+        ];
+
+        Log::info("---Function : AnimationShow Data => ---");
+        Log::info($animationData);
+
+        // return response()->json(['success' => $userData]);
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Voici le détail de l\'animation !',
+            // 'User profile : ' => $userData,
+            'id' => $animationShow->id,
+            'title' => $animationShow->title,
+            'content' => $animationShow->content,
+            'picture' => $animationShow->picture,
+            'capacity' => $animationShow->capacity,
+            'fight' => $animationShow->fight,
+            'reflection' => $animationShow->reflection,
+            'roleplay' => $animationShow->roleplay,
+            'type_animation' => $animationShow->type_animation,
+            'open_time' => $animationShow->open_time,
+            'closed_time' => $animationShow->closed_time
+
+        ]);
     }
 
     /**
@@ -104,9 +146,49 @@ class AnimationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function animationUpdate(Request $request, Animation $animation)
+    public function animationUpdate(Request $request)
     {
-        //
+        Log::info("---Function animationUpdate 1---");
+
+        // $userUpdate = $request->user();
+
+        Log::info($request);
+
+        $request->validate([
+            'lastname' => 'required',
+            'firstname' => 'required',
+            'birthday' => 'required',
+            'email' => 'required',
+        ]);
+
+        Log::info("---Function animationUpdate 2 ---");
+        Log::info($request);
+
+        // Récupère le lieu par son ID
+        $animationUpdate = Animation::findOrFail($request->id);
+        $animationUpdate->title = $request->title;
+        $animationUpdate->content = $request->content;
+        $animationUpdate->picture = $request->picture;
+        $animationUpdate->capacity = $request->capacity;
+        $animationUpdate->fight = $request->fight;
+        $animationUpdate->reflection = $request->reflection;
+        $animationUpdate->roleplay = $request->roleplay;
+        $animationUpdate->type_animation = $request->type_animation;
+        $animationUpdate->open_time = $request->open_time;
+        $animationUpdate->closed_time = $request->closed_time;
+
+
+        $animationUpdate->save();
+
+        Log::info("---Function animationUpdate 3 ---");
+        Log::info($animationUpdate);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Animation mise à jour avec succès',
+            'animation' => $animationUpdate,
+        ]);
+
     }
 
     /**
