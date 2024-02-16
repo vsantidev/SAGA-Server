@@ -146,9 +146,49 @@ class AnimationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function animationUpdate(Request $request, Animation $animation)
+    public function animationUpdate(Request $request)
     {
-        //
+        Log::info("---Function animationUpdate 1---");
+
+        // $userUpdate = $request->user();
+
+        Log::info($request);
+
+        $request->validate([
+            'lastname' => 'required',
+            'firstname' => 'required',
+            'birthday' => 'required',
+            'email' => 'required',
+        ]);
+
+        Log::info("---Function animationUpdate 2 ---");
+        Log::info($request);
+
+        // Récupère le lieu par son ID
+        $animationUpdate = Animation::findOrFail($request->id);
+        $animationUpdate->title = $request->title;
+        $animationUpdate->content = $request->content;
+        $animationUpdate->picture = $request->picture;
+        $animationUpdate->capacity = $request->capacity;
+        $animationUpdate->fight = $request->fight;
+        $animationUpdate->reflection = $request->reflection;
+        $animationUpdate->roleplay = $request->roleplay;
+        $animationUpdate->type_animation = $request->type_animation;
+        $animationUpdate->open_time = $request->open_time;
+        $animationUpdate->closed_time = $request->closed_time;
+
+
+        $animationUpdate->save();
+
+        Log::info("---Function animationUpdate 3 ---");
+        Log::info($animationUpdate);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Animation mise à jour avec succès',
+            'animation' => $animationUpdate,
+        ]);
+
     }
 
     /**
