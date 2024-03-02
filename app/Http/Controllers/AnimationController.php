@@ -194,8 +194,22 @@ class AnimationController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function animationDestroy(Animation $animation)
+    public function animationDestroy(Request $request)
     {
-        //
+        Log::info("---Function Animation : Destroy---");
+        $request->validate([
+            "id" => "required|integer",
+        ]);
+
+        Log::info($request);
+
+        $animationDestroy = Animation::findOrFail($request->id);
+        $animationDestroy->delete();
+               
+        return response()->json([
+            'status' => 'true',
+            'message' => 'L\'animation a été supprimé !',
+            'Animation supprimée : ' => $request->id
+        ]);
     }
 }
