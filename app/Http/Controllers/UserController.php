@@ -6,8 +6,10 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Nette\Utils\Random;
 
 class UserController extends Controller
 {
@@ -38,7 +40,7 @@ class UserController extends Controller
             'firstname' => $request->firstname,
             'email' => $request->email,
             'birthday' => $request->birthday,
-            'password' => bcrypt("MotDePasse1!"),
+            'password' => bcrypt(Str::random(12)),
             'type' => $request->type,
         ]);
 

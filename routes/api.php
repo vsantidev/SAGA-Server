@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // returns a page that shows a full animation
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
     Route::put('/animationShow/{id}', [AnimationController::class, 'animationUpdate']);
+    Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']);
 });
 
 
