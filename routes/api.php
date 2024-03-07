@@ -41,14 +41,15 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
 // --------------- ANIMATIONS ---------------
 Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
 
-    // returns the form for adding an animation
     Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
-    // adds an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
-    // returns a page that shows a full animation
+
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
+    Route::post('/animationShow/{id}', [AnimationController::class, 'animationRegister']);
+
     Route::put('/animationShow/{id}', [AnimationController::class, 'animationUpdate']);
     Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']);
+    
 });
 
 
