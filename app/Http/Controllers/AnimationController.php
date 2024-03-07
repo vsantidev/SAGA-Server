@@ -155,6 +155,7 @@ class AnimationController extends Controller
             'reflection' => $animationShow->reflection,
             'roleplay' => $animationShow->roleplay,
             'type_animation' => $animationShow->type_animation,
+            'user_id' => $animationShow->user_id,
             'open_time' => $animationShow->open_time,
             'closed_time' => $animationShow->closed_time
         ];
@@ -185,10 +186,8 @@ class AnimationController extends Controller
         Log::info($request);
 
         $request->validate([
-            'lastname' => 'required',
-            'firstname' => 'required',
-            'birthday' => 'required',
-            'email' => 'required',
+            'title' => 'required',
+            'content' => 'required'
         ]);
 
         Log::info("---Function animationUpdate 2 ---");
