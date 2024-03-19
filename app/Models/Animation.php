@@ -38,7 +38,7 @@ class Animation extends Model
     }
 
     // RELATION AVEC LA TABLE EVENEMENTS
-    public function evenement()
+    public function evenements()
     {
         return $this->belongsTo(Evenement::class);
     }
@@ -46,7 +46,13 @@ class Animation extends Model
     // RELATION AVEC LA TABLE INSCRIPTION
     public function inscriptions()
     {
-        return $this->belongsToMany(Inscription::class);
+        return $this->hasMany(Inscription::class);
+    }
+
+    // RELATION AVEC LA TABLE TYPE_ANIMATIONS
+    public function type_animation()
+    {
+        return $this->belongsTo(Type_animation::class);
     }
 
 }

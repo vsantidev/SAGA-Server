@@ -10,20 +10,18 @@ use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory()->create([
-        //     'firstname' => 'SerVer',
-        //     'lastname' => 'Nier',
-        //     'email' => 'Servertest@example.com',
-        //     'email_verified_at' => now(),
-        //     'password' => Hash::make('topsecret'),
-        //     'birthday' => '2017/02/23',
-        //     'type'=> 'animateur',
-        // ]);
+        User::factory()->create([
+            'lastname' => 'mon',
+            'firstname' => 'Administrateur',
+            'birthday' => '2017/02/23',
+            'email' => 'serverTest@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('MonSuperMotDePasse123'),
+            'presentation' => 'Le mini administrateur',
+            'type' => 'admin',
+        ]);
 
         User::factory()->create([
             'lastname' => 'Wyvern',
@@ -46,6 +44,16 @@ class DatabaseSeeder extends Seeder
             'presentation' => 'The teacher mystery',
             'type' => 'membre',
         ]);
+
+                // User::factory()->create([
+        //     'firstname' => 'SerVer',
+        //     'lastname' => 'Nier',
+        //     'email' => 'Servertest@example.com',
+        //     'email_verified_at' => now(),
+        //     'password' => Hash::make('topsecret'),
+        //     'birthday' => '2017/02/23',
+        //     'type'=> 'animateur',
+        // ]);
 
     }
 }

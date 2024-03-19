@@ -17,12 +17,12 @@ class Inscription extends Model
     // RELATION AVEC LA TABLE USER
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class);
     }
 
     // RELATION AVEC LA TABLE ANIMATION
     public function animations()
     {
-        return $this->hasMany(Animation::class);
+        return $this->belongsToMany(Animation::class);
     }
 }
