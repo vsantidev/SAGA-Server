@@ -3,8 +3,6 @@
 use App\Http\Controllers\AnimationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
-
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,47 +16,41 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// returns the home page with all posts
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGIN ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER ~~~<~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
-    // --------------- USER ---------------
-    // adds a user to the database
-    Route::post('/useradd', [UserController::class, 'useradd']);
-    // returns the form for adding a user
-    Route::get('/userlist', [UserController::class, 'userlist']);
-    // returns a page that shows a full user
-    Route::get('/userprofile/{id}', [UserController::class, 'userShow']);
-    // returns the form for editing a user
 
+    // add a user to the database
+    Route::post('/useradd', [UserController::class, 'useradd']);
+    // return a page that shows all user
+    Route::get('/userlist', [UserController::class, 'userlist']);
+    // returns the form for editing a user
+    Route::get('/userprofile/{id}', [UserController::class, 'userShow']);
     // updates a user
     Route::put('/userprofile/{id}', [UserController::class, 'userUpdate']);
-    // deletes a user
+    // delete a user
     Route::delete('/userlist', [UserController::class, 'userDelete']);
+    // Dashboard user
     Route::get('/dashboard', [AuthController::class, 'dashboard']); 
 });
 
-// --------------- ANIMATIONS ---------------
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
-
+    // return a page that shows all animation
     Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
+    // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
-
+    /// return the form for editing an animation
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
+    // register an user to an animation
     Route::post('/animationShow/{id}', [AnimationController::class, 'animationRegister']);
-
+    // udate an animation
     Route::put('/animationShow/{id}', [AnimationController::class, 'animationUpdate']);
-    Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']);
-    
+    // delete an animation
+    Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']); 
 });
 
-
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
-
-
-
-
-
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGOUT ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);

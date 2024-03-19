@@ -21,5 +21,10 @@ class Evenement extends Model
         return $this->hasMany(User::class);
     }
 
+    // RELATION AVEC LA TABLE SITE
+    public function sites()
+    {
+        return $this->belongsTo(Site::class);
+    }
 
 }

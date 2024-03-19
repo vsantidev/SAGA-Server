@@ -28,7 +28,8 @@ class AuthController extends Controller
             return response()->json([
                 'token' => $token,
                 'user' => $user,
-                'user_id' => $user->id 
+                'user_id' => $user->id,
+                'type' => $user->type
             ]);
         } else {
             return response()->json(['error login' => 'Email ou mot de passe incorrect'], 401);

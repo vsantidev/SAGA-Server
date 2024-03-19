@@ -14,4 +14,10 @@ class Site extends Model
     {
         return $this->hasMany(Inscription::class);
     }
+
+    // RELATION AVEC LA TABLE EVENEMENT
+    public function evenements()
+    {
+        return $this->hasMany(Evenement::class);
+    }
 }

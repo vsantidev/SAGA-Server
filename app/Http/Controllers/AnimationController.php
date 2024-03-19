@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +19,7 @@ class AnimationController extends Controller
     public function animationIndex()
     {
         Log::info("--- ANIMATION INDEX ---");
-        return Animation::select('id', 'title', 'content', 'created_at')->get();
+        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time')->get();
 
         // Récupère les type d'animations associés à l'ID de la table animations
         // $type_animations = DB::table('Type_animations')->where('type_animations.animations_id', $id)->get();
@@ -114,11 +115,13 @@ class AnimationController extends Controller
     }
 
 
+    // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegisterStore ~~~~~~~~~~~~~~~~~~~~~~~~~~
     // public function animationRegisterStore(Request $request, Int $id): JsonResponse
     // {
 
     // }
+
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationShow ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,7 +135,7 @@ class AnimationController extends Controller
 
         //  2 - ~~~~~ Récupérer les userInscrits dans un table et les rajouter
         Log::info("--- Function : AnimationShow --- Affichage de chaque userInscrits");
-        $listUser=collect([]);
+        $listUser= new Collection();
 
         foreach ($inscriptionsTable as $inscriptionsTables) {
             // ~~~~~ Récupère le users grâce a son ID

@@ -54,7 +54,7 @@ class User extends Authenticatable
     // RELATION AVEC LA TABLE ANIMATION
     public function animations()
     {
-        return $this->hasMany(Animation::class);
+        return $this->belongsToMany(Animation::class);
     }
 
     // RELATION AVEC LA TABLE INSCRIPTION
