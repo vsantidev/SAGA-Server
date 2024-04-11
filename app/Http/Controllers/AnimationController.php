@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Animation;
 use App\Models\Inscription;
 use App\Models\User;
+use App\Models\Type_animation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
@@ -61,7 +62,7 @@ class AnimationController extends Controller
             'fight' => $request->fight,
             'reflection' => $request->reflection,
             'roleplay' => $request->roleplay,
-            'typeAnimation' => $request->type_animation,
+            'type_animation_id' => $request->type_animation_id,
             'user_id' => $request->user_id,
             'picture'=> "images/$filename"
         ]);
@@ -155,8 +156,10 @@ class AnimationController extends Controller
             $listUser->push($usersInscrit);
         }
         Log::info($listUser);
+        $type_animation = Type_animation::find($animationShow->type_animation_id);
 
-
+        Log::info('type_animation');
+        Log::info($type_animation);
         Log::info("---Function : AnimationShow Data => ---");
         $animationData = [
             'id' => $animationShow->id,
@@ -167,7 +170,7 @@ class AnimationController extends Controller
             'fight' => $animationShow->fight,
             'reflection' => $animationShow->reflection,
             'roleplay' => $animationShow->roleplay,
-            'type_animation' => $animationShow->type_animation,
+            'type_animation' => $type_animation->type,
             'user_id' => $animationShow->user_id,
             'open_time' => $animationShow->open_time,
             'closed_time' => $animationShow->closed_time
