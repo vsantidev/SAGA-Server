@@ -21,7 +21,8 @@ class Animation extends Model
         'user_id',
         'room_id',
         'evenement_id',
-        'type_animation_id'
+        'type_animation_id',
+        'picture'
     ];
 
 
