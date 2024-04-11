@@ -13,9 +13,9 @@ class TypeAnimationSeeder extends Seeder
 
     public function run(): void
     {
-        foreach ($this->etiquette as $types) {
+        foreach ($this->etiquette as $etiquette) {
             Type_animation::create([
-                'type' => $types]);
+                'type' => $etiquette]);
         }
 
         echo array_rand($this->etiquette);

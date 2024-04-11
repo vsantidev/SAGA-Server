@@ -21,13 +21,9 @@ class AnimationController extends Controller
         Log::info("--- ANIMATION INDEX ---");
         return Animation::select('id', 'title', 'content', 'type_animation', 'open_time')->get();
 
-        // Récupère les type d'animations associés à l'ID de la table animations
-        // $type_animations = DB::table('Type_animations')->where('type_animations.animations_id', $id)->get();
-
         return response()->json([
             'status' => 'true',
             'message' => 'Affichage des animations !'
-            // 'type_animations' => $type_animations,
         ]);
 
     }
@@ -38,14 +34,6 @@ class AnimationController extends Controller
     {
         Log::info("---ANIMATION CONTROLLER : Function AnimationCreate ---");
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required'
-        ]);
-
-        // -> Récupère le user par son ID
-        // $user_id = User::findOrFail($id);
-        // $user_id = Auth::id();
 
         Log::info("---ANIMATION CREATE : Request---");
         Log::info($request);
@@ -57,6 +45,10 @@ class AnimationController extends Controller
             'title' => $request->title,
             'content' => $request->content,
             'validate' => $request->validate,
+            'fight' => $request->fight,
+            'reflection' => $request->reflection,
+            'roleplay' => $request->roleplay,
+            'typeAnimation' => $request->type_animation,
             'user_id' => $request->user_id
         ]);
 
@@ -71,6 +63,9 @@ class AnimationController extends Controller
         Log::info("---ANIMATION CREATE : AnimationCreate après json---");
         Log::info($animationCreate);
     }
+
+
+
 
 
     // =================================================================================

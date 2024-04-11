@@ -4,17 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Type_animation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TypeAnimationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
 
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : typeAnimation ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function indexTypeAnimation() {
+        // Récupère tous les users enregistrés dans la bdd
+        Log::info("---INDEX DES TYPES D'ANIMTIONS---");
+        return Type_animation::select('id', 'type')->get();
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Voici les types d\'animation !',
+        ]);
+    }
     /**
      * Show the form for creating a new resource.
      */
