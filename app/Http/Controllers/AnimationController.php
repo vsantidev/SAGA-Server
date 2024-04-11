@@ -14,12 +14,13 @@ use Illuminate\Support\Facades\DB;
 
 class AnimationController extends Controller
 {
+
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationIndex()
     {
         Log::info("--- ANIMATION INDEX ---");
-        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time')->get();
+        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture')->get();
 
         return response()->json([
             'status' => 'true',
@@ -29,18 +30,30 @@ class AnimationController extends Controller
     }
 
     // =================================================================================
+    
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationCreate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationCreate(Request $request)
     {
+
+        
         Log::info("---ANIMATION CONTROLLER : Function AnimationCreate ---");
 
 
         Log::info("---ANIMATION CREATE : Request---");
         Log::info($request);
 
-        Log::info("---ANIMATION CREATE : User_id---");
-        // Log::info($user_id);
+        Log::info("---ANIMATION CREATE : debut picture---");
 
+        if($request->hasFile('picture')){
+            $file = $request->file('picture');
+            $extension = $file->getClientOriginalExtension();
+            //$filename = time() .'.'.$extension;
+            $filename = uniqid() . "_" . $file->getClientOriginalName();
+            $file->move(public_path('images/'), $filename);
+            //$payload['picture']= 'public/images/'.$filename;
+        }
+
+        Log::info("---ANIMATION CREATE : fin picture---");
         $animationCreate = Animation::create([
             'title' => $request->title,
             'content' => $request->content,
@@ -49,8 +62,10 @@ class AnimationController extends Controller
             'reflection' => $request->reflection,
             'roleplay' => $request->roleplay,
             'typeAnimation' => $request->type_animation,
-            'user_id' => $request->user_id
+            'user_id' => $request->user_id,
+            'picture'=> "images/$filename"
         ]);
+		
 
         Log::info("---ANIMATION CREATE : AnimationCreate avant json---");
         Log::info($animationCreate);
