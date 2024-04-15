@@ -62,6 +62,8 @@ class AnimationController extends Controller
             'fight' => $request->fight,
             'reflection' => $request->reflection,
             'roleplay' => $request->roleplay,
+            'open_time' => $request->open_time,
+            'closed_time' => $request->closed_time,
             'type_animation_id' => $request->type_animation_id,
             'user_id' => $request->user_id,
             'picture'=> "images/$filename"
