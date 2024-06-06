@@ -52,6 +52,8 @@ class AnimationController extends Controller
             $filename = uniqid() . "_" . $file->getClientOriginalName();
             $file->move(public_path('images/'), $filename);
             //$payload['picture']= 'public/images/'.$filename;
+        }else{
+            $filename = 'img_default.jpg';
         }
 
         Log::info("---ANIMATION CREATE : fin picture---");
