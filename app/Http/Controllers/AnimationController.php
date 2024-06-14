@@ -21,7 +21,7 @@ class AnimationController extends Controller
     public function animationIndex()
     {
         Log::info("--- ANIMATION INDEX ---");
-        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture')->get();
+        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture', 'capacity')->get();
 
         return response()->json([
             'status' => 'true',
@@ -88,48 +88,7 @@ class AnimationController extends Controller
 
 
 
-    // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function animationRegister(Request $request, Int $id): JsonResponse
-    {
-        Log::info("---Function : AnimationRegister connected---");
-        $request->validate([
-            'user_id' => 'required'
-        ]);
-
-        $userRegister = User::find($request->user_id);
-
-        Log::info("---Function : AnimationRegister userData---");
-
-        $userData = [
-            'id' => $userRegister->id,
-            'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname
-        ];
-        Log::info($userData);
-
-        Log::info("---Function : AnimationRegister Table Inscription---");
-        Log::info($id);
-        $registerInscription = Inscription::firstOrNew([
-            'user_id' => $request->user_id,
-            'animation_id' => $id
-        ]);
-        $registerInscription->save();
-        Log::info($registerInscription);
-
-
-        Log::info("---Function : AnimationRegister Create Inscription---");
-        return response()->json([
-            'status' => 'true',
-            'message' => 'L\'utilisateur a été inscrit sur l\'animation !',
-            // 'User profile : ' => $userData,
-            'id' => $userRegister->id,
-            'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname
-        ]);
-    }
-
-
+    
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegisterStore ~~~~~~~~~~~~~~~~~~~~~~~~~~
     // public function animationRegisterStore(Request $request, Int $id): JsonResponse
