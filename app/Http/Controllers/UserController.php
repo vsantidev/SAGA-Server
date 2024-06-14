@@ -54,6 +54,8 @@ class UserController extends Controller
         Log::info($user);
     }
 
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : userIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function userlist() {
         // Récupère tous les users enregistrés dans la bdd
         Log::info("---LIST USER---");
@@ -76,24 +78,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function userDelete(Request $request)
-    {
-        Log::info("---Function UserDelete---");
-        $request->validate([
-            "id" => "required|integer",
-        ]);
 
-        Log::info($request);
-
-        $userDelete = User::findOrFail($request->id);
-        $userDelete->delete();
-               
-        return response()->json([
-            'status' => 'true',
-            'message' => 'L\'utilisateur a été supprimé !',
-            'User supprimé : ' => $request->id
-        ]);
-    }
 
     public function userShow(Request $request, Int $id): JsonResponse 
     {
@@ -180,6 +165,27 @@ class UserController extends Controller
             'user' => $userUpdate,
         ]);
 
+    }
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USERS : Destroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function userDelete(Request $request)
+    {
+        Log::info("---Controller User : destroy Users---");
+        $request->validate([
+            "id" => "required|integer",
+        ]);
+
+        Log::info($request);
+
+        $userDelete = User::findOrFail($request->id);
+        $userDelete->delete();
+               
+        return response()->json([
+            'status' => 'true',
+            'message' => 'L\'utilisateur a été supprimé !',
+            'User supprimé : ' => $request->id
+        ]);
     }
 
 }

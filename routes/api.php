@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnimationController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\TypeAnimationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -47,12 +48,21 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     /// return the form for editing an animation
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
 
-    // register an user to an animation
-    Route::post('/animationShow/{id}', [AnimationController::class, 'animationRegister']);
-    // udate an animation
+
+    // update an animation
     Route::put('/animationShow/{id}', [AnimationController::class, 'animationUpdate']);
     // delete an animation
-    Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']); 
+    // Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']);
+
+
+    // delete an animation of the list
+    Route::delete('/animationIndex', [AnimationController::class, 'animationDestroy']);
+
+
+    // register an user to an animation
+    Route::post('/animationShow/{id}', [InscriptionController::class, 'createRegister']);
+    // unsubcribe a user from an animation
+    Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistration']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGOUT ~~~~~~~~~~~~~~~~~~~~~~~~~~
