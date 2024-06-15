@@ -35,11 +35,11 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('animation_user', function(Blueprint $table) {
+        /*Schema::create('animation_user', function(Blueprint $table) {
             $table->foreignIdFor(\App\Models\Animation::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
             $table->primary(['animation_id', 'user_id']);
-        });
+        });*/
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnimationController;
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TypeAnimationController;
 use App\Http\Controllers\UserController;
@@ -37,12 +38,22 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/dashboard', [AuthController::class, 'dashboard']); 
 });
 
+Route::middleware('auth:sanctum')->prefix('like')->group(function () {
+
+    // return a page that shows all user
+    Route::get('/animationIndex', [LikeController::class, 'likeShow']);
+    // updates a user
+
+});
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // return a page that shows all animation
     Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
     // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
+
     Route::get('/animationCreate', [TypeAnimationController::class, 'indexTypeAnimation']);
     /// return the form for editing an animation
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
@@ -53,6 +64,12 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     Route::put('/animationShow/{id}', [AnimationController::class, 'animationUpdate']);
     // delete an animation
     Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']); 
+
+    //----ANIMATION -> LIKE----
+    // add a like to the database
+    Route::post('/animationIndex', [LikeController::class, 'createLike']);
+    // delete a like
+    Route::delete('/animationIndex', [LikeController::class, 'destroyLike']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGOUT ~~~~~~~~~~~~~~~~~~~~~~~~~~
