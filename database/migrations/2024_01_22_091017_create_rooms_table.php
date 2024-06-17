@@ -15,10 +15,10 @@ return new class extends Migration
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('capacity');
+            $table->string('capacity')->nullable();
             $table->string('floor');
-            $table->string('pmr');
-            $table->mediumText('description');
+            $table->boolean('pmr');
+            $table->mediumText('description')->nullable();
             $table->string('picture')->nullable();
             $table->foreignIdFor(Site::class)->constrained;
             $table->timestamps();

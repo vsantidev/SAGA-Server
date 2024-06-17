@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('type_animations', function (Blueprint $table) {
             $table->id();
             $table->string('type');
-            // $table->timestamps();
+            $table->timestamps();
         });
     }
 

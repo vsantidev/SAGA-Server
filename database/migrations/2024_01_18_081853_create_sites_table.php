@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('street');
             $table->integer('postcode');
             $table->string('city');
-            $table->string('phone');
-            $table->string('document');
+            $table->string('phone')->nullable();
+            $table->string('document')->nullable();
             $table->float('position_x')->nullable();
             $table->float('position_y')->nullable();
             $table->timestamps();

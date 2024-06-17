@@ -45,15 +45,13 @@ class DatabaseSeeder extends Seeder
             'type' => 'membre',
         ]);
 
-                // User::factory()->create([
-        //     'firstname' => 'SerVer',
-        //     'lastname' => 'Nier',
-        //     'email' => 'Servertest@example.com',
-        //     'email_verified_at' => now(),
-        //     'password' => Hash::make('topsecret'),
-        //     'birthday' => '2017/02/23',
-        //     'type'=> 'animateur',
-        // ]);
+        $this->call([
+            SiteSeeder::class,
+            EvenementSeeder::class,
+            RoomSeeder::class,
+            AnimationSeeder::class,
+            TypeAnimationSeeder::class,
+        ]);
 
     }
 }
