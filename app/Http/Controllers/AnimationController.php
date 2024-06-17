@@ -66,6 +66,7 @@ class AnimationController extends Controller
             'roleplay' => $request->roleplay,
             'open_time' => $request->open_time,
             'closed_time' => $request->closed_time,
+            'evenement_id' => '1', // phase 1, en phase 2 affectation de l'evenement actif
             'type_animation_id' => $request->type_animation_id,
             'user_id' => $request->user_id,
             'picture'=> "images/$filename"

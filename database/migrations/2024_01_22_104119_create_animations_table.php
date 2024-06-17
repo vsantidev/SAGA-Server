@@ -30,7 +30,7 @@ return new class extends Migration
             $table->boolean('validate')->default(false);
             $table->foreignIdFor(User::class)->constrained;
             $table->foreignIdFor(Room::class)->nullable();
-            $table->foreignIdFor(Evenement::class)->nullable(); //Dois-être obligatoire après la création des évènements
+            $table->foreignIdFor(Evenement::class); //Dois-être obligatoire après la création des évènements
             $table->foreignIdFor(Type_animation::class)->nullable();  //Dois-être obligatoire après la création des évènements
             $table->timestamps();
         });
