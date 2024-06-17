@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Animation;
 use App\Models\Inscription;
+use App\Models\Like;
 use App\Models\User;
 use App\Models\Type_animation;
 use Illuminate\Http\Request;
@@ -18,14 +19,38 @@ class AnimationController extends Controller
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function animationIndex()
+    public function animationIndex(Request $request)
     {
         Log::info("--- ANIMATION INDEX ---");
-        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture', 'capacity')->get();
+
+        $IdUser = $request->query('param1');
+        Log::info("--- ANIMATION INDEX : IdUser ---");
+        Log::info($IdUser);
+        //Recuperation des animations
+        $Animations=Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture')->get();
+        //Recupération des likes
+        $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
+        //ajout de la colonne like dans le tableau des animations
+        $listeAnimationLike=$Animations->map(function($Animation){
+            $Animation->like = "";
+        return $Animation;
+        });
+        //parcours des 2 tableaux pour intégrer les tableaux liké de l'utilisateur
+        foreach($listeAnimationLike as $anim)
+        {
+            foreach($listeLike as $like)
+            {
+                if($anim->id == $like->animation_id)
+                {
+                    $anim->like="1";
+                }
+            }
+        }
 
         return response()->json([
             'status' => 'true',
-            'message' => 'Affichage des animations !'
+            'message' => 'Affichage des animations + bonus Like!',
+            'listeAnimation' => $listeAnimationLike ,
         ]);
 
     }
@@ -88,13 +113,47 @@ class AnimationController extends Controller
 
 
 
-    
-    // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegisterStore ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // public function animationRegisterStore(Request $request, Int $id): JsonResponse
-    // {
 
-    // }
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function animationRegister(Request $request, Int $id): JsonResponse
+    {
+        Log::info("---Function : AnimationRegister connected---");
+        $request->validate([
+            'user_id' => 'required'
+        ]);
+
+        $userRegister = User::find($request->user_id);
+
+        Log::info("---Function : AnimationRegister userData---");
+
+        $userData = [
+            'id' => $userRegister->id,
+            'lastname' => $userRegister->lastname,
+            'firstname' => $userRegister->firstname
+        ];
+        Log::info($userData);
+
+        Log::info("---Function : AnimationRegister Table Inscription---");
+        Log::info($id);
+        $registerInscription = Inscription::firstOrNew([
+            'user_id' => $request->user_id,
+            'animation_id' => $id
+        ]);
+        $registerInscription->save();
+        Log::info($registerInscription);
+
+
+        Log::info("---Function : AnimationRegister Create Inscription---");
+        return response()->json([
+            'status' => 'true',
+            'message' => 'L\'utilisateur a été inscrit sur l\'animation !',
+            // 'User profile : ' => $userData,
+            'id' => $userRegister->id,
+            'lastname' => $userRegister->lastname,
+            'firstname' => $userRegister->firstname
+        ]);
+    }
 
 
     // =================================================================================
