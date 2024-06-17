@@ -22,6 +22,7 @@ class AnimationController extends Controller
     public function animationIndex(Request $request)
     {
         Log::info("--- ANIMATION INDEX ---");
+
         $IdUser = $request->query('param1');
         Log::info("--- ANIMATION INDEX : IdUser ---");
         Log::info($IdUser);
@@ -45,6 +46,7 @@ class AnimationController extends Controller
                 }
             }
         }
+
         return response()->json([
             'status' => 'true',
             'message' => 'Affichage des animations + bonus Like!',
@@ -111,6 +113,7 @@ class AnimationController extends Controller
 
 
 
+
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationRegister(Request $request, Int $id): JsonResponse
@@ -151,6 +154,7 @@ class AnimationController extends Controller
             'firstname' => $userRegister->firstname
         ]);
     }
+
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationShow ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -216,7 +220,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationUpdate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationUpdate(Request $request)
     {
-        Log::info("---Function animationUpdate 1---");
+        Log::info("---Controller Animation : update Animation |  Request 1---");
         Log::info($request);
 
         $request->validate([
@@ -224,7 +228,7 @@ class AnimationController extends Controller
             'content' => 'required'
         ]);
 
-        Log::info("---Function animationUpdate 2 ---");
+        Log::info("---Controller Animation : update Animation |  Request 2 ---");
         Log::info($request);
 
         // Récupère le lieu par son ID
@@ -242,7 +246,7 @@ class AnimationController extends Controller
 
         $animationUpdate->save();
 
-        Log::info("---Function animationUpdate 3 ---");
+        Log::info("---Controller Inscripton : update Animation |  Request 3---");
         Log::info($animationUpdate);
 
         return response()->json([
