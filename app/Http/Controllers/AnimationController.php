@@ -161,7 +161,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationUpdate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationUpdate(Request $request)
     {
-        Log::info("---Function animationUpdate 1---");
+        Log::info("---Controller Animation : update Animation |  Request 1---");
         Log::info($request);
 
         $request->validate([
@@ -169,7 +169,7 @@ class AnimationController extends Controller
             'content' => 'required'
         ]);
 
-        Log::info("---Function animationUpdate 2 ---");
+        Log::info("---Controller Animation : update Animation |  Request 2 ---");
         Log::info($request);
 
         // Récupère le lieu par son ID
@@ -187,7 +187,7 @@ class AnimationController extends Controller
 
         $animationUpdate->save();
 
-        Log::info("---Function animationUpdate 3 ---");
+        Log::info("---Controller Inscripton : update Animation |  Request 3---");
         Log::info($animationUpdate);
 
         return response()->json([
