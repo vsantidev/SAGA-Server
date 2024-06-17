@@ -76,7 +76,7 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
 
 
     // delete an animation of the list
-    Route::delete('/animationIndex', [AnimationController::class, 'animationDestroy']);
+    // Route::delete('/animationIndex', [AnimationController::class, 'animationDestroy']);
 
 
     // register an user to an animation
