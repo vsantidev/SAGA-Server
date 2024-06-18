@@ -55,8 +55,21 @@ class AnimationController extends Controller
 
     }
 
+
+
     // =================================================================================
-    
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function animationListIndex()
+    {
+        Log::info("---Controller Animation : Index List Animation | Connexion---");
+        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id', 'capacity', 'validate')->get();
+        return response()->json([
+            'status' => 'true',
+            'message' => 'AnimationListIndex : Affichage des animations !'
+        ]);
+    }
+
+    // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationCreate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationCreate(Request $request)
     {
@@ -215,6 +228,8 @@ class AnimationController extends Controller
     {
         //
     }
+
+    
 
 
     // =================================================================================

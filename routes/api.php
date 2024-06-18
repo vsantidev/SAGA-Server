@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->prefix('like')->group(function () {
 Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // return a page that shows all animation
     Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
+    Route::get('animationList', [AnimationController::class, 'animationListIndex']);
     // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
 

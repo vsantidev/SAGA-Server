@@ -19,7 +19,7 @@ class InscriptionController extends Controller
     }
 
 
-// =================================================================================
+    // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function createRegister(Request $request, Int $id): JsonResponse
     {
