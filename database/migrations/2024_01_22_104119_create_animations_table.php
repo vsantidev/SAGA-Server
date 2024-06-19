@@ -18,18 +18,18 @@ return new class extends Migration
         Schema::create('animations', function (Blueprint $table) {
             $table->id();
             $table->string('title',255);
-            $table->longText('content');
             $table->string('picture')->nullable();
-            $table->integer('capacity')->nullable();
+            $table->string('type_animation')->nullable();
+            $table->longText('content');
             $table->integer('fight')->nullable();
             $table->integer('reflection')->nullable();
             $table->integer('roleplay')->nullable();
-            $table->string('type_animation')->nullable();
             $table->datetime('open_time')->nullable();
             $table->datetime('closed_time')->nullable();
             $table->boolean('validate')->default(false);
-            $table->foreignIdFor(User::class)->constrained;
+            $table->integer('capacity')->nullable();
             $table->foreignIdFor(Room::class)->nullable();
+            $table->foreignIdFor(User::class)->constrained;
             $table->foreignIdFor(Evenement::class); //Dois-être obligatoire après la création des évènements
             $table->foreignIdFor(Type_animation::class)->nullable();  //Dois-être obligatoire après la création des évènements
             $table->timestamps();

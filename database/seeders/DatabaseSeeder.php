@@ -45,6 +45,19 @@ class DatabaseSeeder extends Seeder
             'type' => 'membre',
         ]);
 
+        User::factory()->create([
+            'lastname' => 'Ptipeu',
+            'firstname' => 'Justin',
+            'birthday' => '1991/05/12',
+            'email' => 'justin.ptipeu@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('jus1ptipeu-'),
+            'presentation' => 'L\'animateur',
+            'type' => 'animateur',
+        ]);
+
+        User::factory(15)->create();
+
         $this->call([
             SiteSeeder::class,
             EvenementSeeder::class,
