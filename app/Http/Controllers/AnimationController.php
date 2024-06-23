@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Animation;
+use App\Models\Room;
 use App\Models\Inscription;
 use App\Models\Like;
 use App\Models\User;
