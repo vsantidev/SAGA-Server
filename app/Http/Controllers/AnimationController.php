@@ -184,7 +184,7 @@ class AnimationController extends Controller
             $listUser->push($usersInscrit);
         }
         Log::info($listUser);
-        $type_animation_id = Type_animation::find($animationShow->type_animation_id);
+        $type_animation = Type_animation::find($animationShow->type_animation_id);
 
         Log::info('type_animation');
 
@@ -214,7 +214,7 @@ class AnimationController extends Controller
             'fight' => $animationShow->fight,
             'reflection' => $animationShow->reflection,
             'roleplay' => $animationShow->roleplay,
-            'type_animation_id' => $type_animation_id->type,
+            'type_animation' => $type_animation->type,
             'user_id' => $animationShow->user_id,
             'open_time' => $animationShow->open_time,
             'closed_time' => $animationShow->closed_time,
