@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Evenement;
 use App\Models\Type_animation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,14 +13,19 @@ class TypeAnimationController extends Controller
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : typeAnimation ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function indexTypeAnimation() {
-        // Récupère tous les users enregistrés dans la bdd
-        Log::info("---INDEX DES TYPES D'ANIMTIONS---");
-        return Type_animation::select('id', 'type')->get();
-
+    public function getTypeAnimation() {
+        // Récupère tous les types d'animations enregistrés dans la bdd
+        Log::info("---INDEX DES TYPES D'ANIMATIONS---");
+        $typeAnimation = Type_animation::select('id', 'type')->get();
+        Log::info($typeAnimation);
+        // Récupere l'evenement actif pour limiter la conv
+        $DatesEvent = Evenement::select('date_opening','date_ending')->where('actif', '=', '1')->first();
+        Log::info($DatesEvent);
         return response()->json([
             'status' => 'true',
-            'message' => 'Voici les types d\'animation !',
+            'message' => 'Voici les types d\'animation / date event!',
+            'typeAnimation' => $typeAnimation,
+            'DatesEvent' => $DatesEvent
         ]);
     }
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Evenement;
 use App\Models\Animation;
 use App\Models\Inscription;
 use App\Models\Like;
@@ -91,7 +92,12 @@ class AnimationController extends Controller
         }
 
         Log::info("---ANIMATION CREATE : fin picture---");
-        $animationCreate = Animation::create([
+
+        $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
+
+        if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
+        {        
+            $animationCreate = Animation::create([
             'title' => $request->title,
             'content' => $request->content,
             'validate' => $request->validate,
@@ -100,7 +106,7 @@ class AnimationController extends Controller
             'roleplay' => $request->roleplay,
             'open_time' => $request->open_time,
             'closed_time' => $request->closed_time,
-            'evenement_id' => '1', // phase 1, en phase 2 affectation de l'evenement actif
+            'evenement_id' => $DatesEvent->id,
             'type_animation_id' => $request->type_animation_id,
             'user_id' => $request->user_id,
             'picture'=> "images/$filename"
@@ -117,6 +123,12 @@ class AnimationController extends Controller
 
         Log::info("---ANIMATION CREATE : AnimationCreate après json---");
         Log::info($animationCreate);
+
+        }else{
+            return response()->json([
+                'message' => 'Date en dehors de l evenemnt!'
+            ], 520);
+        }
     }
 
     // =================================================================================
