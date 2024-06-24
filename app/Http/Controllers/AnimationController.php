@@ -27,7 +27,7 @@ class AnimationController extends Controller
         Log::info("--- ANIMATION INDEX : IdUser ---");
         Log::info($IdUser);
         //Recuperation des animations
-        $Animations=Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture')->get();
+        $Animations=Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture', 'validate')->get();
         //Recupération des likes
         $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
         //ajout de la colonne like dans le tableau des animations
@@ -73,11 +73,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationCreate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationCreate(Request $request)
     {
-
-        
         Log::info("---ANIMATION CONTROLLER : Function AnimationCreate ---");
-
-
         Log::info("---ANIMATION CREATE : Request---");
         Log::info($request);
 
@@ -123,11 +119,34 @@ class AnimationController extends Controller
         Log::info($animationCreate);
     }
 
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : createValidation ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function createValidation(Request $request)
+    {
+        Log::info("---ANIMATION CONTROLLER : Function createValidation ---");
+        Log::info("---ANIMATION CREATE : fin picture---");
+        $animationCreateValidation = Animation::create([
+            'validate' => $request->validate,
+            'type_animation_id' => $request->type_animation_id,
+            'user_id' => $request->user_id,
+        ]);
 
+        if($animationCreateValidation->validate == "0")
+        {
+            $animationCreateValidation->validate = "1";
+        }
+        
+        Log::info("---ANIMATION CREATE : Function createValidation avant json---");
+        Log::info($animationCreateValidation);
 
+        return response()->json([
+            'animation' => $animationCreateValidation,
+            'message' => 'Validation de l\'animation -> OK !'
+        ], 201);
 
-
-
+        Log::info("---ANIMATION CREATE : Function createValidation json---");
+        Log::info($animationCreateValidation);
+    }
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationRegister(Request $request, Int $id): JsonResponse
@@ -192,10 +211,10 @@ class AnimationController extends Controller
             $listUser->push($usersInscrit);
         }
         Log::info($listUser);
-        $type_animation = Type_animation::find($animationShow->type_animation_id);
+        $type_animation_id = Type_animation::find($animationShow->type_animation_id);
 
         Log::info('type_animation');
-        Log::info($type_animation);
+        Log::info($type_animation_id);
         Log::info("---Function : AnimationShow Data => ---");
         $animationData = [
             'id' => $animationShow->id,
@@ -206,7 +225,7 @@ class AnimationController extends Controller
             'fight' => $animationShow->fight,
             'reflection' => $animationShow->reflection,
             'roleplay' => $animationShow->roleplay,
-            'type_animation' => $type_animation->type,
+            'type_animation_id' => $type_animation_id->type,
             'user_id' => $animationShow->user_id,
             'open_time' => $animationShow->open_time,
             'closed_time' => $animationShow->closed_time
