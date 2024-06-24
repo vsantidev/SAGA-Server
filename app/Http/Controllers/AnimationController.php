@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\DB;
 
 class AnimationController extends Controller
 {
-
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationIndex(Request $request)
@@ -56,7 +55,6 @@ class AnimationController extends Controller
     }
 
 
-
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationListIndex()
@@ -68,6 +66,7 @@ class AnimationController extends Controller
             'message' => 'AnimationListIndex : Affichage des animations !'
         ]);
     }
+
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationCreate ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,6 +118,7 @@ class AnimationController extends Controller
         Log::info($animationCreate);
     }
 
+
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : createValidation ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function createValidation(Request $request)
@@ -146,47 +146,6 @@ class AnimationController extends Controller
 
         Log::info("---ANIMATION CREATE : Function createValidation json---");
         Log::info($animationCreateValidation);
-    }
-    // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function animationRegister(Request $request, Int $id): JsonResponse
-    {
-        Log::info("---Function : AnimationRegister connected---");
-        $request->validate([
-            'user_id' => 'required'
-        ]);
-
-        $userRegister = User::find($request->user_id);
-
-        Log::info("---Function : AnimationRegister userData---");
-
-        $userData = [
-            'id' => $userRegister->id,
-            'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname
-        ];
-        Log::info($userData);
-
-        Log::info("---Function : AnimationRegister Table Inscription---");
-        Log::info($id);
-        $registerInscription = Inscription::firstOrNew([
-            'user_id' => $request->user_id,
-            'animation_id' => $id
-        ]);
-        $registerInscription->save();
-        Log::info($registerInscription);
-
-
-        Log::info("---Function : AnimationRegister Create Inscription---");
-        return response()->json([
-            'status' => 'true',
-            'message' => 'L\'utilisateur a été inscrit sur l\'animation !',
-            // 'User profile : ' => $userData,
-            'id' => $userRegister->id,
-            'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname,
-            'animation_id' => $id,
-        ]);
     }
 
 
