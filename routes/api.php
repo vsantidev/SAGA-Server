@@ -55,9 +55,10 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     Route::get('/animationList', [AnimationController::class, 'animationListIndex']);
     // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
+    // Get the event date for limit the animation
+    Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
 
-
-    Route::get('/animationCreate', [TypeAnimationController::class, 'indexTypeAnimation']);
+    Route::get('/animationCreate', [TypeAnimationController::class, 'getTypeAnimation']);
     /// return the form for editing an animation
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
 
