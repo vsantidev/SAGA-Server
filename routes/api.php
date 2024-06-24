@@ -90,9 +90,9 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {
-    Route::post('/animationShowAdmin/{id}', [AnimationController::class, 'createValidation']);
+    Route::post('/animationShow/{id}', [AnimationController::class, 'createValidation']);
     // unsubcribe the user from an animation (Admin)
-    Route::delete('/animationShowAdmin/{id}', [InscriptionController::class, 'destroyRegistrationAdmin']);
+    Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistrationAdmin']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGOUT ~~~~~~~~~~~~~~~~~~~~~~~~~~

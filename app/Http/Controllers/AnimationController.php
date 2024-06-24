@@ -184,7 +184,8 @@ class AnimationController extends Controller
             // 'User profile : ' => $userData,
             'id' => $userRegister->id,
             'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname
+            'firstname' => $userRegister->firstname,
+            'animation_id' => $id,
         ]);
     }
 
