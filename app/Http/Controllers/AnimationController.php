@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Evenement;
 use App\Models\Animation;
+use App\Models\Room;
 use App\Models\Inscription;
 use App\Models\Like;
 use App\Models\User;
@@ -186,7 +187,23 @@ class AnimationController extends Controller
         $type_animation_id = Type_animation::find($animationShow->type_animation_id);
 
         Log::info('type_animation');
-        Log::info($type_animation_id);
+
+        Log::info($type_animation);
+
+        //Recupération des salles si renseigné. -> uniquement SIEGRIES en V1
+        if($animationShow->room_id != "")
+        {
+            $RoomAnim=Room::select('name','capacity')->where('id', '=', $animationShow->room_id)->first();
+            //$animationShow->room_id = $RoomAnim->name;
+            Log::info($animationShow->room_id);
+            Log::info($RoomAnim->name);
+            if ($animationShow->capacity == null)
+            {
+                $animationShow->capacity = $RoomAnim->capacity;
+            }
+        }
+
+
         Log::info("---Function : AnimationShow Data => ---");
         $animationData = [
             'id' => $animationShow->id,
@@ -200,7 +217,8 @@ class AnimationController extends Controller
             'type_animation_id' => $type_animation_id->type,
             'user_id' => $animationShow->user_id,
             'open_time' => $animationShow->open_time,
-            'closed_time' => $animationShow->closed_time
+            'closed_time' => $animationShow->closed_time,
+            'room' => $RoomAnim->name
         ];
         Log::info($animationData);
 
