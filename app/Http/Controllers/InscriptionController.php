@@ -20,7 +20,7 @@ class InscriptionController extends Controller
 
 
     // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : handleRegisterUser ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function createRegister(Request $request, Int $id): JsonResponse
     {
         Log::info("---Controller Inscription : createRegister | connected---");
