@@ -52,10 +52,13 @@ Route::middleware('auth:sanctum')->prefix('like')->group(function () {
 Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // return a page that shows all animation
     Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
+    Route::get('/animationList', [AnimationController::class, 'animationListIndex']);
     // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
+    // Get the event date for limit the animation
+    Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
 
-    Route::get('/animationCreate', [TypeAnimationController::class, 'indexTypeAnimation']);
+    Route::get('/animationCreate', [TypeAnimationController::class, 'getTypeAnimation']);
     /// return the form for editing an animation
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
 
@@ -84,6 +87,13 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // unsubcribe a user from an animation
     Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistration']);
 
+
+});
+
+Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {
+    Route::post('/animationShow/{id}', [AnimationController::class, 'createValidation']);
+    // unsubcribe the user from an animation (Admin)
+    Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistrationAdmin']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGOUT ~~~~~~~~~~~~~~~~~~~~~~~~~~

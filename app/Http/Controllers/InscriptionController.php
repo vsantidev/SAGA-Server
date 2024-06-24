@@ -19,8 +19,8 @@ class InscriptionController extends Controller
     }
 
 
-// =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : handleRegisterUser ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function createRegister(Request $request, Int $id): JsonResponse
     {
         Log::info("---Controller Inscription : createRegister | connected---");
@@ -56,7 +56,8 @@ class InscriptionController extends Controller
             // 'User profile : ' => $userData,
             'id' => $userRegister->id,
             'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname
+            'firstname' => $userRegister->firstname,
+            'animation_id' => $id,
         ]);
     }
 
@@ -96,7 +97,7 @@ class InscriptionController extends Controller
 
 
     // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : UnsubscribeRegisterDestroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION SHOW : UnsubscribeRegisterDestroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function destroyRegistration(Request $request)
     {
         Log::info("---Controller Inscripton : destroy Registration Animation | Connexion---");
@@ -121,6 +122,37 @@ class InscriptionController extends Controller
             'status' => 'true',
             'message' => 'Votre inscription à l\'animation a été supprimé !',
             'Inscription supprimée : ' => $request->id
+        ]);
+    }
+
+        // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION SHOW (ADMIN) : UnsubscribeRegisterDestroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function destroyRegistrationAdmin(Request $request)
+    {
+        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Connexion---");
+        $request->validate([
+            "animation_id" => "required|integer",
+            "user_id" => "required|integer",
+            // "id" => "required|integer",
+        ]);
+
+        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Request 1---");
+        Log::info($request);
+
+        // $animationUnsubscribe = Inscription::('user_id',$request->user_id);
+        $animationUnsubscribe = Inscription::where('animation_id', $request->animation_id)
+        ->where('user_id', $request->user_id)
+        // ->where('id', $id)
+        ->delete();
+        // $animationUnsubscribe->delete();
+
+        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Request 2---");
+        Log::info($request);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Ce membre a été désinscrit à l\'animation !',
+            'Inscription supprimée : ' => $request->animation_id
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Evenement;
 use App\Models\Animation;
 use App\Models\Room;
 use App\Models\Inscription;
@@ -17,7 +18,6 @@ use Illuminate\Support\Facades\DB;
 
 class AnimationController extends Controller
 {
-
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationIndex(Request $request)
@@ -28,7 +28,7 @@ class AnimationController extends Controller
         Log::info("--- ANIMATION INDEX : IdUser ---");
         Log::info($IdUser);
         //Recuperation des animations
-        $Animations=Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture')->get();
+        $Animations=Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture', 'validate')->get();
         //Recupération des likes
         $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
         //ajout de la colonne like dans le tableau des animations
@@ -56,16 +56,25 @@ class AnimationController extends Controller
 
     }
 
+
     // =================================================================================
-    
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function animationListIndex()
+    {
+        Log::info("---Controller Animation : Index List Animation | Connexion---");
+        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id', 'capacity', 'validate')->get();
+        return response()->json([
+            'status' => 'true',
+            'message' => 'AnimationListIndex : Affichage des animations !'
+        ]);
+    }
+
+
+    // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationCreate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationCreate(Request $request)
     {
-
-        
         Log::info("---ANIMATION CONTROLLER : Function AnimationCreate ---");
-
-
         Log::info("---ANIMATION CREATE : Request---");
         Log::info($request);
 
@@ -83,7 +92,12 @@ class AnimationController extends Controller
         }
 
         Log::info("---ANIMATION CREATE : fin picture---");
-        $animationCreate = Animation::create([
+
+        $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
+
+        if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
+        {        
+            $animationCreate = Animation::create([
             'title' => $request->title,
             'content' => $request->content,
             'validate' => $request->validate,
@@ -92,7 +106,7 @@ class AnimationController extends Controller
             'roleplay' => $request->roleplay,
             'open_time' => $request->open_time,
             'closed_time' => $request->closed_time,
-            'evenement_id' => '1', // phase 1, en phase 2 affectation de l'evenement actif
+            'evenement_id' => $DatesEvent->id,
             'type_animation_id' => $request->type_animation_id,
             'user_id' => $request->user_id,
             'picture'=> "images/$filename"
@@ -109,52 +123,42 @@ class AnimationController extends Controller
 
         Log::info("---ANIMATION CREATE : AnimationCreate après json---");
         Log::info($animationCreate);
+
+        }else{
+            return response()->json([
+                'message' => 'Date en dehors de l evenemnt!'
+            ], 520);
+        }
     }
 
 
-
-
-
-
     // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function animationRegister(Request $request, Int $id): JsonResponse
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : createValidation ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function createValidation(Request $request)
     {
-        Log::info("---Function : AnimationRegister connected---");
-        $request->validate([
-            'user_id' => 'required'
-        ]);
-
-        $userRegister = User::find($request->user_id);
-
-        Log::info("---Function : AnimationRegister userData---");
-
-        $userData = [
-            'id' => $userRegister->id,
-            'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname
-        ];
-        Log::info($userData);
-
-        Log::info("---Function : AnimationRegister Table Inscription---");
-        Log::info($id);
-        $registerInscription = Inscription::firstOrNew([
+        Log::info("---ANIMATION CONTROLLER : Function createValidation ---");
+        Log::info("---ANIMATION CREATE : fin picture---");
+        $animationCreateValidation = Animation::create([
+            'validate' => $request->validate,
+            'type_animation_id' => $request->type_animation_id,
             'user_id' => $request->user_id,
-            'animation_id' => $id
         ]);
-        $registerInscription->save();
-        Log::info($registerInscription);
 
+        if($animationCreateValidation->validate == "0")
+        {
+            $animationCreateValidation->validate = "1";
+        }
+        
+        Log::info("---ANIMATION CREATE : Function createValidation avant json---");
+        Log::info($animationCreateValidation);
 
-        Log::info("---Function : AnimationRegister Create Inscription---");
         return response()->json([
-            'status' => 'true',
-            'message' => 'L\'utilisateur a été inscrit sur l\'animation !',
-            // 'User profile : ' => $userData,
-            'id' => $userRegister->id,
-            'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname
-        ]);
+            'animation' => $animationCreateValidation,
+            'message' => 'Validation de l\'animation -> OK !'
+        ], 201);
+
+        Log::info("---ANIMATION CREATE : Function createValidation json---");
+        Log::info($animationCreateValidation);
     }
 
 
@@ -180,9 +184,10 @@ class AnimationController extends Controller
             $listUser->push($usersInscrit);
         }
         Log::info($listUser);
-        $type_animation = Type_animation::find($animationShow->type_animation_id);
+        $type_animation_id = Type_animation::find($animationShow->type_animation_id);
 
         Log::info('type_animation');
+
         Log::info($type_animation);
 
         //Recupération des salles si renseigné. -> uniquement SIEGRIES en V1
@@ -198,6 +203,7 @@ class AnimationController extends Controller
             }
         }
 
+
         Log::info("---Function : AnimationShow Data => ---");
         $animationData = [
             'id' => $animationShow->id,
@@ -208,7 +214,7 @@ class AnimationController extends Controller
             'fight' => $animationShow->fight,
             'reflection' => $animationShow->reflection,
             'roleplay' => $animationShow->roleplay,
-            'type_animation' => $type_animation->type,
+            'type_animation_id' => $type_animation_id->type,
             'user_id' => $animationShow->user_id,
             'open_time' => $animationShow->open_time,
             'closed_time' => $animationShow->closed_time,
@@ -231,6 +237,8 @@ class AnimationController extends Controller
     {
         //
     }
+
+    
 
 
     // =================================================================================
