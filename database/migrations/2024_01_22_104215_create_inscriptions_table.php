@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->constrained;
             $table->foreignIdFor(Animation::class)->constrained;
-            $table->dateTime('date');
+            // $table->dateTime('date');
             $table->timestamps();
         });
     }
