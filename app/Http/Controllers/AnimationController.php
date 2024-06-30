@@ -201,25 +201,42 @@ class AnimationController extends Controller
             {
                 $animationShow->capacity = $RoomAnim->capacity;
             }
+
+            Log::info("---Function : AnimationShow Data Salle=> ---");
+            $animationData = [
+                'id' => $animationShow->id,
+                'title' => $animationShow->title,
+                'content' => $animationShow->content,
+                'picture' => $animationShow->picture,
+                'capacity' => $animationShow->capacity,
+                'fight' => $animationShow->fight,
+                'reflection' => $animationShow->reflection,
+                'roleplay' => $animationShow->roleplay,
+                'type_animation' => $type_animation->type,
+                'user_id' => $animationShow->user_id,
+                'open_time' => $animationShow->open_time,
+                'closed_time' => $animationShow->closed_time,
+                'room' => $RoomAnim->name
+            ];
+        }else{
+            Log::info("---Function : AnimationShow Data Sans Salle=> ---");
+            $animationData = [
+                'id' => $animationShow->id,
+                'title' => $animationShow->title,
+                'content' => $animationShow->content,
+                'picture' => $animationShow->picture,
+                'fight' => $animationShow->fight,
+                'reflection' => $animationShow->reflection,
+                'roleplay' => $animationShow->roleplay,
+                'type_animation' => $type_animation->type,
+                'user_id' => $animationShow->user_id,
+                'open_time' => $animationShow->open_time,
+                'closed_time' => $animationShow->closed_time,
+                'room' => "non affectée",
+                'capacity' => "non renseignée",
+            ];
         }
 
-
-        Log::info("---Function : AnimationShow Data => ---");
-        $animationData = [
-            'id' => $animationShow->id,
-            'title' => $animationShow->title,
-            'content' => $animationShow->content,
-            'picture' => $animationShow->picture,
-            'capacity' => $animationShow->capacity,
-            'fight' => $animationShow->fight,
-            'reflection' => $animationShow->reflection,
-            'roleplay' => $animationShow->roleplay,
-            'type_animation' => $type_animation->type,
-            'user_id' => $animationShow->user_id,
-            'open_time' => $animationShow->open_time,
-            'closed_time' => $animationShow->closed_time,
-            'room' => $RoomAnim->name
-        ];
         Log::info($animationData);
 
         return response()->json([
