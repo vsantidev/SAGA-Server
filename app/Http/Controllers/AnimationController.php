@@ -28,7 +28,7 @@ class AnimationController extends Controller
         Log::info("--- ANIMATION INDEX : IdUser ---");
         Log::info($IdUser);
         //Recuperation des animations
-        $Animations=Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture', 'validate')->get();
+        $Animations=Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture', 'validate','user_id')->get();
         //Recupération des likes
         $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
         //ajout de la colonne like dans le tableau des animations
@@ -201,25 +201,45 @@ class AnimationController extends Controller
             {
                 $animationShow->capacity = $RoomAnim->capacity;
             }
+
+            Log::info("---Function : AnimationShow Data Salle=> ---");
+            $animationData = [
+                'id' => $animationShow->id,
+                'title' => $animationShow->title,
+                'content' => $animationShow->content,
+                'picture' => $animationShow->picture,
+                'capacity' => $animationShow->capacity,
+                'fight' => $animationShow->fight,
+                'reflection' => $animationShow->reflection,
+                'roleplay' => $animationShow->roleplay,
+                'type_animation' => $type_animation->type,
+                'user_id' => $animationShow->user_id,
+                'validate' => $animationShow->validate,
+                'open_time' => $animationShow->open_time,
+                'closed_time' => $animationShow->closed_time,
+                'room' => $RoomAnim->name,
+                'room_id' => $animationShow->room_id,
+            ];
+        }else{
+            Log::info("---Function : AnimationShow Data Sans Salle=> ---");
+            $animationData = [
+                'id' => $animationShow->id,
+                'title' => $animationShow->title,
+                'content' => $animationShow->content,
+                'picture' => $animationShow->picture,
+                'fight' => $animationShow->fight,
+                'reflection' => $animationShow->reflection,
+                'roleplay' => $animationShow->roleplay,
+                'type_animation' => $type_animation->type,
+                'user_id' => $animationShow->user_id,
+                'validate' => $animationShow->validate,
+                'open_time' => $animationShow->open_time,
+                'closed_time' => $animationShow->closed_time,
+                'room' => "non affectée",
+                'capacity' => "non renseignée",
+            ];
         }
 
-
-        Log::info("---Function : AnimationShow Data => ---");
-        $animationData = [
-            'id' => $animationShow->id,
-            'title' => $animationShow->title,
-            'content' => $animationShow->content,
-            'picture' => $animationShow->picture,
-            'capacity' => $animationShow->capacity,
-            'fight' => $animationShow->fight,
-            'reflection' => $animationShow->reflection,
-            'roleplay' => $animationShow->roleplay,
-            'type_animation' => $type_animation->type,
-            'user_id' => $animationShow->user_id,
-            'open_time' => $animationShow->open_time,
-            'closed_time' => $animationShow->closed_time,
-            'room' => $RoomAnim->name
-        ];
         Log::info($animationData);
 
         return response()->json([
@@ -262,12 +282,14 @@ class AnimationController extends Controller
         $animationUpdate->content = $request->content;
         $animationUpdate->picture = $request->picture;
         $animationUpdate->capacity = $request->capacity;
+        $animationUpdate->room_id = $request->room_id;
         $animationUpdate->fight = $request->fight;
         $animationUpdate->reflection = $request->reflection;
         $animationUpdate->roleplay = $request->roleplay;
         $animationUpdate->type_animation = $request->type_animation;
         $animationUpdate->open_time = $request->open_time;
         $animationUpdate->closed_time = $request->closed_time;
+        $animationUpdate->validate = $request->validate;
 
         $animationUpdate->save();
 
