@@ -183,6 +183,7 @@ class AnimationController extends Controller
             Log::info($usersInscrit);
             $listUser->push($usersInscrit);
         }
+
         Log::info($listUser);
         $type_animation = Type_animation::find($animationShow->type_animation_id);
 
@@ -236,7 +237,7 @@ class AnimationController extends Controller
                 'open_time' => $animationShow->open_time,
                 'closed_time' => $animationShow->closed_time,
                 'room' => "non affectée",
-                'capacity' => "non renseignée",
+                'capacity' => "",
             ];
         }
 
