@@ -243,11 +243,17 @@ class AnimationController extends Controller
 
         Log::info($animationData);
 
+        //récupération de l'autheur
+        $author = User::findOrFail($animationShow->user_id);
+
         return response()->json([
             'status' => 'true',
             'message' => 'Voici le détail de l\'animation !',
             'listInscrits' => $listUser,
-            'animationData' => $animationData
+            'animationData' => $animationData,
+            'authorLastname' => $author->lastname,
+            'authorFirstname'=> $author->firstname
+
         ]);
     }
 
@@ -297,10 +303,24 @@ class AnimationController extends Controller
         Log::info("---Controller Inscripton : update Animation |  Request 3---");
         Log::info($animationUpdate);
 
+        $author = User::findOrFail($animationUpdate->user_id);
+        if ($animationUpdate->validate == true)
+        {
+            
+            Log::info("---Controller Inscripton : update Animation |  verif author---");
+            Log::info($author);
+            $author->type="animateur";
+            $author->save();
+
+        }// on ne supprime pas le statut de l'animateur si il a déjà été validé une fois.
+        // Sinon cela risque d'annuler pour des personnes qui ont déjà fait plusieurs animations.
+
         return response()->json([
             'status' => 'true',
             'message' => 'Animation mise à jour avec succès',
             'animation' => $animationUpdate,
+            'authorLastname' => $author->lastname,
+            'authorFirstname'=> $author->firstname
         ]);
 
     }
