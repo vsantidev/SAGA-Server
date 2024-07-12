@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AnimationController extends Controller
 {
@@ -94,39 +95,45 @@ class AnimationController extends Controller
         Log::info("---ANIMATION CREATE : fin picture---");
 
         $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
-
+        //comparaison dates events
+        Log::info("---ANIMATION CREATE : verif date---");
+        //Log::info($DatesEvent->date_opening);
+        //Log::info($request->open_time);
+        //Log::info($request->closed_time);
+        //Log::info($DatesEvent->date_ending);
+    
         if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
         {        
-            $animationCreate = Animation::create([
-            'title' => $request->title,
-            'content' => $request->content,
-            'validate' => $request->validate,
-            'fight' => $request->fight,
-            'reflection' => $request->reflection,
-            'roleplay' => $request->roleplay,
-            'open_time' => $request->open_time,
-            'closed_time' => $request->closed_time,
-            'evenement_id' => $DatesEvent->id,
-            'type_animation_id' => $request->type_animation_id,
-            'user_id' => $request->user_id,
-            'picture'=> "images/$filename"
-        ]);
-		
+                $animationCreate = Animation::create([
+                'title' => $request->title,
+                'content' => $request->content,
+                'validate' => $request->validate,
+                'fight' => $request->fight,
+                'reflection' => $request->reflection,
+                'roleplay' => $request->roleplay,
+                'open_time' => $request->open_time,
+                'closed_time' => $request->closed_time,
+                'evenement_id' => $DatesEvent->id,
+                'type_animation_id' => $request->type_animation_id,
+                'user_id' => $request->user_id,
+                'picture'=> "images/$filename"
+            ]);
+            
 
-        Log::info("---ANIMATION CREATE : AnimationCreate avant json---");
-        Log::info($animationCreate);
+            Log::info("---ANIMATION CREATE : AnimationCreate avant json---");
+            Log::info($animationCreate);
 
-        return response()->json([
-            'animation' => $animationCreate,
-            'message' => 'Création du formulaire d\'animation réussi !'
-        ], 201);
+            return response()->json([
+                'animation' => $animationCreate,
+                'message' => 'Création du formulaire d\'animation réussi !'
+            ], 201);
 
-        Log::info("---ANIMATION CREATE : AnimationCreate après json---");
-        Log::info($animationCreate);
+            Log::info("---ANIMATION CREATE : AnimationCreate après json---");
+            Log::info($animationCreate);
 
         }else{
             return response()->json([
-                'message' => 'Date en dehors de l evenemnt!'
+                'message' => 'L animation doit se passer pendant la convention!'
             ], 520);
         }
     }
@@ -304,13 +311,17 @@ class AnimationController extends Controller
         Log::info($animationUpdate);
 
         $author = User::findOrFail($animationUpdate->user_id);
-        if ($animationUpdate->validate == true)
+
+        if ($animationUpdate->validate == true && $author->type != "admin")
         {
             
             Log::info("---Controller Inscripton : update Animation |  verif author---");
             Log::info($author);
+            Log::info($author->type);
             $author->type="animateur";
+            Log::info($author->type);
             $author->save();
+            
 
         }// on ne supprime pas le statut de l'animateur si il a déjà été validé une fois.
         // Sinon cela risque d'annuler pour des personnes qui ont déjà fait plusieurs animations.
