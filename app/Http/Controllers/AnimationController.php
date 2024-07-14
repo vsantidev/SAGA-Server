@@ -192,6 +192,8 @@ class AnimationController extends Controller
         }
 
         Log::info($listUser);
+        $alltypeAnimation = Type_animation::select('id', 'type')->get();
+        Log::info($alltypeAnimation);
         $type_animation = Type_animation::find($animationShow->type_animation_id);
 
         Log::info('type_animation');
@@ -259,7 +261,8 @@ class AnimationController extends Controller
             'listInscrits' => $listUser,
             'animationData' => $animationData,
             'authorLastname' => $author->lastname,
-            'authorFirstname'=> $author->firstname
+            'authorFirstname'=> $author->firstname,
+            'allTypeAnim' => $alltypeAnimation
 
         ]);
     }
