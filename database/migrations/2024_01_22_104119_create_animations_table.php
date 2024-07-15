@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('picture')->nullable();
             $table->string('type_animation')->nullable();
             $table->longText('content');
+            $table->longText('remark')->nullable();
             $table->integer('fight')->nullable();
             $table->integer('reflection')->nullable();
             $table->integer('roleplay')->nullable();

@@ -12,6 +12,7 @@ class Animation extends Model
     protected $fillable = [
         'title',
         'content',
+        'remark',
         'fight',
         'reflection',
         'roleplay',

@@ -26,7 +26,9 @@ class AnimationSeeder extends Seeder
             'validate' => '1',
             'capacity' => '40',
             'type_animation_id' => '3',
-            'picture'=> "images/img_default.jpg"
+            'picture'=> "images/img_default.jpg",
+            'open_time' => "2024-11-29 14:00:00",
+            'closed_time' => "2024-11-29 16:00:00"
         ]);
 
         Animation::factory()->create([
@@ -44,7 +46,9 @@ class AnimationSeeder extends Seeder
             'capacity' => '30',
             'validate' => '1',
             'type_animation_id' => '2',
-            'picture'=> "images/img_default.jpg"
+            'picture'=> "images/img_default.jpg",
+            'open_time' => "2024-11-29 10:00:00",
+            'closed_time' => "2024-11-29 12:00:00"
         ]);
 
         Animation::factory()->create([
@@ -62,7 +66,9 @@ class AnimationSeeder extends Seeder
             'room_id' => '4',
             'capacity' => '70',
             'validate' => '1',
-            'picture'=> "images/img_default.jpg"
+            'picture'=> "images/img_default.jpg",
+            'open_time' => "2024-11-29 14:00:00",
+            'closed_time' => "2024-11-29 16:00:00"
         ]);
 
         Animation::factory()->create([
@@ -79,7 +85,9 @@ class AnimationSeeder extends Seeder
             'room_id' => '7',
             'capacity' => '30',
             'validate' => '1',
-            'picture'=> "images/img_default.jpg"
+            'picture'=> "images/img_default.jpg",
+            'open_time' => "2024-11-29 14:00:00",
+            'closed_time' => "2024-11-29 16:00:00"
         ]);
 
         Animation::factory()->create([
@@ -95,7 +103,9 @@ class AnimationSeeder extends Seeder
             'room_id' => '3',
             'capacity' => '8',
             'validate' => '1',
-            'picture'=> "images/img_default.jpg"
+            'picture'=> "images/img_default.jpg",
+            'open_time' => "2024-11-30 08:00:00",
+            'closed_time' => "2024-11-30 10:00:00"
         ]);
 
         Animation::factory()->create([
@@ -110,7 +120,9 @@ class AnimationSeeder extends Seeder
             'reflection' => '5',
             'roleplay' => '5',
             'validate' => '0',
-            'picture'=> "images/img_default.jpg"
+            'picture'=> "images/img_default.jpg",
+            'open_time' => "2024-11-30 10:00:00",
+            'closed_time' => "2024-11-30 12:00:00"
         ]);
 
         Animation::factory()->create([
@@ -125,7 +137,38 @@ class AnimationSeeder extends Seeder
             'reflection' => '5',
             'roleplay' => '5',
             'validate' => '0',
-            'picture'=> "images/img_default.jpg"
+            'picture'=> "images/img_default.jpg",
+            'open_time' => "2024-11-30 14:00:00",
+            'closed_time' => "2024-11-30 16:00:00"
+        ]);
+
+
+        Animation::factory()->create([
+            'title' => 'Découverte de 5 Whisky tourbé',
+            'content' => "Je vous propose de venir voyager en terre écossaise afin de découvrir ou redécouvrir pour certains 5 Whisky tourbés.
+
+            Après avoir rapidement évoqué quelques éléments propre à cette noble boisson nous dégusterons 5 verres afin d\'échanger autour de nos perceptions de ces Whisky.
+            
+            Les 5 whisky proposés sont:
+            
+            - Artist 7 - Compass Box - Edition limité la Maison du Whisky
+            - 3D3 Norrie Campbell Tribute Bottling - Bruichladdich
+            - Ardmore 2009 - Selection le Gus\'t - Un-Chillfiltered Signatory
+            - Moine French Oak Finish - Feis Ile 2019 - Bunnahabhain
+            - Ledaig 2005 11 ans - Cask Strenght Collection Signatory
+            
+            Tous sont des Whisky peu commun pas toujours facile à trouvé (en moyenne moins de 2000 bouteilles, voir beaucoup moins pour certains). Tous présente un aspect différent et des goûts variés.",
+            'remark' => "Ce sont des Whisky d'exception, une participation financière vous sera demandée. Mineurs exclus. Il s'agit d'alcool donc attention à ne pas en abuser.",
+            'evenement_id' => '1',
+            'user_id' => '4',
+            'type_animation_id' => '3',
+            'fight' => '2',
+            'reflection' => '5',
+            'roleplay' => '5',
+            'validate' => '0',
+            'picture'=> "images/img_default.jpg",
+            'open_time' => "2024-11-30 14:00:00",
+            'closed_time' => "2024-11-30 16:00:00"
         ]);
     }
 }
