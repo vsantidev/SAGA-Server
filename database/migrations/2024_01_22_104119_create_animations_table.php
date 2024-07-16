@@ -19,7 +19,6 @@ return new class extends Migration
             $table->id();
             $table->string('title',255);
             $table->string('picture')->nullable();
-            $table->string('type_animation')->nullable();
             $table->longText('content');
             $table->longText('remark')->nullable();
             $table->integer('fight')->nullable();
@@ -29,6 +28,7 @@ return new class extends Migration
             $table->datetime('closed_time')->nullable();
             $table->boolean('validate')->default(false);
             $table->integer('capacity')->nullable();
+            $table->datetime('registration_date')->nullable();
             $table->foreignIdFor(Room::class)->nullable();
             $table->foreignIdFor(User::class)->constrained;
             $table->foreignIdFor(Evenement::class); //Dois-être obligatoire après la création des évènements
