@@ -29,7 +29,7 @@ class AnimationController extends Controller
         Log::info("--- ANIMATION INDEX : IdUser ---");
         Log::info($IdUser);
         //Recuperation des animations
-        $Animations=Animation::select('id', 'title', 'content', 'type_animation', 'open_time','picture', 'validate','user_id')->get();
+        $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time','picture', 'validate','user_id', 'registration_date')->get();
         //Recupération des likes
         $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
         //ajout de la colonne like dans le tableau des animations
@@ -63,7 +63,7 @@ class AnimationController extends Controller
     public function animationListIndex()
     {
         Log::info("---Controller Animation : Index List Animation | Connexion---");
-        return Animation::select('id', 'title', 'content', 'type_animation', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id', 'capacity', 'validate')->get();
+        return Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id', 'capacity', 'validate')->get();
         return response()->json([
             'status' => 'true',
             'message' => 'AnimationListIndex : Affichage des animations !'
@@ -222,11 +222,13 @@ class AnimationController extends Controller
                 'fight' => $animationShow->fight,
                 'reflection' => $animationShow->reflection,
                 'roleplay' => $animationShow->roleplay,
-                'type_animation' => $type_animation->type,
+                'type_animation_id' => $type_animation->id,
+                'type_animation_name' => $type_animation->type, 
                 'user_id' => $animationShow->user_id,
                 'validate' => $animationShow->validate,
                 'open_time' => $animationShow->open_time,
                 'closed_time' => $animationShow->closed_time,
+                'registration_date' => $animationShow->registration_date,
                 'room' => $RoomAnim->name,
                 'room_id' => $animationShow->room_id,
             ];
@@ -240,7 +242,8 @@ class AnimationController extends Controller
                 'fight' => $animationShow->fight,
                 'reflection' => $animationShow->reflection,
                 'roleplay' => $animationShow->roleplay,
-                'type_animation' => $type_animation->type,
+                'type_animation_id' => $type_animation->id,
+                'type_animation_name' => $type_animation->type,
                 'user_id' => $animationShow->user_id,
                 'validate' => $animationShow->validate,
                 'open_time' => $animationShow->open_time,
@@ -303,10 +306,11 @@ class AnimationController extends Controller
         $animationUpdate->fight = $request->fight;
         $animationUpdate->reflection = $request->reflection;
         $animationUpdate->roleplay = $request->roleplay;
-        $animationUpdate->type_animation = $request->type_animation;
+        $animationUpdate->type_animation_id = $request->type_animation_id;
         $animationUpdate->open_time = $request->open_time;
         $animationUpdate->closed_time = $request->closed_time;
         $animationUpdate->validate = $request->validate;
+        $animationUpdate->registration_date = $request->registration_date;
 
         $animationUpdate->save();
 
