@@ -60,7 +60,7 @@ class UserController extends Controller
         // Récupère tous les users enregistrés dans la bdd
         Log::info("---LIST USER---");
         // $users = DB::table('users')->get();
-        return User::select('id','lastname','firstname','birthday','phone','email')->get();
+        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->get();
         // Log::info($users);
         // Génère pour chaque lieu une url de l'image associée au lieu
         // foreach ($users as $user) {
