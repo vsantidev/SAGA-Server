@@ -86,7 +86,7 @@ class AnimationController extends Controller
             $extension = $file->getClientOriginalExtension();
             //$filename = time() .'.'.$extension;
             $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/'), $filename);
+            $file->move(public_path('images/animations/'), $filename);
             //$payload['picture']= 'public/images/'.$filename;
         }else{
             $filename = 'img_default.jpg';
@@ -116,7 +116,7 @@ class AnimationController extends Controller
                 'evenement_id' => $DatesEvent->id,
                 'type_animation_id' => $request->type_animation_id,
                 'user_id' => $request->user_id,
-                'picture'=> "images/$filename"
+                'picture'=> "images/animations/$filename"
             ]);
             
 
