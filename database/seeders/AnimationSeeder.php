@@ -27,6 +27,7 @@ class AnimationSeeder extends Seeder
             'capacity' => '40',
             'type_animation_id' => '3',
             'picture'=> "images/img_default.jpg",
+            'registration_date' => "2024-11-29 10:00:00",
             'open_time' => "2024-11-29 14:00:00",
             'closed_time' => "2024-11-29 16:00:00"
         ]);
@@ -47,6 +48,7 @@ class AnimationSeeder extends Seeder
             'validate' => '1',
             'type_animation_id' => '2',
             'picture'=> "images/img_default.jpg",
+            'registration_date' => "2024-07-19 15:00:00",
             'open_time' => "2024-11-29 10:00:00",
             'closed_time' => "2024-11-29 12:00:00"
         ]);

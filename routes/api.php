@@ -4,6 +4,7 @@ use App\Http\Controllers\AnimationController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InscriptionController;
+use App\Http\Controllers\SponsorController;
 use App\Http\Controllers\TypeAnimationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -89,6 +90,15 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
 
 
 });
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ SPONSORS ~~~~~~~~~~~~~~~~~~~~~~~~~~
+Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
+    Route::get('/index', [SponsorController::class, 'sponsorsIndex']);
+    Route::post('/create', [SponsorController::class, 'create']);
+});
+
+
+
 
 Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {
     Route::post('/animationShow/{id}', [AnimationController::class, 'createValidation']);
