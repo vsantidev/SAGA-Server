@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sponsor;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -89,17 +90,54 @@ class SponsorController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Sponsor $sponsor)
+    public function edit(Int $id): JsonResponse
     {
-        //
+        Log::info("---Sponsor Controller (Update | Request 1) ---");
+
+        $sponsorData = Sponsor::find($id);
+
+        Log::info($sponsorData);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Voici le détail du partenaire !',
+            'sponsorData' => $sponsorData
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Sponsor $sponsor)
+    public function update(Request $request, Int $id): JsonResponse
     {
-        //
+        Log::info("---Sponsor Controller (Update | Request 1) ---");
+        Log::info($request);
+
+        $sponsorId = Sponsor::find($id);
+
+        $request->validate([
+            'name' => 'required',
+            'content' => 'required'
+        ]);
+
+        Log::info("---Sponsor Controller (Update | Request 2) ---");
+        Log::info($request);
+
+
+        Log::info("---Sponsor Controller (Update | Request 2) ---");
+        $sponsorUpdate = Sponsor::findOrFail($request->id);
+        $sponsorUpdate->name = $request->name;
+        $sponsorUpdate->content = $request->content;
+        $sponsorUpdate->link = $request->link;
+        $sponsorUpdate->picture = $request->picture;
+        $sponsorUpdate->save;
+        Log::info($sponsorUpdate);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Le partenaire a été mise à jour avec succès',
+            'sponsor' => $sponsorUpdate,
+        ], 201);
     }
 
     /**
