@@ -95,6 +95,8 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
 Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::get('/index', [SponsorController::class, 'sponsorsIndex']);
     Route::post('/create', [SponsorController::class, 'create']);
+    Route::get('/edit/{id}', [SponsorController::class, 'edit']);
+    Route::put('/edit/{id}', [SponsorController::class, 'update']);
 });
 
 
