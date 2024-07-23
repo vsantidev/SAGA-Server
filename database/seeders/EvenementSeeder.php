@@ -16,8 +16,8 @@ class EvenementSeeder extends Seeder
        Evenement::factory()->create([
             'actif' => '1',
             'title' => 'IV : PIRATES',
-            'date_opening' => '2024/11/29',
-            'date_ending' => '2024/12/01',
+            'date_opening' => '2024/11/29 12:00:00',
+            'date_ending' => '2024/12/02 03:00:00',
             'site_id' => '1'
         ]);
        
