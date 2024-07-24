@@ -17,19 +17,19 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->boolean('actif');
             $table->string('title');
-            $table->string('subtitle');
-            $table->mediumText('content');
+            $table->string('subtitle')->nullable();
+            $table->mediumText('content')->nullable();
             $table->datetime('date_opening');
             $table->datetime('date_ending');
             $table->string('flag')->nullable();
             $table->string('display')->nullable();
-            $table->string('attachment');
-            $table->longText('others');
-            $table->mediumText('announcement');
-            $table->boolean('hide_announcement');
-            $table->boolean('hide_animation');
-            $table->string('url_event');
-            $table->string('url_inscritpion');
+            $table->string('attachment')->nullable();
+            $table->longText('others')->nullable();
+            $table->mediumText('announcement')->nullable();
+            $table->boolean('hide_announcement')->nullable();
+            $table->boolean('hide_animation')->nullable();
+            $table->string('url_event')->nullable();
+            $table->string('url_inscritpion')->nullable();
             $table->foreignIdFor(Site::class)->constrained;
             $table->timestamps();
         });
@@ -37,8 +37,8 @@ return new class extends Migration
         Schema::create('evenement_user', function(Blueprint $table) {
             $table->foreignIdFor(\App\Models\Evenement::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
-            $table->boolean('organisateurs');
-            $table->boolean('rewards');
+            $table->boolean('masters')->default(false);
+            $table->boolean('rewards')->default(false);
             $table->primary(['evenement_id', 'user_id']);
         });
     }

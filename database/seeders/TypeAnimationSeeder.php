@@ -9,15 +9,15 @@ use Illuminate\Database\Seeder;
 class TypeAnimationSeeder extends Seeder
 {
 
-    private $types = ['Grandeur Nature', 'Jeux de Rôles', 'Jeux de plateau', 'Murder Party']; 
+    private $etiquette = ['Jeux de plateau', 'Jeux de Rôles' ,'Murder Party','Grandeur Nature']; 
 
     public function run(): void
     {
-        foreach ($this->types as $types) {
+        foreach ($this->etiquette as $etiquette) {
             Type_animation::create([
-                'type_animation' => $types]);
+                'type' => $etiquette]);
         }
 
-        echo array_rand($this->types);
+        echo array_rand($this->etiquette);
     }
 }

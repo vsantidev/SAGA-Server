@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscription;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class InscriptionController extends Controller
 {
@@ -15,13 +18,50 @@ class InscriptionController extends Controller
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : handleRegisterUser ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function createRegister(Request $request, Int $id): JsonResponse
     {
-        //
+        Log::info("---Controller Inscription : createRegister | connected---");
+        $request->validate([
+            'user_id' => 'required'
+        ]);
+
+        $userRegister = User::find($request->user_id);
+
+        Log::info("---Controller Inscription : createRegister | userData---");
+
+        $userData = [
+            'id' => $userRegister->id,
+            'lastname' => $userRegister->lastname,
+            'firstname' => $userRegister->firstname
+        ];
+        Log::info($userData);
+
+        Log::info("---Controller Inscription : createRegister | Table Inscription---");
+        Log::info($id);
+        $registerInscription = Inscription::firstOrNew([
+            'user_id' => $request->user_id,
+            'animation_id' => $id
+        ]);
+        $registerInscription->save();
+        Log::info($registerInscription);
+
+
+        Log::info("---Controller Inscription : createRegister | Create Inscription---");
+        return response()->json([
+            'status' => 'true',
+            'message' => 'L\'utilisateur a été inscrit sur l\'animation !',
+            // 'User profile : ' => $userData,
+            'id' => $userRegister->id,
+            'lastname' => $userRegister->lastname,
+            'firstname' => $userRegister->firstname,
+            'animation_id' => $id,
+        ]);
     }
+
+
 
     /**
      * Store a newly created resource in storage.
@@ -55,11 +95,64 @@ class InscriptionController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Inscription $inscription)
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION SHOW : UnsubscribeRegisterDestroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function destroyRegistration(Request $request)
     {
-        //
+        Log::info("---Controller Inscripton : destroy Registration Animation | Connexion---");
+        $request->validate([
+            "animation_id" => "required|integer",
+            "user_id" => "required|integer",
+        ]);
+
+        Log::info("---Controller Inscripton : destroy Registration Animation | Request 1---");
+        Log::info($request);
+
+        // $animationUnsubscribe = Inscription::('user_id',$request->user_id);
+        $animationUnsubscribe = Inscription::where('animation_id', $request->animation_id)
+        ->where('user_id', $request->user_id)
+        ->delete();
+        // $animationUnsubscribe->delete();
+
+        Log::info("---Controller Inscripton : destroy Registration Animation | Request 2---");
+        Log::info($request);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Votre inscription à l\'animation a été supprimé !',
+            'Inscription supprimée : ' => $request->id
+        ]);
+    }
+
+        // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION SHOW (ADMIN) : UnsubscribeRegisterDestroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function destroyRegistrationAdmin(Request $request)
+    {
+        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Connexion---");
+        $request->validate([
+            "animation_id" => "required|integer",
+            "user_id" => "required|integer",
+            // "id" => "required|integer",
+        ]);
+
+        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Request 1---");
+        Log::info($request);
+
+        // $animationUnsubscribe = Inscription::('user_id',$request->user_id);
+        $animationUnsubscribe = Inscription::where('animation_id', $request->animation_id)
+        ->where('user_id', $request->user_id)
+        // ->where('id', $id)
+        ->delete();
+        // $animationUnsubscribe->delete();
+
+        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Request 2---");
+        Log::info($request);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Ce membre a été désinscrit à l\'animation !',
+            'Inscription supprimée : ' => $request->animation_id
+        ]);
     }
 }

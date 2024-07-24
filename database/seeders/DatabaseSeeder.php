@@ -4,46 +4,69 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\Inscription;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory()->create([
-        //     'firstname' => 'SerVer',
-        //     'lastname' => 'Nier',
-        //     'email' => 'Servertest@example.com',
-        //     'email_verified_at' => now(),
-        //     'password' => Hash::make('topsecret'),
-        //     'birthday' => '2017/02/23',
-        //     'type'=> 'animateur',
-        // ]);
+        User::factory()->create([
+            'lastname' => 'mon',
+            'firstname' => 'Administrateur',
+            'birthday' => '2017/02/23',
+            'email' => 'serverTest@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('MonSuperMotDePasse123'),
+            'presentation' => 'Le mini administrateur',
+            'type' => 'admin',
+        ]);
 
         User::factory()->create([
-            'firstname' => 'Tsuyu',
             'lastname' => 'Wyvern',
+            'firstname' => 'Tsuyu',
+            'birthday' => '1987/09/04',
             'email' => 'tsuyuwolf@example.com',
             'email_verified_at' => now(),
             'password' => Hash::make('wolfsecret'),
-            'birthday' => '1987/09/04',
-            'type'=> 'admin',
+            'presentation' => 'The AïeAdministrator',
+            'type' => 'admin',
         ]);
 
-        // User::factory()->create([
-        //     'firstname' => 'Lulu',
-        //     'lastname' => 'Lemon',
-        //     'email' => 'LuluLemon@example.com',
-        //     'email_verified_at' => now(),
-        //     'password' => Hash::make('lulusecret'),
-        //     'birthday' => '2000/05/29',
-        //     'type'=> 'membre',
-        // ]);
+        User::factory()->create([
+            'lastname' => 'Senai',
+            'firstname' => 'Koro',
+            'birthday' => '1995/05/29',
+            'email' => 'Koro.Sensei@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('Y@mete1'),
+            'presentation' => 'The teacher mystery',
+            'type' => 'membre',
+        ]);
+
+        User::factory()->create([
+            'lastname' => 'Ptipeu',
+            'firstname' => 'Justin',
+            'birthday' => '1991/05/12',
+            'email' => 'justin.ptipeu@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('jus1ptipeu-'),
+            'presentation' => 'L\'animateur',
+            'type' => 'animateur',
+        ]);
+
+        User::factory(15)->create();
+
+        $this->call([
+            SiteSeeder::class,
+            EvenementSeeder::class,
+            RoomSeeder::class,
+            AnimationSeeder::class,
+            TypeAnimationSeeder::class,
+            InscriptionSeeder::class,
+        ]);
 
     }
 }

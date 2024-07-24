@@ -8,4 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Room extends Model
 {
     use HasFactory;
+
+    // RELATION AVEC LA TABLE SITES
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    // RELATION AVEC LA TABLE ANIMATIONS
+    public function animations()
+    {
+        return $this->hasMany(Animation::class);
+    }
 }
