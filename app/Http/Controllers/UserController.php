@@ -13,6 +13,33 @@ use Nette\Utils\Random;
 
 class UserController extends Controller
 {
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : Index ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function userlist() {
+        // Récupère tous les users enregistrés dans la bdd
+        Log::info("---LIST USER---");
+        // $users = DB::table('users')->get();
+        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->get();
+        // Log::info($users);
+        // Génère pour chaque lieu une url de l'image associée au lieu
+        // foreach ($users as $user) {
+        //     $user->file = asset('storage/images/' . $user->file);
+        // }
+
+        // $token = $request->bearerToken;
+        // $token = $user->createToken('remember_token')->plainTextToken;
+
+        return response()->json([
+            'status' => 'true',
+            // 'token' => $token,
+            'message' => 'Voici vos users !',
+            // $users
+        ]);
+    }
+
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER USER : Create ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function useradd(Request $request)
     {
         Log::info("---CREA USER---");
@@ -54,39 +81,20 @@ class UserController extends Controller
         Log::info($user);
     }
 
+
+
     // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : userIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function userlist() {
-        // Récupère tous les users enregistrés dans la bdd
-        Log::info("---LIST USER---");
-        // $users = DB::table('users')->get();
-        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->get();
-        // Log::info($users);
-        // Génère pour chaque lieu une url de l'image associée au lieu
-        // foreach ($users as $user) {
-        //     $user->file = asset('storage/images/' . $user->file);
-        // }
-
-        // $token = $request->bearerToken;
-        // $token = $user->createToken('remember_token')->plainTextToken;
-
-        return response()->json([
-            'status' => 'true',
-            // 'token' => $token,
-            'message' => 'Voici vos users !',
-            // $users
-        ]);
-    }
-
-
-
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER USER : EDIT ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function userShow(Request $request, Int $id): JsonResponse 
     {
 
         // Récupère le user par son ID
         $userShow = User::find($id);
 
-        Log::info("---Function UserShow---");
+        Log::info("---User Controller (Show | Request 1/1) ---");
         // $userShow = $request->user();
 
         $userData = [
@@ -122,10 +130,15 @@ class UserController extends Controller
         ]);
     }
 
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER USER : Update ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /**
+     * Update the specified resource in storage.
+     */
     public function userUpdate(Request $request) 
     {
-       
-        Log::info("---Function 1 UserUpdate---");
+        Log::info("---User Controller (Update | Request 1) ---");
 
         // $userUpdate = $request->user();
 
@@ -138,7 +151,7 @@ class UserController extends Controller
             'email' => 'required',
         ]);
 
-        Log::info("---Function 2 UserUpdate ---");
+        Log::info("---User Controller (Update | Request 2) ---");
         Log::info($request);
 
         // Récupère le lieu par son ID
@@ -156,7 +169,7 @@ class UserController extends Controller
 
         $userUpdate->save();
 
-        Log::info("---Function 3 UserUpdate ---");
+        Log::info("---User Controller (Update | Request 3) ---");
         Log::info($userUpdate);
 
         return response()->json([
@@ -171,7 +184,7 @@ class UserController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USERS : Destroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function userDelete(Request $request)
     {
-        Log::info("---Controller User : destroy Users---");
+        Log::info("---User Controller (Destroy | Request 1/1) ---");
         $request->validate([
             "id" => "required|integer",
         ]);
