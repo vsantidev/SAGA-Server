@@ -38,6 +38,8 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::delete('/userlist', [UserController::class, 'userDelete']);
     // Dashboard user
     Route::get('/dashboard', [AuthController::class, 'dashboard']); 
+    // return a page that shows all Orga
+    Route::get('/organizerlist', [UserController::class, 'organizerlist']);
 });
 
 Route::middleware('auth:sanctum')->prefix('like')->group(function () {
