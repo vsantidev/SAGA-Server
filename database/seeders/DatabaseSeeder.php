@@ -13,6 +13,16 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        User::factory()->create([
+            'lastname' => 'Admin',
+            'firstname' => 'SAGA',
+            'email' => 'jsowyvern@gmail.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('04072017'),
+            'presentation' => 'Administrateur SAGA',
+            'type' => 'admin',
+        ]);
+
         $this->call([
             SiteSeeder::class,
             EvenementSeeder::class,

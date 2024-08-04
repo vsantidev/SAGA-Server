@@ -48,7 +48,7 @@ class AnimationSeeder extends Seeder
             'validate' => '1',
             'type_animation_id' => '2',
             'picture'=> "images/img_default.jpg",
-            'registration_date' => "2024-07-19 15:00:00",
+            'registration_date' => "2024-11-29 08:00:00",
             'open_time' => "2024-11-29 10:00:00",
             'closed_time' => "2024-11-29 12:00:00"
         ]);
@@ -69,6 +69,7 @@ class AnimationSeeder extends Seeder
             'capacity' => '70',
             'validate' => '1',
             'picture'=> "images/img_default.jpg",
+            'registration_date' => "2024-11-29 10:00:00",
             'open_time' => "2024-11-29 14:00:00",
             'closed_time' => "2024-11-29 16:00:00"
         ]);
@@ -88,6 +89,7 @@ class AnimationSeeder extends Seeder
             'capacity' => '30',
             'validate' => '1',
             'picture'=> "images/img_default.jpg",
+            'registration_date' => "2024-11-29 10:00:00",
             'open_time' => "2024-11-29 14:00:00",
             'closed_time' => "2024-11-29 16:00:00"
         ]);
@@ -106,6 +108,7 @@ class AnimationSeeder extends Seeder
             'capacity' => '8',
             'validate' => '1',
             'picture'=> "images/img_default.jpg",
+            'registration_date' => "2024-11-29 20:00:00",
             'open_time' => "2024-11-30 08:00:00",
             'closed_time' => "2024-11-30 10:00:00"
         ]);
