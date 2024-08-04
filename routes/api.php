@@ -56,6 +56,8 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // return a page that shows all animation
     Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
     Route::get('/animationList', [AnimationController::class, 'animationListIndex']);
+    // delete an animation to the database
+    Route::delete('/animationList', [AnimationController::class, 'animationDestroy']);
     // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
     // Get the event date for limit the animation

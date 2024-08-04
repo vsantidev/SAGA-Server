@@ -92,31 +92,6 @@ class UserController extends Controller
         ], 201);
         Log::info($user);
     }
-
-
-    // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : userIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function userlist() {
-        // Récupère tous les users enregistrés dans la bdd
-        Log::info("---User Controller (Index | Request 1/1) ---");
-        // $users = DB::table('users')->get();
-        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->get();
-        // Log::info($users);
-        // Génère pour chaque lieu une url de l'image associée au lieu
-        // foreach ($users as $user) {
-        //     $user->file = asset('storage/images/' . $user->file);
-        // }
-
-        // $token = $request->bearerToken;
-        // $token = $user->createToken('remember_token')->plainTextToken;
-
-        return response()->json([
-            'status' => 'true',
-            // 'token' => $token,
-            'message' => 'Voici vos users !',
-            // $users
-        ]);
-    }
   
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : OrganizerIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
