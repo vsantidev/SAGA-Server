@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
             'password' => Hash::make('04072017'),
             'presentation' => 'Administrateur SAGA',
+            'picture'=> "images/users/img_default_drake.jpg",
             'type' => 'admin',
         ]);
 

@@ -33,6 +33,18 @@ class UserController extends Controller
             ],*/
         ]);
 
+        if($request->hasFile('picture')){
+            $file = $request->file('picture');
+            $extension = $file->getClientOriginalExtension();
+            //$filename = time() .'.'.$extension;
+            $filename = uniqid() . "_" . $file->getClientOriginalName();
+            $file->move(public_path('images/users/'), $filename);
+            //$payload['picture']= 'public/images/'.$filename;
+        }else{
+
+            $filename = 'img_default_drake.jpg';
+        }
+
         Log::info($request);
 
         $user = User::create([
