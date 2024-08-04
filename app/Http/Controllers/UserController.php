@@ -60,6 +60,18 @@ class UserController extends Controller
             ],*/
         ]);
 
+        if($request->hasFile('picture')){
+            $file = $request->file('picture');
+            $extension = $file->getClientOriginalExtension();
+            //$filename = time() .'.'.$extension;
+            $filename = uniqid() . "_" . $file->getClientOriginalName();
+            $file->move(public_path('images/users/'), $filename);
+            //$payload['picture']= 'public/images/'.$filename;
+        }else{
+
+            $filename = 'img_default_drake.jpg';
+        }
+
         Log::info($request);
 
         $user = User::create([
@@ -79,6 +91,54 @@ class UserController extends Controller
             'message' => 'Inscription réussie !'
         ], 201);
         Log::info($user);
+    }
+
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : userIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function userlist() {
+        // Récupère tous les users enregistrés dans la bdd
+        Log::info("---User Controller (Index | Request 1/1) ---");
+        // $users = DB::table('users')->get();
+        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->get();
+        // Log::info($users);
+        // Génère pour chaque lieu une url de l'image associée au lieu
+        // foreach ($users as $user) {
+        //     $user->file = asset('storage/images/' . $user->file);
+        // }
+
+        // $token = $request->bearerToken;
+        // $token = $user->createToken('remember_token')->plainTextToken;
+
+        return response()->json([
+            'status' => 'true',
+            // 'token' => $token,
+            'message' => 'Voici vos users !',
+            // $users
+        ]);
+    }
+  
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : OrganizerIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function organizerlist() {
+        // Récupère tous les users enregistrés dans la bdd
+        Log::info("---User Controller (OrganizerIndex | Request 1/1) ---");
+        // $users = DB::table('users')->get();
+        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
+        // Log::info($users);
+        // Génère pour chaque lieu une url de l'image associée au lieu
+        // foreach ($users as $user) {
+        //     $user->file = asset('storage/images/' . $user->file);
+        // }
+
+        // $token = $request->bearerToken;
+        // $token = $user->createToken('remember_token')->plainTextToken;
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Voici vos orgas !',
+            // $users
+        ]);
     }
 
 
