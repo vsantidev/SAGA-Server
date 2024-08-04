@@ -14,7 +14,7 @@ class SponsorController extends Controller
      * Display a listing of the resource.
      */
     // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER SPONSOR : Index ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function sponsorsIndex(Request $request)
     {
         Log::info("---SPONSOR CONTROLLER : Function Index ---");
@@ -30,6 +30,8 @@ class SponsorController extends Controller
 
     }
 
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER SPONSOR : Create ~~~~~~~~~~~~~~~~~~~~~~~~~~
     /**
      * Show the form for creating a new resource.
      */
@@ -87,12 +89,15 @@ class SponsorController extends Controller
         //
     }
 
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER SPONSOR : EDIT ~~~~~~~~~~~~~~~~~~~~~~~~~~
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Int $id): JsonResponse
+    public function edit(Request $request, Int $id): JsonResponse
     {
-        Log::info("---Sponsor Controller (Update | Request 1) ---");
+        Log::info("---Sponsor Controller (Edit | Request 1) ---");
 
         $sponsorData = Sponsor::find($id);
 
@@ -105,6 +110,8 @@ class SponsorController extends Controller
         ]);
     }
 
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER SPONSOR : Update ~~~~~~~~~~~~~~~~~~~~~~~~~~
     /**
      * Update the specified resource in storage.
      */
@@ -124,7 +131,7 @@ class SponsorController extends Controller
         Log::info($request);
 
 
-        Log::info("---Sponsor Controller (Update | Request 2) ---");
+        Log::info("---Sponsor Controller (Update | Request 3) ---");
         $sponsorUpdate = Sponsor::findOrFail($request->id);
         $sponsorUpdate->name = $request->name;
         $sponsorUpdate->content = $request->content;
