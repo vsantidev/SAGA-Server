@@ -8,6 +8,8 @@ use App\Http\Controllers\SponsorController;
 use App\Http\Controllers\TypeAnimationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\ResetPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +24,11 @@ use Illuminate\Support\Facades\Route;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGIN ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ PASSWORD ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendNewPassword']);
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER ~~~<~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
