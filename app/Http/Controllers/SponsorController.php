@@ -120,24 +120,23 @@ class SponsorController extends Controller
         Log::info("---Sponsor Controller (Update | Request 1) ---");
         Log::info($request);
 
-        $sponsorId = Sponsor::find($id);
-
         $request->validate([
             'name' => 'required',
             'content' => 'required'
         ]);
 
-        Log::info("---Sponsor Controller (Update | Request 2) ---");
-        Log::info($request);
 
-
-        Log::info("---Sponsor Controller (Update | Request 3) ---");
+        Log::info("---Sponsor Controller (Update | Request 2 Save SQL) ---");
         $sponsorUpdate = Sponsor::findOrFail($request->id);
+        Log::info("avant update");
+        Log::info($sponsorUpdate);
         $sponsorUpdate->name = $request->name;
         $sponsorUpdate->content = $request->content;
         $sponsorUpdate->link = $request->link;
-        $sponsorUpdate->picture = $request->picture;
-        $sponsorUpdate->save;
+        //$sponsorUpdate->picture = $request->picture;
+        
+        $sponsorUpdate->save();
+        Log::info("aprés update");
         Log::info($sponsorUpdate);
 
         return response()->json([
