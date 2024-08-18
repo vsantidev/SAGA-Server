@@ -34,6 +34,12 @@ class ForgotPasswordController extends Controller
             $message->to($user->email)
                     ->subject('Votre nouveau mot de passe');
 
+            // Ajouter des en-têtes personnalisés
+            $message->replyTo('contesdautomne@contes-de-provence.com', 'SAGA Contes d automnes');
+            $message->getHeaders()->addTextHeader('X-Mailer', 'Laravel Mailer');
+            $message->getHeaders()->addTextHeader('X-Priority', '3'); // Priorité normale
+
+
             });
         return response()->json(['message' => 'Un nouveau mot de passe a été envoyé à votre adresse email, ce message étant automatique, pensez à verifier dans les courriers indésirables'], 200);
 

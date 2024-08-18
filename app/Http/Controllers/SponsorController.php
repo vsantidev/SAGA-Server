@@ -37,11 +37,11 @@ class SponsorController extends Controller
      */
     public function create(Request $request)
     {
-        Log::info("---SPONSOR CONTROLLER : Function Create ---");
-        Log::info("---SPONSOR CREATE : Request---");
-        Log::info($request);
+        //Log::info("---SPONSOR CONTROLLER : Function Create ---");
+        //Log::info("---SPONSOR CREATE : Request---");
+        //Log::info($request);
 
-        Log::info("---SPONSOR CREATE : Picture---");
+        //Log::info("---SPONSOR CREATE : Picture---");
         if($request->hasFile('picture')){
             $file = $request->file('picture');
             $extension= $file->getClientOriginalExtension();
@@ -51,7 +51,7 @@ class SponsorController extends Controller
             $filename = 'img_default.jpg';
         }
 
-        Log::info("---SPONSOR CREATE : Create---");
+        //Log::info("---SPONSOR CREATE : Create---");
         $sponsorCreate = Sponsor::create([
             'name' => $request->name,
             'content' => $request->content,
@@ -59,16 +59,17 @@ class SponsorController extends Controller
             'picture' => "images/sponsors/$filename"
         ]);
 
-        Log::info("---SPONSOR CREATE : sponsorCreate avant JSON---");
-        Log::info($sponsorCreate);
+        ///Log::info("---SPONSOR CREATE : sponsorCreate avant JSON---");
+        //Log::info($sponsorCreate);
+        Log::info("JOURNAL : ---Controller ANIMATION UPDATE : Création du sponsor : $sponsorCreate");
 
         return response()->json([
             'sponsor' => $sponsorCreate,
             'message' => 'Création du partenaire réussi !'
         ], 201);
 
-        Log::info("---SPONSOR CREATE : sponsorCreate après JSON---");
-        Log::info($sponsorCreate);
+        //Log::info("---SPONSOR CREATE : sponsorCreate après JSON---");
+        //Log::info($sponsorCreate);
 
         
     }
