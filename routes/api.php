@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnimationController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InscriptionController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\SponsorController;
 use App\Http\Controllers\TypeAnimationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +24,13 @@ use Illuminate\Support\Facades\Route;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGIN ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ PASSWORD - BUG ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendNewPassword']);
+
+
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER ~~~<~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
@@ -101,6 +110,7 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::post('/create', [SponsorController::class, 'create']);
     Route::get('/edit/{id}', [SponsorController::class, 'edit']);
     Route::put('/edit/{id}', [SponsorController::class, 'update']);
+
 });
 
 
@@ -114,3 +124,8 @@ Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGOUT ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ ADMIN - BUG ~~~~~~~~~~~~~~~~~~~~~~~~~~
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    Route::post('/bug', [AdminController::class, 'createBug']);
+});

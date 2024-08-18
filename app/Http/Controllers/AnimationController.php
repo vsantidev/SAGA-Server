@@ -97,10 +97,6 @@ class AnimationController extends Controller
         $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
         //comparaison dates events
         Log::info("---ANIMATION CREATE : verif date---");
-        //Log::info($DatesEvent->date_opening);
-        //Log::info($request->open_time);
-        //Log::info($request->closed_time);
-        //Log::info($DatesEvent->date_ending);
     
         if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
         {        
@@ -129,8 +125,7 @@ class AnimationController extends Controller
             ], 201);
 
             Log::info("---ANIMATION CREATE : AnimationCreate après json---");
-            Log::info($animationCreate);
-
+            Log::info("JOURNAL : ---Controller ANIMATION CREATE: $request->user_id à crée l'animation $request->title ---");
         }else{
             return response()->json([
                 'message' => 'L animation doit se passer pendant la convention!'
@@ -144,7 +139,6 @@ class AnimationController extends Controller
     public function createValidation(Request $request)
     {
         Log::info("---ANIMATION CONTROLLER : Function createValidation ---");
-        Log::info("---ANIMATION CREATE : fin picture---");
         $animationCreateValidation = Animation::create([
             'validate' => $request->validate,
             'type_animation_id' => $request->type_animation_id,
@@ -158,14 +152,10 @@ class AnimationController extends Controller
         
         Log::info("---ANIMATION CREATE : Function createValidation avant json---");
         Log::info($animationCreateValidation);
-
         return response()->json([
             'animation' => $animationCreateValidation,
             'message' => 'Validation de l\'animation -> OK !'
         ], 201);
-
-        Log::info("---ANIMATION CREATE : Function createValidation json---");
-        Log::info($animationCreateValidation);
     }
 
 
@@ -332,6 +322,8 @@ class AnimationController extends Controller
 
         }// on ne supprime pas le statut de l'animateur si il a déjà été validé une fois.
         // Sinon cela risque d'annuler pour des personnes qui ont déjà fait plusieurs animations.
+
+        Log::info("JOURNAL : ---Controller ANIMATION UPDATE : modification de l'animation $request->title ---");
 
         return response()->json([
             'status' => 'true',

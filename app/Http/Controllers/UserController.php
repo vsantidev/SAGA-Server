@@ -175,8 +175,6 @@ class UserController extends Controller
     {
         Log::info("---User Controller (Update | Request 1) ---");
 
-        // $userUpdate = $request->user();
-
         Log::info($request);
 
         $request->validate([
@@ -189,7 +187,7 @@ class UserController extends Controller
         Log::info("---User Controller (Update | Request 2) ---");
         Log::info($request);
 
-        // Récupère le lieu par son ID
+        // Récupère l'utilisateur par son ID
         $userUpdate = User::findOrFail($request->id);
         $userUpdate->lastname = $request->lastname;
         $userUpdate->firstname = $request->firstname;
@@ -199,8 +197,6 @@ class UserController extends Controller
         $userUpdate->email = $request->email;
         $userUpdate->password = $request->password;
         $userUpdate->presentation = $request->presentation;
-        $userUpdate->type = $request->type;
-
 
         $userUpdate->save();
 
