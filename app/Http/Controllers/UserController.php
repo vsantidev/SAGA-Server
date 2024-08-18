@@ -48,16 +48,6 @@ class UserController extends Controller
             'firstname' => 'required|string|max:255',
             'birthday' => 'required',
             'email' => 'required|string|email|max:255|unique:users',
-            /*'password' => [
-                'required',
-                // 'confirmed',
-                'string',
-                'min:10',             // doit comporter au moins 10 caractères
-                'regex:/[a-z]/',      // doit contenir au moins une lettre minuscule
-                'regex:/[A-Z]/',      // doit contenir au moins une lettre majuscule
-                'regex:/[0-9]/',      // doit contenir au moins un chiffre
-                'regex:/[@$!%*#?&]/', // doit contenir un caractère spécial
-            ],*/
         ]);
 
         if($request->hasFile('picture')){
@@ -173,35 +163,39 @@ class UserController extends Controller
      */
     public function userUpdate(Request $request) 
     {
-        Log::info("---User Controller (Update | Request 1) ---");
+        //Log::info("---User Controller (Update | Request 1) ---");
 
-        Log::info($request);
+        //Log::info($request);
+        // Verification de présence d'image et gestion :
+        if($request->hasFile('picture')){
+            $file = $request->file('picture');
+            $extension = $file->getClientOriginalExtension();
+            //$filename = time() .'.'.$extension;
+            $filename = uniqid() . "_" . $file->getClientOriginalName();
+            $file->move(public_path('images/users/'), $filename);
+            //$payload['picture']= 'public/images/'.$filename;
+        }
 
-        $request->validate([
-            'lastname' => 'required',
-            'firstname' => 'required',
-            'birthday' => 'required',
-            'email' => 'required',
-        ]);
-
-        Log::info("---User Controller (Update | Request 2) ---");
-        Log::info($request);
-
+        //transformation du String en tableau
+        $myUserRequest = json_decode($request->user, true); 
+    
         // Récupère l'utilisateur par son ID
-        $userUpdate = User::findOrFail($request->id);
-        $userUpdate->lastname = $request->lastname;
-        $userUpdate->firstname = $request->firstname;
-        $userUpdate->picture = $request->picture;
-        $userUpdate->birthday = $request->birthday;
-        $userUpdate->phone = $request->phone;
-        $userUpdate->email = $request->email;
-        $userUpdate->password = $request->password;
-        $userUpdate->presentation = $request->presentation;
+        $userUpdate = User::findOrFail($myUserRequest['id']);
+        $userUpdate->lastname = $myUserRequest['lastname'];
+        $userUpdate->firstname = $myUserRequest['firstname'];
+        if($request->hasFile('picture')){$userUpdate->picture = "images/users/$filename";}
+        $userUpdate->birthday = $myUserRequest['birthday'];
+        $userUpdate->phone = $myUserRequest['phone'];
+        $userUpdate->email = $myUserRequest['email'];
+        if (isset($myUserRequest['password'])){$userUpdate->password = bcrypt($myUserRequest['password']);}
+        $userUpdate->presentation = $myUserRequest['presentation'];
 
         $userUpdate->save();
 
-        Log::info("---User Controller (Update | Request 3) ---");
-        Log::info($userUpdate);
+        //Log::info("---User Controller (Update | Request 3) ---");
+        //Log::info($userUpdate);
+
+        Log::info("JOURNAL : ---Controller PASSWORDFORGOT : $userUpdate à MAJ son profil ---");
 
         return response()->json([
             'status' => 'true',

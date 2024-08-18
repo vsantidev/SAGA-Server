@@ -36,6 +36,9 @@ class AdminController extends Controller
             $message->getHeaders()->addTextHeader('X-Priority', '3'); // Priorité normale
 
             });
+        
+        Log::info("JOURNAL : ---Controller ADMIN : $user->firstname $user->lastname à soumis une demande de bug/amélio ---");
+        
         return response()->json(['message' => 'Le formulaire a bien été envoyé à l\'equipe technique'], 200);
     }
 }
