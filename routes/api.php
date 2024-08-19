@@ -69,32 +69,19 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     Route::delete('/animationList', [AnimationController::class, 'animationDestroy']);
     // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
-    // Get the event date for limit the animation
-    Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
-
+    // TODO - importer le type animation pour la creation.
     Route::get('/animationCreate', [TypeAnimationController::class, 'getTypeAnimation']);
     /// return the form for editing an animation
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
-
-
     // update an animation
-    Route::put('/animationShow/{id}', [AnimationController::class, 'animationUpdate']);
-    // delete an animation
+    Route::post('/animationShowEdit/{id}', [AnimationController::class, 'animationUpdate']);
 
-    Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']); 
 
     //----ANIMATION -> LIKE----
     // add a like to the database
     Route::post('/animationIndex', [LikeController::class, 'createLike']);
     // delete a like
     Route::delete('/animationIndex', [LikeController::class, 'destroyLike']);
-
-    // Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']);
-
-
-    // delete an animation of the list
-    // Route::delete('/animationIndex', [AnimationController::class, 'animationDestroy']);
-
 
     // register an user to an animation
     Route::post('/animationShow/{id}', [InscriptionController::class, 'createRegister']);
