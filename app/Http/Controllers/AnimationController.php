@@ -103,6 +103,7 @@ class AnimationController extends Controller
                 $animationCreate = Animation::create([
                 'title' => $request->title,
                 'content' => $request->content,
+                'remark' => $request->remark,
                 'validate' => $request->validate,
                 'fight' => $request->fight,
                 'reflection' => $request->reflection,
@@ -207,6 +208,7 @@ class AnimationController extends Controller
                 'id' => $animationShow->id,
                 'title' => $animationShow->title,
                 'content' => $animationShow->content,
+                'remark' => $animationShow->remark,
                 'picture' => $animationShow->picture,
                 'capacity' => $animationShow->capacity,
                 'fight' => $animationShow->fight,
@@ -228,6 +230,7 @@ class AnimationController extends Controller
                 'id' => $animationShow->id,
                 'title' => $animationShow->title,
                 'content' => $animationShow->content,
+                'remark' => $animationShow->remark,
                 'picture' => $animationShow->picture,
                 'fight' => $animationShow->fight,
                 'reflection' => $animationShow->reflection,
@@ -277,30 +280,36 @@ class AnimationController extends Controller
     {
         Log::info("---Controller Animation : update Animation |  Request 1---");
         Log::info($request);
-
-        $request->validate([
-            'title' => 'required',
-            'content' => 'required'
-        ]);
+        
+        if($request->hasFile('picture')){
+            $file = $request->file('picture');
+            $extension = $file->getClientOriginalExtension();
+            //$filename = time() .'.'.$extension;
+            $filename = uniqid() . "_" . $file->getClientOriginalName();
+            $file->move(public_path('images/animations/'), $filename);
+            //$payload['picture']= 'public/images/'.$filename;
+        }
 
         Log::info("---Controller Animation : update Animation |  Request 2 ---");
-        Log::info($request);
-
+        $myAnimationRequest = json_decode($request->animation, true); 
+        
         // Récupère le lieu par son ID
-        $animationUpdate = Animation::findOrFail($request->id);
-        $animationUpdate->title = $request->title;
-        $animationUpdate->content = $request->content;
-        $animationUpdate->picture = $request->picture;
-        $animationUpdate->capacity = $request->capacity;
-        $animationUpdate->room_id = $request->room_id;
-        $animationUpdate->fight = $request->fight;
-        $animationUpdate->reflection = $request->reflection;
-        $animationUpdate->roleplay = $request->roleplay;
-        $animationUpdate->type_animation_id = $request->type_animation_id;
-        $animationUpdate->open_time = $request->open_time;
-        $animationUpdate->closed_time = $request->closed_time;
-        $animationUpdate->validate = $request->validate;
-        $animationUpdate->registration_date = $request->registration_date;
+        $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
+        $animationUpdate->title = $myAnimationRequest['title'];
+        $animationUpdate->content = $myAnimationRequest['content'];
+        $animationUpdate->remark = $myAnimationRequest['remark'];
+        $animationUpdate->picture = $myAnimationRequest['picture'];
+        $animationUpdate->capacity = $myAnimationRequest['capacity'];
+        $animationUpdate->room_id = $myAnimationRequest['room_id'];
+        $animationUpdate->fight = $myAnimationRequest['fight'];
+        $animationUpdate->reflection = $myAnimationRequest['reflection'];
+        $animationUpdate->roleplay = $myAnimationRequest['roleplay'];
+        $animationUpdate->type_animation_id = $myAnimationRequest['type_animation_id'];
+        $animationUpdate->open_time = $myAnimationRequest['open_time'];
+        $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
+        $animationUpdate->validate = $myAnimationRequest['validate'];
+        $animationUpdate->registration_date = $myAnimationRequest['registration_date'];
+        if($request->hasFile('picture')){$animationUpdate->picture = "images/animations/$filename";}
 
         $animationUpdate->save();
 
