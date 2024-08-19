@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnimationController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InscriptionController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\SponsorController;
 use App\Http\Controllers\TypeAnimationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +25,13 @@ use Illuminate\Support\Facades\Route;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGIN ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ PASSWORD - BUG ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendNewPassword']);
+
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER ~~~<~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
 
@@ -33,7 +42,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     // returns the form for editing a user
     Route::get('/userprofile/{id}', [UserController::class, 'userShow']);
     // updates a user
-    Route::put('/userprofile/{id}', [UserController::class, 'userUpdate']);
+    Route::post('/userprofile/{id}', [UserController::class, 'userUpdate']);
     // delete a user
     Route::delete('/userlist', [UserController::class, 'userDelete']);
     // Dashboard user
@@ -60,32 +69,19 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     Route::delete('/animationList', [AnimationController::class, 'animationDestroy']);
     // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
-    // Get the event date for limit the animation
-    Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
-
+    // TODO - importer le type animation pour la creation.
     Route::get('/animationCreate', [TypeAnimationController::class, 'getTypeAnimation']);
     /// return the form for editing an animation
     Route::get('/animationShow/{id}', [AnimationController::class, 'animationShow']);
-
-
     // update an animation
-    Route::put('/animationShow/{id}', [AnimationController::class, 'animationUpdate']);
-    // delete an animation
+    Route::post('/animationShowEdit/{id}', [AnimationController::class, 'animationUpdate']);
 
-    Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']); 
 
     //----ANIMATION -> LIKE----
     // add a like to the database
     Route::post('/animationIndex', [LikeController::class, 'createLike']);
     // delete a like
     Route::delete('/animationIndex', [LikeController::class, 'destroyLike']);
-
-    // Route::delete('/animationShow/{id}', [AnimationController::class, 'animationDestroy']);
-
-
-    // delete an animation of the list
-    // Route::delete('/animationIndex', [AnimationController::class, 'animationDestroy']);
-
 
     // register an user to an animation
     Route::post('/animationShow/{id}', [InscriptionController::class, 'createRegister']);
@@ -101,6 +97,7 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::post('/create', [SponsorController::class, 'create']);
     Route::get('/edit/{id}', [SponsorController::class, 'edit']);
     Route::put('/edit/{id}', [SponsorController::class, 'update']);
+
 });
 
 
@@ -114,3 +111,8 @@ Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGOUT ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ ADMIN - BUG ~~~~~~~~~~~~~~~~~~~~~~~~~~
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    Route::post('/bug', [AdminController::class, 'createBug']);
+});

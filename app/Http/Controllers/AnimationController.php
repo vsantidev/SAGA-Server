@@ -97,16 +97,13 @@ class AnimationController extends Controller
         $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
         //comparaison dates events
         Log::info("---ANIMATION CREATE : verif date---");
-        //Log::info($DatesEvent->date_opening);
-        //Log::info($request->open_time);
-        //Log::info($request->closed_time);
-        //Log::info($DatesEvent->date_ending);
     
         if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
         {        
                 $animationCreate = Animation::create([
                 'title' => $request->title,
                 'content' => $request->content,
+                'remark' => $request->remark,
                 'validate' => $request->validate,
                 'fight' => $request->fight,
                 'reflection' => $request->reflection,
@@ -129,8 +126,7 @@ class AnimationController extends Controller
             ], 201);
 
             Log::info("---ANIMATION CREATE : AnimationCreate après json---");
-            Log::info($animationCreate);
-
+            Log::info("JOURNAL : ---Controller ANIMATION CREATE: $request->user_id à crée l'animation $request->title ---");
         }else{
             return response()->json([
                 'message' => 'L animation doit se passer pendant la convention!'
@@ -144,7 +140,6 @@ class AnimationController extends Controller
     public function createValidation(Request $request)
     {
         Log::info("---ANIMATION CONTROLLER : Function createValidation ---");
-        Log::info("---ANIMATION CREATE : fin picture---");
         $animationCreateValidation = Animation::create([
             'validate' => $request->validate,
             'type_animation_id' => $request->type_animation_id,
@@ -158,14 +153,10 @@ class AnimationController extends Controller
         
         Log::info("---ANIMATION CREATE : Function createValidation avant json---");
         Log::info($animationCreateValidation);
-
         return response()->json([
             'animation' => $animationCreateValidation,
             'message' => 'Validation de l\'animation -> OK !'
         ], 201);
-
-        Log::info("---ANIMATION CREATE : Function createValidation json---");
-        Log::info($animationCreateValidation);
     }
 
 
@@ -217,6 +208,7 @@ class AnimationController extends Controller
                 'id' => $animationShow->id,
                 'title' => $animationShow->title,
                 'content' => $animationShow->content,
+                'remark' => $animationShow->remark,
                 'picture' => $animationShow->picture,
                 'capacity' => $animationShow->capacity,
                 'fight' => $animationShow->fight,
@@ -238,6 +230,7 @@ class AnimationController extends Controller
                 'id' => $animationShow->id,
                 'title' => $animationShow->title,
                 'content' => $animationShow->content,
+                'remark' => $animationShow->remark,
                 'picture' => $animationShow->picture,
                 'fight' => $animationShow->fight,
                 'reflection' => $animationShow->reflection,
@@ -287,30 +280,36 @@ class AnimationController extends Controller
     {
         Log::info("---Controller Animation : update Animation |  Request 1---");
         Log::info($request);
-
-        $request->validate([
-            'title' => 'required',
-            'content' => 'required'
-        ]);
+        
+        if($request->hasFile('picture')){
+            $file = $request->file('picture');
+            $extension = $file->getClientOriginalExtension();
+            //$filename = time() .'.'.$extension;
+            $filename = uniqid() . "_" . $file->getClientOriginalName();
+            $file->move(public_path('images/animations/'), $filename);
+            //$payload['picture']= 'public/images/'.$filename;
+        }
 
         Log::info("---Controller Animation : update Animation |  Request 2 ---");
-        Log::info($request);
-
+        $myAnimationRequest = json_decode($request->animation, true); 
+        
         // Récupère le lieu par son ID
-        $animationUpdate = Animation::findOrFail($request->id);
-        $animationUpdate->title = $request->title;
-        $animationUpdate->content = $request->content;
-        $animationUpdate->picture = $request->picture;
-        $animationUpdate->capacity = $request->capacity;
-        $animationUpdate->room_id = $request->room_id;
-        $animationUpdate->fight = $request->fight;
-        $animationUpdate->reflection = $request->reflection;
-        $animationUpdate->roleplay = $request->roleplay;
-        $animationUpdate->type_animation_id = $request->type_animation_id;
-        $animationUpdate->open_time = $request->open_time;
-        $animationUpdate->closed_time = $request->closed_time;
-        $animationUpdate->validate = $request->validate;
-        $animationUpdate->registration_date = $request->registration_date;
+        $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
+        $animationUpdate->title = $myAnimationRequest['title'];
+        $animationUpdate->content = $myAnimationRequest['content'];
+        $animationUpdate->remark = $myAnimationRequest['remark'];
+        $animationUpdate->picture = $myAnimationRequest['picture'];
+        $animationUpdate->capacity = $myAnimationRequest['capacity'];
+        $animationUpdate->room_id = $myAnimationRequest['room_id'];
+        $animationUpdate->fight = $myAnimationRequest['fight'];
+        $animationUpdate->reflection = $myAnimationRequest['reflection'];
+        $animationUpdate->roleplay = $myAnimationRequest['roleplay'];
+        $animationUpdate->type_animation_id = $myAnimationRequest['type_animation_id'];
+        $animationUpdate->open_time = $myAnimationRequest['open_time'];
+        $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
+        $animationUpdate->validate = $myAnimationRequest['validate'];
+        $animationUpdate->registration_date = $myAnimationRequest['registration_date'];
+        if($request->hasFile('picture')){$animationUpdate->picture = "images/animations/$filename";}
 
         $animationUpdate->save();
 
@@ -332,6 +331,8 @@ class AnimationController extends Controller
 
         }// on ne supprime pas le statut de l'animateur si il a déjà été validé une fois.
         // Sinon cela risque d'annuler pour des personnes qui ont déjà fait plusieurs animations.
+
+        Log::info("JOURNAL : ---Controller ANIMATION UPDATE : modification de l'animation $request->title ---");
 
         return response()->json([
             'status' => 'true',

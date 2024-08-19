@@ -37,11 +37,11 @@ class SponsorController extends Controller
      */
     public function create(Request $request)
     {
-        Log::info("---SPONSOR CONTROLLER : Function Create ---");
-        Log::info("---SPONSOR CREATE : Request---");
-        Log::info($request);
+        //Log::info("---SPONSOR CONTROLLER : Function Create ---");
+        //Log::info("---SPONSOR CREATE : Request---");
+        //Log::info($request);
 
-        Log::info("---SPONSOR CREATE : Picture---");
+        //Log::info("---SPONSOR CREATE : Picture---");
         if($request->hasFile('picture')){
             $file = $request->file('picture');
             $extension= $file->getClientOriginalExtension();
@@ -51,7 +51,7 @@ class SponsorController extends Controller
             $filename = 'img_default.jpg';
         }
 
-        Log::info("---SPONSOR CREATE : Create---");
+        //Log::info("---SPONSOR CREATE : Create---");
         $sponsorCreate = Sponsor::create([
             'name' => $request->name,
             'content' => $request->content,
@@ -59,16 +59,17 @@ class SponsorController extends Controller
             'picture' => "images/sponsors/$filename"
         ]);
 
-        Log::info("---SPONSOR CREATE : sponsorCreate avant JSON---");
-        Log::info($sponsorCreate);
+        ///Log::info("---SPONSOR CREATE : sponsorCreate avant JSON---");
+        //Log::info($sponsorCreate);
+        Log::info("JOURNAL : ---Controller ANIMATION UPDATE : Création du sponsor : $sponsorCreate");
 
         return response()->json([
             'sponsor' => $sponsorCreate,
             'message' => 'Création du partenaire réussi !'
         ], 201);
 
-        Log::info("---SPONSOR CREATE : sponsorCreate après JSON---");
-        Log::info($sponsorCreate);
+        //Log::info("---SPONSOR CREATE : sponsorCreate après JSON---");
+        //Log::info($sponsorCreate);
 
         
     }
@@ -120,24 +121,23 @@ class SponsorController extends Controller
         Log::info("---Sponsor Controller (Update | Request 1) ---");
         Log::info($request);
 
-        $sponsorId = Sponsor::find($id);
-
         $request->validate([
             'name' => 'required',
             'content' => 'required'
         ]);
 
-        Log::info("---Sponsor Controller (Update | Request 2) ---");
-        Log::info($request);
 
-
-        Log::info("---Sponsor Controller (Update | Request 3) ---");
+        Log::info("---Sponsor Controller (Update | Request 2 Save SQL) ---");
         $sponsorUpdate = Sponsor::findOrFail($request->id);
+        Log::info("avant update");
+        Log::info($sponsorUpdate);
         $sponsorUpdate->name = $request->name;
         $sponsorUpdate->content = $request->content;
         $sponsorUpdate->link = $request->link;
-        $sponsorUpdate->picture = $request->picture;
-        $sponsorUpdate->save;
+        //$sponsorUpdate->picture = $request->picture;
+        
+        $sponsorUpdate->save();
+        Log::info("aprés update");
         Log::info($sponsorUpdate);
 
         return response()->json([
