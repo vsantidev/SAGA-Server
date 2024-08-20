@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('title',255);
             $table->string('picture')->nullable();
             $table->longText('content');
+            $table->boolean('multiple')->default(false);
             $table->longText('remark')->nullable();
             $table->integer('fight')->nullable();
             $table->integer('reflection')->nullable();
