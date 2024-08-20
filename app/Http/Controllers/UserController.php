@@ -187,7 +187,6 @@ class UserController extends Controller
         $userUpdate->birthday = $myUserRequest['birthday'];
         $userUpdate->phone = $myUserRequest['phone'];
         $userUpdate->email = $myUserRequest['email'];
-        if (isset($myUserRequest['password'])){$userUpdate->password = bcrypt($myUserRequest['password']);}
         $userUpdate->presentation = $myUserRequest['presentation'];
 
         $userUpdate->save();
@@ -195,13 +194,57 @@ class UserController extends Controller
         //Log::info("---User Controller (Update | Request 3) ---");
         //Log::info($userUpdate);
 
-        Log::info("JOURNAL : ---Controller PASSWORDFORGOT : $userUpdate à MAJ son profil ---");
+        Log::info("JOURNAL : ---Controller USER $userUpdate->firstname $userUpdate->lastname à MAJ son profil: $userUpdate ---");
 
         return response()->json([
             'status' => 'true',
             'message' => 'Profil utilisateur mis à jour avec succès',
             'user' => $userUpdate,
         ]);
+
+    }
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER USER : Update MDP ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /**
+     * Update the specified resource in storage.
+     */
+    public function userUpdateMdp(Request $request) 
+    {
+        Log::info("---User Controller (UpdateMdp | Request 1) ---");
+
+        $myUserRequest = User::findOrFail($request->user_id);
+        Log::info($myUserRequest->password);
+        Log::info($myUserRequest->password);
+        
+        if(password_verify($request->oldPassword, $myUserRequest->password)){
+            if($request->newPassword1 == $request->newPassword2){
+
+                $myUserRequest->password = bcrypt($request->newPassword1);
+                Log::info("JOURNAL : ---Controller $myUserRequest->firstname $myUserRequest->lastnameuser : $myUserRequest à MAJ son profil ---");
+                $myUserRequest->save();
+                return response()->json([
+                    'status' => 'true',
+                    'message' => 'mot de passe utilisateur mis à jour avec succès',
+                ]);
+
+            }else{
+                return response()->json([
+                    'status' => 'false',
+                    'message' => 'Confirmation incorrecte : vos mots de passe ne sont pas égaux',
+                ]);
+
+            }
+        }else{
+            return response()->json([
+                'status' => 'false',
+                'message' => 'erreur sur l\'ancien mot de passe',
+            ]);
+        }
+        //Log::info($request);
+        
+        //transformation du String en tableau
+        //$myUserRequest = json_decode($request->user, true); 
 
     }
 
