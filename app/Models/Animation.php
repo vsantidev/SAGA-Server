@@ -13,6 +13,7 @@ class Animation extends Model
         'title',
         'content',
         'remark',
+        'multiple',
         'fight',
         'reflection',
         'roleplay',

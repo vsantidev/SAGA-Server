@@ -92,6 +92,14 @@ class AnimationController extends Controller
             $filename = 'img_default.jpg';
         }
 
+        //Gestion du boolean
+        if ($request->multiple==false)
+        {
+            $choixMultiple ="0";
+        }else{
+            $choixMultiple ="1";
+        }
+
         Log::info("---ANIMATION CREATE : fin picture---");
 
         $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
@@ -104,6 +112,7 @@ class AnimationController extends Controller
                 'title' => $request->title,
                 'content' => $request->content,
                 'remark' => $request->remark,
+                'multiple' => $choixMultiple,
                 'validate' => $request->validate,
                 'fight' => $request->fight,
                 'reflection' => $request->reflection,
@@ -209,6 +218,7 @@ class AnimationController extends Controller
                 'title' => $animationShow->title,
                 'content' => $animationShow->content,
                 'remark' => $animationShow->remark,
+                'multiple' => $animationShow->multiple,
                 'picture' => $animationShow->picture,
                 'capacity' => $animationShow->capacity,
                 'fight' => $animationShow->fight,
@@ -231,6 +241,7 @@ class AnimationController extends Controller
                 'title' => $animationShow->title,
                 'content' => $animationShow->content,
                 'remark' => $animationShow->remark,
+                'multiple' => $animationShow->multiple,
                 'picture' => $animationShow->picture,
                 'fight' => $animationShow->fight,
                 'reflection' => $animationShow->reflection,
@@ -241,8 +252,8 @@ class AnimationController extends Controller
                 'validate' => $animationShow->validate,
                 'open_time' => $animationShow->open_time,
                 'closed_time' => $animationShow->closed_time,
-                'room' => "non affectée",
-                'capacity' => "",
+                //'room' => "",
+                //'capacity' => "",
             ];
         }
 
@@ -297,10 +308,11 @@ class AnimationController extends Controller
         $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
         $animationUpdate->title = $myAnimationRequest['title'];
         $animationUpdate->content = $myAnimationRequest['content'];
-        $animationUpdate->remark = $myAnimationRequest['remark'];
+        if(isset($myAnimationRequest['registration_date'])){$animationUpdate->remark = $myAnimationRequest['remark'];}
+        $animationUpdate->multiple = $myAnimationRequest['multiple'];
         $animationUpdate->picture = $myAnimationRequest['picture'];
-        $animationUpdate->capacity = $myAnimationRequest['capacity'];
-        $animationUpdate->room_id = $myAnimationRequest['room_id'];
+        if(isset($myAnimationRequest['capacity'])){$animationUpdate->capacity = $myAnimationRequest['capacity'];}
+        if(isset($myAnimationRequest['room_id'])){$animationUpdate->room_id = $myAnimationRequest['room_id'];}
         $animationUpdate->fight = $myAnimationRequest['fight'];
         $animationUpdate->reflection = $myAnimationRequest['reflection'];
         $animationUpdate->roleplay = $myAnimationRequest['roleplay'];
@@ -308,8 +320,9 @@ class AnimationController extends Controller
         $animationUpdate->open_time = $myAnimationRequest['open_time'];
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
         $animationUpdate->validate = $myAnimationRequest['validate'];
-        $animationUpdate->registration_date = $myAnimationRequest['registration_date'];
+        if(isset($myAnimationRequest['registration_date'])){$animationUpdate->registration_date = $myAnimationRequest['registration_date'];}
         if($request->hasFile('picture')){$animationUpdate->picture = "images/animations/$filename";}
+
 
         $animationUpdate->save();
 
