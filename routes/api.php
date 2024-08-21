@@ -98,6 +98,7 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::post('/create', [SponsorController::class, 'create']);
     Route::get('/edit/{id}', [SponsorController::class, 'edit']);
     Route::put('/edit/{id}', [SponsorController::class, 'update']);
+    Route::delete('/index', [SponsorController::class, 'destroy']);
 
 });
 
