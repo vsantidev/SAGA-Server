@@ -49,6 +49,8 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/dashboard', [AuthController::class, 'dashboard']); 
     // return a page that shows all Orga
     Route::get('/organizerlist', [UserController::class, 'organizerlist']);
+    // update mdp
+    Route::post('/mdp', [UserController::class, 'userUpdateMdp']); 
 });
 
 Route::middleware('auth:sanctum')->prefix('like')->group(function () {
@@ -58,7 +60,6 @@ Route::middleware('auth:sanctum')->prefix('like')->group(function () {
     // updates a user
 
 });
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
@@ -97,6 +98,7 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::post('/create', [SponsorController::class, 'create']);
     Route::get('/edit/{id}', [SponsorController::class, 'edit']);
     Route::put('/edit/{id}', [SponsorController::class, 'update']);
+    Route::delete('/index', [SponsorController::class, 'destroy']);
 
 });
 
