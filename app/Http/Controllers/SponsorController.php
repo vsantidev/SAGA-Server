@@ -150,8 +150,22 @@ class SponsorController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Sponsor $sponsor)
+    public function destroy(Request $request)
     {
-        //
+        Log::info("---Function Sponsor : Destroy---");
+        $request->validate([
+            "id" => "required|integer",
+        ]);
+
+        Log::info($request);
+
+        $sponsorDestroy = Sponsor::findOrFail($request->id);
+        $sponsorDestroy->delete();
+               
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Le partenaire a été supprimé !',
+            'Sponsor supprimé : ' => $request->id
+        ]);
     }
 }
