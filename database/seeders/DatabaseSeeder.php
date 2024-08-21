@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             AnimationSeeder::class,
             TypeAnimationSeeder::class,
             InscriptionSeeder::class,
+            SponsorSeeder::class,
             UserSeeder::class,
         ]);
 
