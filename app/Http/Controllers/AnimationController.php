@@ -78,7 +78,6 @@ class AnimationController extends Controller
         Log::info("---ANIMATION CONTROLLER : Function AnimationCreate ---");
         Log::info("---ANIMATION CREATE : Request---");
         Log::info($request);
-
         Log::info("---ANIMATION CREATE : debut picture---");
 
         if($request->hasFile('picture')){
@@ -92,14 +91,6 @@ class AnimationController extends Controller
             $filename = 'img_default.jpg';
         }
 
-        //Gestion du boolean
-        if ($request->multiple==false)
-        {
-            $choixMultiple ="0";
-        }else{
-            $choixMultiple ="1";
-        }
-
         Log::info("---ANIMATION CREATE : fin picture---");
 
         $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
@@ -109,20 +100,27 @@ class AnimationController extends Controller
         if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
         {        
                 $animationCreate = Animation::create([
+                'registration' => $request->registration,
                 'title' => $request->title,
                 'content' => $request->content,
                 'remark' => $request->remark,
-                'multiple' => $choixMultiple,
+                'multiple' => $request->multiple,
+                'url' => $request->url,
                 'validate' => $request->validate,
                 'fight' => $request->fight,
                 'reflection' => $request->reflection,
                 'roleplay' => $request->roleplay,
                 'open_time' => $request->open_time,
                 'closed_time' => $request->closed_time,
+                'time' => $request->time,
+                'other_time' => $request->otherTime,
+                'capacity' => $request->capacity,
                 'evenement_id' => $DatesEvent->id,
                 'type_animation_id' => $request->type_animation_id,
                 'user_id' => $request->user_id,
+                'registration_date' => $request->registrationDate,
                 'picture'=> "images/animations/$filename"
+                
             ]);
             
 
@@ -138,7 +136,7 @@ class AnimationController extends Controller
             Log::info("JOURNAL : ---Controller ANIMATION CREATE: $request->user_id à crée l'animation $request->title ---");
         }else{
             return response()->json([
-                'message' => 'L animation doit se passer pendant la convention!'
+                'message' => 'Erreur dans l\'insertion!'
             ], 520);
         }
     }
@@ -218,6 +216,7 @@ class AnimationController extends Controller
                 'title' => $animationShow->title,
                 'content' => $animationShow->content,
                 'remark' => $animationShow->remark,
+                'url' => $animationShow->url,
                 'multiple' => $animationShow->multiple,
                 'picture' => $animationShow->picture,
                 'capacity' => $animationShow->capacity,
@@ -230,6 +229,9 @@ class AnimationController extends Controller
                 'validate' => $animationShow->validate,
                 'open_time' => $animationShow->open_time,
                 'closed_time' => $animationShow->closed_time,
+                'time' => $animationShow->time,
+                'other_time' => $animationShow->other_time,
+                'registration' => $animationShow->registration,
                 'registration_date' => $animationShow->registration_date,
                 'room' => $RoomAnim->name,
                 'room_id' => $animationShow->room_id,
@@ -241,8 +243,10 @@ class AnimationController extends Controller
                 'title' => $animationShow->title,
                 'content' => $animationShow->content,
                 'remark' => $animationShow->remark,
+                'url' => $animationShow->url,
                 'multiple' => $animationShow->multiple,
                 'picture' => $animationShow->picture,
+                'capacity' => $animationShow->capacity,
                 'fight' => $animationShow->fight,
                 'reflection' => $animationShow->reflection,
                 'roleplay' => $animationShow->roleplay,
@@ -252,6 +256,10 @@ class AnimationController extends Controller
                 'validate' => $animationShow->validate,
                 'open_time' => $animationShow->open_time,
                 'closed_time' => $animationShow->closed_time,
+                'time' => $animationShow->time,
+                'other_time' => $animationShow->other_time,
+                'registration' => $animationShow->registration,
+                'registration_date' => $animationShow->registration_date,
                 //'room' => "",
                 //'capacity' => "",
             ];
@@ -303,11 +311,13 @@ class AnimationController extends Controller
 
         Log::info("---Controller Animation : update Animation |  Request 2 ---");
         $myAnimationRequest = json_decode($request->animation, true); 
-        
+        Log::info($myAnimationRequest['url'].$myAnimationRequest['time']);
+
         // Récupère le lieu par son ID
         $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
         $animationUpdate->title = $myAnimationRequest['title'];
         $animationUpdate->content = $myAnimationRequest['content'];
+        $animationUpdate->url = $myAnimationRequest['url'];
         if(isset($myAnimationRequest['registration_date'])){$animationUpdate->remark = $myAnimationRequest['remark'];}
         $animationUpdate->multiple = $myAnimationRequest['multiple'];
         $animationUpdate->picture = $myAnimationRequest['picture'];
@@ -320,7 +330,10 @@ class AnimationController extends Controller
         $animationUpdate->open_time = $myAnimationRequest['open_time'];
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
         $animationUpdate->validate = $myAnimationRequest['validate'];
-        if(isset($myAnimationRequest['registration_date'])){$animationUpdate->registration_date = $myAnimationRequest['registration_date'];}
+        $animationUpdate->time = $myAnimationRequest['time'];
+        $animationUpdate->other_time = $myAnimationRequest['other_time'];
+        $animationUpdate->registration = $myAnimationRequest['registration'];
+        $animationUpdate->registration_date = $myAnimationRequest['registration_date'];
         if($request->hasFile('picture')){$animationUpdate->picture = "images/animations/$filename";}
 
 
