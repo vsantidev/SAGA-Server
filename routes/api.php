@@ -89,6 +89,9 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // unsubcribe a user from an animation
     Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistration']);
 
+    // ----- Animation -> Type_Animation
+    Route::get('/typeAnimation', [TypeAnimationController::class, 'getTypeAnimation']);
+
 
 });
 

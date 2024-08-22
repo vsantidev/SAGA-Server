@@ -29,17 +29,35 @@ class AnimationController extends Controller
         Log::info("--- ANIMATION INDEX : IdUser ---");
         Log::info($IdUser);
         //Recuperation des animations
-        $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time','picture', 'validate','user_id', 'registration_date')->get();
+        $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time','picture', 'validate','user_id', 'registration_date', 'fight', 'roleplay', 'reflection')->get();
+        // $Animations = Animation::find($id);
+
         //Recupération des likes
         $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
         //ajout de la colonne like dans le tableau des animations
         $listeAnimationLike=$Animations->map(function($Animation){
             $Animation->like = "";
+            $Animation->type_animation_name = "";
+            $Animation->author_name ="";
         return $Animation;
         });
-        //parcours des 2 tableaux pour intégrer les tableaux liké de l'utilisateur
+
+        Log::info($Animations);
+        Log::info('--- AnimationController - INDEX | type_animation');
+        $alltypeAnimation = Type_animation::select('id','type')->get();
+        Log::info($alltypeAnimation);
+        $ListeUser = User::select('id', 'firstname','lastname')->get();
+        Log::info($ListeUser);
         foreach($listeAnimationLike as $anim)
         {
+            foreach($alltypeAnimation as $type_anim){
+                
+                if($anim->type_animation_id == $type_anim->id)
+                {
+                    $anim->type_animation_name=$type_anim->type;
+                }
+            }
+
             foreach($listeLike as $like)
             {
                 if($anim->id == $like->animation_id)
@@ -47,12 +65,20 @@ class AnimationController extends Controller
                     $anim->like="1";
                 }
             }
+            foreach($ListeUser as $user){
+                if($anim->user_id == $user->id)
+                {
+                    $anim->author_name= ucfirst(strtolower($user->firstname))." ".strtoupper($user->lastname);
+                }
+            }
+
         }
 
         return response()->json([
             'status' => 'true',
             'message' => 'Affichage des animations + bonus Like!',
             'listeAnimation' => $listeAnimationLike ,
+            //'allTypeAnimations' => $alltypeAnimation,
         ]);
 
     }
