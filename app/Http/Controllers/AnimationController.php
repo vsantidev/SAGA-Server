@@ -139,7 +139,7 @@ class AnimationController extends Controller
                 'open_time' => $request->open_time,
                 'closed_time' => $request->closed_time,
                 'time' => $request->time,
-                'other_time' => $request->otherTime,
+                'other_time' => $request->other_time,
                 'capacity' => $request->capacity,
                 'evenement_id' => $DatesEvent->id,
                 'type_animation_id' => $request->type_animation_id,
