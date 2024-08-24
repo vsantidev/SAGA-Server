@@ -53,6 +53,9 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/organizerlist', [UserController::class, 'organizerlist']);
     // update mdp
     Route::post('/mdp', [UserController::class, 'userUpdateMdp']); 
+    // import users by csv
+    Route::post('/userimport', [UserController::class, 'uploadcsv']); 
+    
 });
 
 Route::middleware('auth:sanctum')->prefix('like')->group(function () {

@@ -38,6 +38,50 @@ class UserController extends Controller
         ]);
     }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER IMPORT CSV ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function uploadcsv(Request $request)
+    {
+        Log::info("---UPLOAD CSV---");
+        // Valider que le fichier est bien un CSV
+        /*$request->validate([
+            'file' => 'required|mimes:csv,txt|max:2048',
+        ]);*/
+        Log::info($request);
+        // Récupérer le fichier
+        /*$file = $request->file('file');
+
+        // Lire le fichier CSV
+        $data = array_map('str_getcsv', file($file));
+
+        // Extraire les en-têtes du CSV (la première ligne)
+        $headers = array_shift($data);*/
+
+        // Insérer les données dans la table 'users'
+
+        $usersArray = $request->all();
+
+
+        foreach ($usersArray as $row) {
+            //$userData = array_combine($headers, $row);
+            $user = User::create([
+                'lastname' => $row['lastname'],
+                'firstname' => $row['firstname'],
+                'email' => $row['email'],
+                'password' => bcrypt(Str::random(12)),
+            ]);
+            Log::info('USER!');
+            Log::info($user);
+
+            Evenement_user::create([
+                'evenement_id' => '1', // A modifier dans le futur pour le prochain evenement.
+                'user_id'  => $user->id,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Les utilisateurs ont été importés',
+        ]);
+    }
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER USER : Create ~~~~~~~~~~~~~~~~~~~~~~~~~~
