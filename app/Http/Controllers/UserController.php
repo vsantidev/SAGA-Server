@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Evenement_user;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -69,8 +70,16 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => bcrypt(Str::random(12)),
         ]);
+        Log::info('USER!');
+        Log::info($user);
 
         $token = $user->createToken('remember_token')->plainTextToken;
+
+        Evenement_user::create([
+            'evenement_id' => '1', // A modifier dans le futur pour le prochain evenement.
+            'user_id'  => $user->id,
+        ]);
+
 
         return response()->json([
             'user' => $user,
