@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             InscriptionSeeder::class,
             SponsorSeeder::class,
             UserSeeder::class,
+            EvenementUserSeeder::class,
         ]);
 
     }

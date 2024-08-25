@@ -43,6 +43,8 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/userprofile/{id}', [UserController::class, 'userShow']);
     // updates a user
     Route::post('/userprofile/{id}', [UserController::class, 'userUpdate']);
+    // update user by admin
+    Route::post('/userprofileadmin', [UserController::class, 'userAdminUpdate']);
     // delete a user
     Route::delete('/userlist', [UserController::class, 'userDelete']);
     // Dashboard user
@@ -51,6 +53,9 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/organizerlist', [UserController::class, 'organizerlist']);
     // update mdp
     Route::post('/mdp', [UserController::class, 'userUpdateMdp']); 
+    // import users by csv
+    Route::post('/userimport', [UserController::class, 'uploadcsv']); 
+    
 });
 
 Route::middleware('auth:sanctum')->prefix('like')->group(function () {
@@ -88,6 +93,9 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     Route::post('/animationShow/{id}', [InscriptionController::class, 'createRegister']);
     // unsubcribe a user from an animation
     Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistration']);
+
+    // ----- Animation -> Type_Animation
+    Route::get('/typeAnimation', [TypeAnimationController::class, 'getTypeAnimation']);
 
 
 });

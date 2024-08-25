@@ -33,14 +33,6 @@ return new class extends Migration
             $table->foreignIdFor(Site::class)->constrained;
             $table->timestamps();
         });
-
-        Schema::create('evenement_user', function(Blueprint $table) {
-            $table->foreignIdFor(\App\Models\Evenement::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
-            $table->boolean('masters')->default(false);
-            $table->boolean('rewards')->default(false);
-            $table->primary(['evenement_id', 'user_id']);
-        });
     }
 
     /**

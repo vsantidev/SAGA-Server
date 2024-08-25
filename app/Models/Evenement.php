@@ -46,4 +46,10 @@ class Evenement extends Model
         return $this->belongsTo(Site::class);
     }
 
+    // RELATION AVEC LA TABLE EVENEMENT_USERS
+    public function evenement_users()
+    {
+        return $this->belongsToMany(Evenement::class);
+    }
+
 }

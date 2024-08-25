@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 class TypeAnimationSeeder extends Seeder
 {
 
-    private $etiquette = ['Jeux de plateau', 'Jeux de Rôles' ,'Murder Party','Grandeur Nature']; 
+    private $etiquette = ['Jeux de plateau', 'Jeux de Rôles' ,'Murder Party','Grandeur Nature','Escape Game', 'Cartes', 'Table ronde', 'Autre']; 
 
     public function run(): void
     {
