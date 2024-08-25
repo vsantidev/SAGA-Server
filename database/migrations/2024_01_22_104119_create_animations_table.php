@@ -36,16 +36,10 @@ return new class extends Migration
             $table->datetime('registration_date')->nullable();
             $table->foreignIdFor(Room::class)->nullable();
             $table->foreignIdFor(User::class)->constrained;
-            $table->foreignIdFor(Evenement::class); //Dois-être obligatoire après la création des évènements
-            $table->foreignIdFor(Type_animation::class)->nullable();  //Dois-être obligatoire après la création des évènements
+            $table->foreignIdFor(Evenement::class);
+            $table->foreignIdFor(Type_animation::class);
             $table->timestamps();
         });
-
-        /*Schema::create('animation_user', function(Blueprint $table) {
-            $table->foreignIdFor(\App\Models\Animation::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
-            $table->primary(['animation_id', 'user_id']);
-        });*/
     }
 
     /**

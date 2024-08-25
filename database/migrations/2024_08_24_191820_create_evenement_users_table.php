@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\Animation;
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inscriptions', function (Blueprint $table) {
+        Schema::create('evenement_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class)->constrained;
-            $table->foreignIdFor(Animation::class)->constrained;
+            $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Evenement::class)->constrained();
+            $table->boolean('masters')->default(false);
+            $table->boolean('rewards')->default(false);
             $table->timestamps();
+           
         });
     }
 
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inscriptions');
+        Schema::dropIfExists('evenement_users');
     }
 };

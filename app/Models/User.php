@@ -64,6 +64,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Inscription::class);
     }
-
+    
+    // RELATION AVEC LA TABLE EVENEMENT_USERS
+    public function evenement_users()
+    {
+        return $this->belongsToMany(Evenement::class);
+    }
     
 }
