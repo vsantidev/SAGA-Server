@@ -29,7 +29,7 @@ class AnimationController extends Controller
         Log::info("--- ANIMATION INDEX : IdUser ---");
         Log::info($IdUser);
         //Recuperation des animations
-        $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time','picture', 'validate','user_id', 'registration_date', 'fight', 'roleplay', 'reflection')->get();
+        $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time' ,'picture', 'validate','user_id', 'registration_date', 'fight', 'roleplay', 'reflection')->get();
         // $Animations = Animation::find($id);
 
         //Recupération des likes
