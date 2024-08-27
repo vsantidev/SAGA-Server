@@ -26,10 +26,10 @@ class AnimationController extends Controller
         Log::info("--- ANIMATION INDEX ---");
 
         $IdUser = $request->query('param1');
-        Log::info("--- ANIMATION INDEX : IdUser ---");
-        Log::info($IdUser);
+        //Log::info("--- ANIMATION INDEX : IdUser ---");
+        //Log::info($IdUser);
         //Recuperation des animations
-        $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time' ,'picture', 'validate','user_id', 'registration_date', 'fight', 'roleplay', 'reflection')->get();
+        $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity' ,'picture', 'validate','user_id', 'registration' , 'registration_date', 'fight', 'roleplay', 'reflection')->get();
         // $Animations = Animation::find($id);
 
         //Recupération des likes
@@ -39,15 +39,22 @@ class AnimationController extends Controller
             $Animation->like = "";
             $Animation->type_animation_name = "";
             $Animation->author_name ="";
+            $Animation->nb_inscrits = 0;
+
         return $Animation;
         });
 
-        Log::info($Animations);
-        Log::info('--- AnimationController - INDEX | type_animation');
+        $inscriptionsCount = Inscription::select('animation_id', DB::raw('count(*) as total'))
+        ->groupBy('animation_id')
+        ->get();
+
+        Log::info($inscriptionsCount);
+        //Log::info($Animations);
+        //Log::info('--- AnimationController - INDEX | type_animation');
         $alltypeAnimation = Type_animation::select('id','type')->get();
-        Log::info($alltypeAnimation);
+        //Log::info($alltypeAnimation);
         $ListeUser = User::select('id', 'firstname','lastname')->get();
-        Log::info($ListeUser);
+        //Log::info($ListeUser);
         foreach($listeAnimationLike as $anim)
         {
             foreach($alltypeAnimation as $type_anim){
@@ -72,6 +79,12 @@ class AnimationController extends Controller
                 }
             }
 
+            foreach($inscriptionsCount as $inscription){
+                if($anim->id == $inscription->animation_id)
+                {
+                    $anim->nb_inscrits = $inscription->total;
+                }
+            }
         }
 
         return response()->json([
