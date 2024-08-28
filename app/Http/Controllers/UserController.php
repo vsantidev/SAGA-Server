@@ -156,6 +156,29 @@ class UserController extends Controller
         ]);
     }
 
+        // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : AnimatorIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function animatorIndex() {
+        
+        Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
+        // $users = DB::table('users')->get();
+        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "animateur")->get();
+        // Log::info($users);
+        // Génère pour chaque lieu une url de l'image associée au lieu
+        // foreach ($users as $user) {
+        //     $user->file = asset('storage/images/' . $user->file);
+        // }
+
+        // $token = $request->bearerToken;
+        // $token = $user->createToken('remember_token')->plainTextToken;
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Voici les animateurs !',
+            // $users
+        ]);
+    }
+
 
 
     // =================================================================================
