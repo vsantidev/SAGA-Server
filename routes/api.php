@@ -54,7 +54,9 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     // update mdp
     Route::post('/mdp', [UserController::class, 'userUpdateMdp']); 
     // import users by csv
-    Route::post('/userimport', [UserController::class, 'uploadcsv']); 
+    Route::post('/userimport', [UserController::class, 'uploadcsv']);
+    // import users type animators
+    Route::get('/animatorIndex', [UserController::class, 'animatorIndex']); 
     
 });
 
@@ -108,6 +110,9 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::put('/edit/{id}', [SponsorController::class, 'update']);
     Route::delete('/index', [SponsorController::class, 'destroy']);
 
+});
+
+Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
 });
 
 
