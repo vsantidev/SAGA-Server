@@ -46,7 +46,7 @@ class UserController extends Controller
         /*$request->validate([
             'file' => 'required|mimes:csv,txt|max:2048',
         ]);*/
-        Log::info($request);
+        //Log::info($request);
         // Récupérer le fichier
         /*$file = $request->file('file');
 
@@ -64,13 +64,13 @@ class UserController extends Controller
         foreach ($usersArray as $row) {
             //$userData = array_combine($headers, $row);
             $user = User::create([
-                'lastname' => $row['lastname'],
-                'firstname' => $row['firstname'],
-                'email' => $row['email'],
+                'lastname' => strtoupper($row['lastname']),
+                'firstname' => ucfirst(strtolower($row['firstname'])),
+                'email' => strtolower($row['email']),
                 'password' => bcrypt(Str::random(12)),
             ]);
-            Log::info('USER!');
-            Log::info($user);
+            //Log::info('USER!');
+            //Log::info($user);
 
             Evenement_user::create([
                 'evenement_id' => '1', // A modifier dans le futur pour le prochain evenement.
