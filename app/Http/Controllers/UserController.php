@@ -69,6 +69,7 @@ class UserController extends Controller
                 'firstname' => ucfirst(strtolower($row['firstname'])),
                 'email' => strtolower($row['email']),
                 'password' => bcrypt(Str::random(12)),
+                'picture' => 'images/users/img_default_drake.jpg'
             ]);
             //Log::info('USER!');
             //Log::info($user);
@@ -298,17 +299,17 @@ class UserController extends Controller
         $userUpdate = User::findOrFail($request->id);
         $userUpdate->lastname = $request->lastname;
         $userUpdate->firstname = $request->firstname;
-        $userUpdate->birthday = $request->birthday;
         $userUpdate->phone = $request->phone;
         $userUpdate->email = $request->email;
         $userUpdate->presentation = $request->presentation;
-
+        $userUpdate->type = $request->type;
+        Log::info("---User Controller (ADMIN Update | Request avant save) ---");
         $userUpdate->save();
 
         //Log::info("---User Controller (Update | Request 3) ---");
         //Log::info($userUpdate);
 
-        Log::info("JOURNAL : ---Controller USER $userUpdate->firstname $userUpdate->lastname à MAJ son profil: $userUpdate ---");
+        Log::info("JOURNAL : ---Controller USER $userUpdate->firstname $userUpdate->lastname à été MAJ par un ADMIN : $userUpdate ---");
 
         return response()->json([
             'status' => 'true',
