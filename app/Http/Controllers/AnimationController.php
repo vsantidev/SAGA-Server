@@ -349,7 +349,7 @@ class AnimationController extends Controller
         }
 
         Log::info("---Controller Animation : update Animation |  Request 2 ---");
-        $myAnimationRequest = json_decode($request->animation, true); 
+        $myAnimationRequest = json_decode($request->animation, true);
         Log::info($myAnimationRequest['url'].$myAnimationRequest['time']);
 
         // Récupère le lieu par son ID
@@ -370,6 +370,7 @@ class AnimationController extends Controller
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
         $animationUpdate->validate = $myAnimationRequest['validate'];
         $animationUpdate->time = $myAnimationRequest['time'];
+        if($request->adminAnimator){$animationUpdate->user_id = $request->adminAnimator;}else{$animationUpdate->user_id = $myAnimationRequest['user_id'];}
         $animationUpdate->other_time = $myAnimationRequest['other_time'];
         $animationUpdate->registration = $myAnimationRequest['registration'];
         $animationUpdate->registration_date = $myAnimationRequest['registration_date'];

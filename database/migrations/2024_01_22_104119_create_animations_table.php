@@ -28,7 +28,7 @@ return new class extends Migration
             $table->integer('roleplay')->nullable();
             $table->datetime('open_time')->nullable();
             $table->datetime('closed_time')->nullable();
-            $table->longText('time')->nullable();
+            $table->integer('time')->nullable();
             $table->longText('other_time')->nullable();
             $table->boolean('validate')->default(false);
             $table->integer('capacity')->nullable();
