@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Animation;
 use App\Models\User;
 use App\Models\Evenement_user;
 use Illuminate\Http\JsonResponse;
@@ -161,21 +162,22 @@ class UserController extends Controller
     public function animatorIndex() {
         
         Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
-        // $users = DB::table('users')->get();
-        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "animateur")->get();
-        // Log::info($users);
-        // Génère pour chaque lieu une url de l'image associée au lieu
-        // foreach ($users as $user) {
-        //     $user->file = asset('storage/images/' . $user->file);
-        // }
+        
+        // Récupération des animateurs
+        $userAnimators = User::select('id','lastname','firstname','picture')->where('type', '=', "animateur")->get();
+        Log::info("userAnimator --- >");
+        Log::info($userAnimators);
 
-        // $token = $request->bearerToken;
-        // $token = $user->createToken('remember_token')->plainTextToken;
+        // Récupération des animations
+        $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')->where('validate', '=','1')->get();
+        Log::info("animations --- >");
+        Log::info($animations);
 
         return response()->json([
             'status' => 'true',
             'message' => 'Voici les animateurs !',
-            // $users
+            'listeAnimateurs' => $userAnimators,
+            'listeAnimations'=> $animations,
         ]);
     }
 
