@@ -102,10 +102,46 @@ class AnimationController extends Controller
     public function animationListIndex()
     {
         Log::info("---Controller Animation : Index List Animation | Connexion---");
-        return Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id', 'capacity', 'validate')->get();
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();
+        $alltypeAnimation = Type_animation::select('id','type')->get();
+        $ListeUser = User::select('id', 'firstname','lastname')->get();
+        $ListeRoom = Room::select('id', 'name')->get();
+        $listeAnimationComplete=$Animations->map(function($Animation){
+            $Animation->room_name = "";
+            $Animation->type_animation_name = "";
+            $Animation->author_name ="";
+        return $Animation;
+        });
+
+        foreach($listeAnimationComplete as $anim)
+        {
+            foreach($alltypeAnimation as $type_anim){
+                
+                if($anim->type_animation_id == $type_anim->id)
+                {
+                    $anim->type_animation_name=$type_anim->type;
+                }
+            }
+
+            foreach($ListeUser as $user){
+                if($anim->user_id == $user->id)
+                {
+                    $anim->author_name= ucfirst(strtolower($user->firstname))." ".strtoupper($user->lastname);
+                }
+            }
+
+            foreach($ListeRoom as $room){
+                if($anim->id == $room->id)
+                {
+                    $anim->room_name = $room->name;
+                }
+            }
+        }
+        Log::info($listeAnimationComplete);
         return response()->json([
             'status' => 'true',
-            'message' => 'AnimationListIndex : Affichage des animations !'
+            'message' => 'AnimationListIndex : Affichage des animations !',
+            'listeAnimation' => $listeAnimationComplete ,
         ]);
     }
 
