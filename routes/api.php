@@ -44,7 +44,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     // updates a user
     Route::post('/userprofile/{id}', [UserController::class, 'userUpdate']);
     // update user by admin
-    Route::post('/userprofileadmin', [UserController::class, 'userAdminUpdate']);
+    Route::post('/userprofileadmin/{id}', [UserController::class, 'userAdminUpdate']);
     // delete a user
     Route::delete('/userlist', [UserController::class, 'userDelete']);
     // Dashboard user
