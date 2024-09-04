@@ -32,11 +32,11 @@ class AnimationController extends Controller
         $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity' ,'picture', 'validate','user_id', 'registration' , 'registration_date', 'fight', 'roleplay', 'reflection')->get();
         // $Animations = Animation::find($id);
 
-        //Recupération des likes
+        //Recupération des likes de l'utilisateur en cours
         $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
         //ajout de la colonne like dans le tableau des animations
         $listeAnimationLike=$Animations->map(function($Animation){
-            $Animation->like = "";
+            $Animation->like = "0";
             $Animation->type_animation_name = "";
             $Animation->author_name ="";
             $Animation->nb_inscrits = 0;
