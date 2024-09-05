@@ -34,7 +34,8 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendNewPasswo
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER ~~~<~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
-
+    // Verification token on login page
+    Route::get('/token', [AuthController::class, 'getUser']);
     // add a user to the database
     Route::post('/useradd', [UserController::class, 'useradd']);
     // return a page that shows all user

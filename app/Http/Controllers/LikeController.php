@@ -22,9 +22,10 @@ class LikeController extends Controller
      */
     public function createLike(Request $request): JsonResponse
     {
-         // =================================================================================
+    // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
         Log::info("---Function : Like connected---");
+        Log::info($request);
         $request->validate([
             'user_id' => 'required',
             'animation_id' => 'required'
@@ -39,7 +40,6 @@ class LikeController extends Controller
         ]);
         $registerLike->save();
         Log::info($registerLike);
-
 
         Log::info("---Function : Like Create---");
         return response()->json([
