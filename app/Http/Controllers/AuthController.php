@@ -74,13 +74,13 @@ class AuthController extends Controller
         return response()->json(['Le message de la voix off' => 'Logged out']);
     }
 
-    // public function logout(Request $request): JsonResponse
-    // {
-    //     $request->session()->invalidate();
-
-    //     $request->session()->regenerateToken();
-
-    //     return response()->json('Successfully logged out');
-    // }
+    public function getUser(Request $request)
+    {
+        Log::info("---GET USER LOGIN---");
+        return response()->json([
+            'user' => $request->user(),
+            'message' => 'Token is valid',
+        ]);
+    }
 
 }
