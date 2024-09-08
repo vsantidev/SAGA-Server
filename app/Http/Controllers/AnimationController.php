@@ -32,11 +32,11 @@ class AnimationController extends Controller
         $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity' ,'picture', 'validate','user_id', 'registration' , 'registration_date', 'fight', 'roleplay', 'reflection')->get();
         // $Animations = Animation::find($id);
 
-        //Recupération des likes
+        //Recupération des likes de l'utilisateur en cours
         $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
         //ajout de la colonne like dans le tableau des animations
         $listeAnimationLike=$Animations->map(function($Animation){
-            $Animation->like = "";
+            $Animation->like = "0";
             $Animation->type_animation_name = "";
             $Animation->author_name ="";
             $Animation->nb_inscrits = 0;
@@ -102,10 +102,46 @@ class AnimationController extends Controller
     public function animationListIndex()
     {
         Log::info("---Controller Animation : Index List Animation | Connexion---");
-        return Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id', 'capacity', 'validate')->get();
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();
+        $alltypeAnimation = Type_animation::select('id','type')->get();
+        $ListeUser = User::select('id', 'firstname','lastname')->get();
+        $ListeRoom = Room::select('id', 'name')->get();
+        $listeAnimationComplete=$Animations->map(function($Animation){
+            $Animation->room_name = "";
+            $Animation->type_animation_name = "";
+            $Animation->author_name ="";
+        return $Animation;
+        });
+
+        foreach($listeAnimationComplete as $anim)
+        {
+            foreach($alltypeAnimation as $type_anim){
+                
+                if($anim->type_animation_id == $type_anim->id)
+                {
+                    $anim->type_animation_name=$type_anim->type;
+                }
+            }
+
+            foreach($ListeUser as $user){
+                if($anim->user_id == $user->id)
+                {
+                    $anim->author_name= ucfirst(strtolower($user->firstname))." ".strtoupper($user->lastname);
+                }
+            }
+
+            foreach($ListeRoom as $room){
+                if($anim->id == $room->id)
+                {
+                    $anim->room_name = $room->name;
+                }
+            }
+        }
+        Log::info($listeAnimationComplete);
         return response()->json([
             'status' => 'true',
-            'message' => 'AnimationListIndex : Affichage des animations !'
+            'message' => 'AnimationListIndex : Affichage des animations !',
+            'listeAnimation' => $listeAnimationComplete ,
         ]);
     }
 
@@ -349,7 +385,7 @@ class AnimationController extends Controller
         }
 
         Log::info("---Controller Animation : update Animation |  Request 2 ---");
-        $myAnimationRequest = json_decode($request->animation, true); 
+        $myAnimationRequest = json_decode($request->animation, true);
         Log::info($myAnimationRequest['url'].$myAnimationRequest['time']);
 
         // Récupère le lieu par son ID
@@ -370,6 +406,7 @@ class AnimationController extends Controller
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
         $animationUpdate->validate = $myAnimationRequest['validate'];
         $animationUpdate->time = $myAnimationRequest['time'];
+        if($request->adminAnimator){$animationUpdate->user_id = $request->adminAnimator;}else{$animationUpdate->user_id = $myAnimationRequest['user_id'];}
         $animationUpdate->other_time = $myAnimationRequest['other_time'];
         $animationUpdate->registration = $myAnimationRequest['registration'];
         $animationUpdate->registration_date = $myAnimationRequest['registration_date'];

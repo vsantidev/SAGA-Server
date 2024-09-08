@@ -34,7 +34,8 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendNewPasswo
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER ~~~<~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
-
+    // Verification token on login page
+    Route::get('/token', [AuthController::class, 'getUser']);
     // add a user to the database
     Route::post('/useradd', [UserController::class, 'useradd']);
     // return a page that shows all user
@@ -44,7 +45,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     // updates a user
     Route::post('/userprofile/{id}', [UserController::class, 'userUpdate']);
     // update user by admin
-    Route::post('/userprofileadmin', [UserController::class, 'userAdminUpdate']);
+    Route::post('/userprofileadmin/{id}', [UserController::class, 'userAdminUpdate']);
     // delete a user
     Route::delete('/userlist', [UserController::class, 'userDelete']);
     // Dashboard user
@@ -54,7 +55,9 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     // update mdp
     Route::post('/mdp', [UserController::class, 'userUpdateMdp']); 
     // import users by csv
-    Route::post('/userimport', [UserController::class, 'uploadcsv']); 
+    Route::post('/userimport', [UserController::class, 'uploadcsv']);
+    // import users type animators
+    Route::get('/animatorIndex', [UserController::class, 'animatorIndex']); 
     
 });
 
@@ -108,6 +111,9 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::put('/edit/{id}', [SponsorController::class, 'update']);
     Route::delete('/index', [SponsorController::class, 'destroy']);
 
+});
+
+Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
 });
 
 

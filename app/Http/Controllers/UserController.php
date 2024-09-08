@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Animation;
 use App\Models\User;
 use App\Models\Evenement_user;
 use Illuminate\Http\JsonResponse;
@@ -68,6 +69,7 @@ class UserController extends Controller
                 'firstname' => ucfirst(strtolower($row['firstname'])),
                 'email' => strtolower($row['email']),
                 'password' => bcrypt(Str::random(12)),
+                'picture' => 'images/users/img_default_drake.jpg'
             ]);
             //Log::info('USER!');
             //Log::info($user);
@@ -153,6 +155,30 @@ class UserController extends Controller
             'status' => 'true',
             'message' => 'Voici vos orgas !',
             // $users
+        ]);
+    }
+
+        // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : AnimatorIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function animatorIndex() {
+        
+        Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
+        
+        // Récupération des animateurs
+        $userAnimators = User::select('id','lastname','firstname','picture')->where('type', '=', "animateur")->get();
+        Log::info("userAnimator --- >");
+        Log::info($userAnimators);
+
+        // Récupération des animations
+        $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')->where('validate', '=','1')->get();
+        Log::info("animations --- >");
+        Log::info($animations);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Voici les animateurs !',
+            'listeAnimateurs' => $userAnimators,
+            'listeAnimations'=> $animations,
         ]);
     }
 
@@ -273,17 +299,17 @@ class UserController extends Controller
         $userUpdate = User::findOrFail($request->id);
         $userUpdate->lastname = $request->lastname;
         $userUpdate->firstname = $request->firstname;
-        $userUpdate->birthday = $request->birthday;
         $userUpdate->phone = $request->phone;
         $userUpdate->email = $request->email;
         $userUpdate->presentation = $request->presentation;
-
+        $userUpdate->type = $request->type;
+        Log::info("---User Controller (ADMIN Update | Request avant save) ---");
         $userUpdate->save();
 
         //Log::info("---User Controller (Update | Request 3) ---");
         //Log::info($userUpdate);
 
-        Log::info("JOURNAL : ---Controller USER $userUpdate->firstname $userUpdate->lastname à MAJ son profil: $userUpdate ---");
+        Log::info("JOURNAL : ---Controller USER $userUpdate->firstname $userUpdate->lastname à été MAJ par un ADMIN : $userUpdate ---");
 
         return response()->json([
             'status' => 'true',
