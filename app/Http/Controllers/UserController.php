@@ -141,16 +141,12 @@ class UserController extends Controller
         // Récupère tous les users enregistrés dans la bdd
         Log::info("---User Controller (OrganizerIndex | Request 1/1) ---");
         // $users = DB::table('users')->get();
-        return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
-        // Log::info($users);
-        // Génère pour chaque lieu une url de l'image associée au lieu
-        // foreach ($users as $user) {
-        //     $user->file = asset('storage/images/' . $user->file);
-        // }
-
-        // $token = $request->bearerToken;
-        // $token = $user->createToken('remember_token')->plainTextToken;
-
+        //return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
+        
+        return User::select('id', 'lastname', 'firstname', 'birthday', 'phone', 'email', 'type', 'picture', 'presentation')
+        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+        ->get();
+        
         return response()->json([
             'status' => 'true',
             'message' => 'Voici vos orgas !',

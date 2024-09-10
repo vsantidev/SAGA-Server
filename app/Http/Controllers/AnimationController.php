@@ -235,6 +235,7 @@ class AnimationController extends Controller
         
         Log::info("---ANIMATION CREATE : Function createValidation avant json---");
         Log::info($animationCreateValidation);
+        Log::info("JOURNAL : ---Controller ANIMATION VALIDATE: l'animation $animationCreateValidation a été validée) ---");
         return response()->json([
             'animation' => $animationCreateValidation,
             'message' => 'Validation de l\'animation -> OK !'
@@ -250,10 +251,10 @@ class AnimationController extends Controller
         //  1 - ~~~~~ Retrouver l'animation par id + récupérer les users dans Inscription par animation_id
         $animationShow = Animation::find($id);
         $inscriptionsTable = Inscription::select('user_id')->where('animation_id', '=', $id)->get();
-        Log::info($inscriptionsTable);
+        //Log::info($inscriptionsTable);
 
         //  2 - ~~~~~ Récupérer les userInscrits dans un table et les rajouter
-        Log::info("--- Function : AnimationShow --- Affichage de chaque userInscrits");
+        //Log::info("--- Function : AnimationShow --- Affichage de chaque userInscrits");
         $listUser= new Collection();
 
         foreach ($inscriptionsTable as $inscriptionsTables) {
@@ -264,22 +265,22 @@ class AnimationController extends Controller
             $listUser->push($usersInscrit);
         }
 
-        Log::info($listUser);
+        //Log::info($listUser);
         $alltypeAnimation = Type_animation::select('id', 'type')->get();
-        Log::info($alltypeAnimation);
+        //Log::info($alltypeAnimation);
         $type_animation = Type_animation::find($animationShow->type_animation_id);
 
-        Log::info('type_animation');
+        //Log::info('type_animation');
 
-        Log::info($type_animation);
+        //Log::info($type_animation);
 
         //Recupération des salles si renseigné. -> uniquement SIEGRIES en V1
         if($animationShow->room_id != "")
         {
             $RoomAnim=Room::select('name','capacity')->where('id', '=', $animationShow->room_id)->first();
             //$animationShow->room_id = $RoomAnim->name;
-            Log::info($animationShow->room_id);
-            Log::info($RoomAnim->name);
+            //Log::info($animationShow->room_id);
+            //Log::info($RoomAnim->name);
             if ($animationShow->capacity == null)
             {
                 $animationShow->capacity = $RoomAnim->capacity;
@@ -312,7 +313,7 @@ class AnimationController extends Controller
                 'room_id' => $animationShow->room_id,
             ];
         }else{
-            Log::info("---Function : AnimationShow Data Sans Salle=> ---");
+            //Log::info("---Function : AnimationShow Data Sans Salle=> ---");
             $animationData = [
                 'id' => $animationShow->id,
                 'title' => $animationShow->title,
@@ -340,7 +341,7 @@ class AnimationController extends Controller
             ];
         }
 
-        Log::info($animationData);
+        //Log::info($animationData);
 
         //récupération de l'autheur
         $author = User::findOrFail($animationShow->user_id);
@@ -455,11 +456,13 @@ class AnimationController extends Controller
             "id" => "required|integer",
         ]);
 
-        Log::info($request);
+        //Log::info($request);
 
         $animationDestroy = Animation::findOrFail($request->id);
         $animationDestroy->delete();
-               
+        
+        Log::info("JOURNAL : ---Controller ANIMATION DESTROY : SUPRESSION de l'animation $request->id ---");
+
         return response()->json([
             'status' => 'true',
             'message' => 'L\'animation a été supprimé !',
