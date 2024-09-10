@@ -17,11 +17,11 @@ class TypeAnimationController extends Controller
         // Récupère tous les types d'animations enregistrés dans la bdd
         Log::info("---INDEX DES TYPES D'ANIMATIONS---");
         $typeAnimation = Type_animation::select('id', 'type')->get();
-        Log::info($typeAnimation);
+        //Log::info($typeAnimation);
         // Récupere l'evenement actif pour limiter la conv
         $DatesEvent = Evenement::select('date_opening','date_ending')->where('actif', '=', '1')->first();
-        Log::info($DatesEvent);
-        Log::info(date('d/m/Y',strtotime($DatesEvent->date_opening)));
+        //Log::info($DatesEvent);
+        //Log::info(date('d/m/Y',strtotime($DatesEvent->date_opening)));
         return response()->json([
             'status' => 'true',
             'message' => 'Voici les types d\'animation / date event!',

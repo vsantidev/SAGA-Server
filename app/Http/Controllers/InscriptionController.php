@@ -30,26 +30,26 @@ class InscriptionController extends Controller
 
         $userRegister = User::find($request->user_id);
 
-        Log::info("---Controller Inscription : createRegister | userData---");
+        //Log::info("---Controller Inscription : createRegister | userData---");
 
         $userData = [
             'id' => $userRegister->id,
             'lastname' => $userRegister->lastname,
             'firstname' => $userRegister->firstname
         ];
-        Log::info($userData);
+        //Log::info($userData);
 
-        Log::info("---Controller Inscription : createRegister | Table Inscription---");
-        Log::info($id);
+        //Log::info("---Controller Inscription : createRegister | Table Inscription---");
+        //Log::info($id);
         $registerInscription = Inscription::firstOrNew([
             'user_id' => $request->user_id,
             'animation_id' => $id
         ]);
         $registerInscription->save();
-        Log::info($registerInscription);
+        //Log::info($registerInscription);
 
-
-        Log::info("---Controller Inscription : createRegister | Create Inscription---");
+        Log::info("JOURNAL : ---Controller INSCRIPTION ADD : Inscription de l'user $userRegister->lastname $userRegister->firstname ds l'animation : $id ---");
+        //Log::info("---Controller Inscription : createRegister | Create Inscription---");
         return response()->json([
             'status' => 'true',
             'message' => 'L\'utilisateur a été inscrit sur l\'animation !',

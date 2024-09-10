@@ -23,25 +23,25 @@ class LikeController extends Controller
     public function createLike(Request $request): JsonResponse
     {
     // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LIKE : LikeRegister ~~~~~~~~~~~~~~~~~~~~~~~~~~
         Log::info("---Function : Like connected---");
-        Log::info($request);
+        //Log::info($request);
         $request->validate([
             'user_id' => 'required',
             'animation_id' => 'required'
         ]);
 
         //$userlike = User::find($request->user_id);
-        Log::info("---Function : Like Table ---");
-        Log::info($request);
+        //Log::info("---Function : Like Table ---");
+        //Log::info($request);
         $registerLike = Like::firstOrNew([
             'user_id' => $request->user_id,
             'animation_id' => $request->animation_id
         ]);
         $registerLike->save();
-        Log::info($registerLike);
-
-        Log::info("---Function : Like Create---");
+        //Log::info($registerLike);
+        Log::info("JOURNAL : ---Controller LIKE ADD : Like de l'user $request->user_id ds l'animation : $request->animation_id ---");
+        //Log::info("---Function : Like Create---");
         return response()->json([
             'status' => 'true',
             'message' => 'L\'utilisateur a liké l\'animation !',
@@ -56,25 +56,26 @@ class LikeController extends Controller
      */
     public function destroyLike(Request $request): JsonResponse
     {
-        //
+        
         Log::info("---Function Like : Destroy---");
         $request->validate([
             'user_id' => 'required',
             'animation_id' => 'required'
         ]);
 
-        Log::info($request);
+        //Log::info($request);
 
         $likeDestroy = Like::where('user_id',$request->user_id)
         ->where('animation_id',$request->animation_id)
         ->delete();
-               
+        
+        Log::info("JOURNAL : ---Controller LIKE DESTROY : unlike de l'user $request->user_id ds l'animation : $request->animation_id ---");
         return response()->json([
             'status' => 'true',
             'message' => 'Like a été supprimé !',
             'Like supprimé : ' => $request->animation_id
         ]);
-        Log::info("--- FIN Function Like : Destroy---");
+        //Log::info("--- FIN Function Like : Destroy---");
     }
 
     /**

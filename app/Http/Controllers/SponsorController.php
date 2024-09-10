@@ -119,7 +119,7 @@ class SponsorController extends Controller
     public function update(Request $request, Int $id): JsonResponse
     {
         Log::info("---Sponsor Controller (Update | Request 1) ---");
-        Log::info($request);
+        //Log::info($request);
 
         $request->validate([
             'name' => 'required',
@@ -127,18 +127,18 @@ class SponsorController extends Controller
         ]);
 
 
-        Log::info("---Sponsor Controller (Update | Request 2 Save SQL) ---");
+        //Log::info("---Sponsor Controller (Update | Request 2 Save SQL) ---");
         $sponsorUpdate = Sponsor::findOrFail($request->id);
-        Log::info("avant update");
-        Log::info($sponsorUpdate);
+        //Log::info("avant update");
+        //Log::info($sponsorUpdate);
         $sponsorUpdate->name = $request->name;
         $sponsorUpdate->content = $request->content;
         $sponsorUpdate->link = $request->link;
         //$sponsorUpdate->picture = $request->picture;
         
         $sponsorUpdate->save();
-        Log::info("aprés update");
-        Log::info($sponsorUpdate);
+        //Log::info("aprés update");
+        //Log::info($sponsorUpdate);
 
         return response()->json([
             'status' => 'true',
