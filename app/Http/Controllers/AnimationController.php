@@ -23,7 +23,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationIndex(Request $request)
     {
-        Log::info("--- ANIMATION INDEX ---");
+        //Log::info("--- ANIMATION INDEX ---");
 
         $IdUser = $request->query('param1');
         //Log::info("--- ANIMATION INDEX : IdUser ---");
@@ -48,7 +48,7 @@ class AnimationController extends Controller
         ->groupBy('animation_id')
         ->get();
 
-        Log::info($inscriptionsCount);
+        //Log::info($inscriptionsCount);
         //Log::info($Animations);
         //Log::info('--- AnimationController - INDEX | type_animation');
         $alltypeAnimation = Type_animation::select('id','type')->get();
@@ -101,7 +101,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationListIndex()
     {
-        Log::info("---Controller Animation : Index List Animation | Connexion---");
+        //Log::info("---Controller Animation : Index List Animation | Connexion---");
         $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();
         $alltypeAnimation = Type_animation::select('id','type')->get();
         $ListeUser = User::select('id', 'firstname','lastname')->get();
@@ -137,7 +137,7 @@ class AnimationController extends Controller
                 }
             }
         }
-        Log::info($listeAnimationComplete);
+        //Log::info($listeAnimationComplete);
         return response()->json([
             'status' => 'true',
             'message' => 'AnimationListIndex : Affichage des animations !',
@@ -150,10 +150,10 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationCreate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationCreate(Request $request)
     {
-        Log::info("---ANIMATION CONTROLLER : Function AnimationCreate ---");
-        Log::info("---ANIMATION CREATE : Request---");
-        Log::info($request);
-        Log::info("---ANIMATION CREATE : debut picture---");
+        //Log::info("---ANIMATION CONTROLLER : Function AnimationCreate ---");
+        //Log::info("---ANIMATION CREATE : Request---");
+        //Log::info($request);
+        //Log::info("---ANIMATION CREATE : debut picture---");
 
         if($request->hasFile('picture')){
             $file = $request->file('picture');
@@ -166,11 +166,11 @@ class AnimationController extends Controller
             $filename = 'img_default.jpg';
         }
 
-        Log::info("---ANIMATION CREATE : fin picture---");
+        //Log::info("---ANIMATION CREATE : fin picture---");
 
         $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
         //comparaison dates events
-        Log::info("---ANIMATION CREATE : verif date---");
+        //Log::info("---ANIMATION CREATE : verif date---");
     
         if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
         {        
@@ -199,15 +199,15 @@ class AnimationController extends Controller
             ]);
             
 
-            Log::info("---ANIMATION CREATE : AnimationCreate avant json---");
-            Log::info($animationCreate);
+            //Log::info("---ANIMATION CREATE : AnimationCreate avant json---");
+            //Log::info($animationCreate);
 
             return response()->json([
                 'animation' => $animationCreate,
                 'message' => 'Création du formulaire d\'animation réussi !'
             ], 201);
 
-            Log::info("---ANIMATION CREATE : AnimationCreate après json---");
+            //Log::info("---ANIMATION CREATE : AnimationCreate après json---");
             Log::info("JOURNAL : ---Controller ANIMATION CREATE: $request->user_id à crée l'animation $request->title ---");
         }else{
             return response()->json([
@@ -221,7 +221,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : createValidation ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function createValidation(Request $request)
     {
-        Log::info("---ANIMATION CONTROLLER : Function createValidation ---");
+        //Log::info("---ANIMATION CONTROLLER : Function createValidation ---");
         $animationCreateValidation = Animation::create([
             'validate' => $request->validate,
             'type_animation_id' => $request->type_animation_id,
@@ -233,8 +233,8 @@ class AnimationController extends Controller
             $animationCreateValidation->validate = "1";
         }
         
-        Log::info("---ANIMATION CREATE : Function createValidation avant json---");
-        Log::info($animationCreateValidation);
+        //Log::info("---ANIMATION CREATE : Function createValidation avant json---");
+        //Log::info($animationCreateValidation);
         Log::info("JOURNAL : ---Controller ANIMATION VALIDATE: l'animation $animationCreateValidation a été validée) ---");
         return response()->json([
             'animation' => $animationCreateValidation,
@@ -247,7 +247,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationShow ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationShow(Request $request, Int $id): JsonResponse
     {   
-        Log::info("---Function : AnimationShow connected---");
+        //Log::info("---Function : AnimationShow connected---");
         //  1 - ~~~~~ Retrouver l'animation par id + récupérer les users dans Inscription par animation_id
         $animationShow = Animation::find($id);
         $inscriptionsTable = Inscription::select('user_id')->where('animation_id', '=', $id)->get();
@@ -260,8 +260,8 @@ class AnimationController extends Controller
         foreach ($inscriptionsTable as $inscriptionsTables) {
             // ~~~~~ Récupère le users grâce a son ID
             $usersInscrit = User::select('id', 'firstname','lastname')->where('id',$inscriptionsTables->user_id)->get();
-            Log::info("afffichage de chaque userinscrits");
-            Log::info($usersInscrit);
+            //Log::info("afffichage de chaque userinscrits");
+            //Log::info($usersInscrit);
             $listUser->push($usersInscrit);
         }
 
@@ -373,8 +373,8 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationUpdate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationUpdate(Request $request)
     {
-        Log::info("---Controller Animation : update Animation |  Request 1---");
-        Log::info($request);
+        //Log::info("---Controller Animation : update Animation |  Request 1---");
+        //Log::info($request);
         
         if($request->hasFile('picture')){
             $file = $request->file('picture');
@@ -385,9 +385,9 @@ class AnimationController extends Controller
             //$payload['picture']= 'public/images/'.$filename;
         }
 
-        Log::info("---Controller Animation : update Animation |  Request 2 ---");
+        //Log::info("---Controller Animation : update Animation |  Request 2 ---");
         $myAnimationRequest = json_decode($request->animation, true);
-        Log::info($myAnimationRequest['url'].$myAnimationRequest['time']);
+        //Log::info($myAnimationRequest['url'].$myAnimationRequest['time']);
 
         // Récupère le lieu par son ID
         $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
@@ -416,19 +416,19 @@ class AnimationController extends Controller
 
         $animationUpdate->save();
 
-        Log::info("---Controller Inscripton : update Animation |  Request 3---");
-        Log::info($animationUpdate);
+        //Log::info("---Controller Inscripton : update Animation |  Request 3---");
+        //Log::info($animationUpdate);
 
         $author = User::findOrFail($animationUpdate->user_id);
 
         if ($animationUpdate->validate == true && $author->type != "admin")
         {
             
-            Log::info("---Controller Inscripton : update Animation |  verif author---");
-            Log::info($author);
-            Log::info($author->type);
+            //Log::info("---Controller Inscripton : update Animation |  verif author---");
+            //Log::info($author);
+            //Log::info($author->type);
             $author->type="animateur";
-            Log::info($author->type);
+            //Log::info($author->type);
             $author->save();
             
 
@@ -451,7 +451,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationDestroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationDestroy(Request $request)
     {
-        Log::info("---Function Animation : Destroy---");
+        //Log::info("---Function Animation : Destroy---");
         $request->validate([
             "id" => "required|integer",
         ]);

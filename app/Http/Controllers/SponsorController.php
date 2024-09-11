@@ -98,7 +98,7 @@ class SponsorController extends Controller
      */
     public function edit(Request $request, Int $id): JsonResponse
     {
-        Log::info("---Sponsor Controller (Edit | Request 1) ---");
+        //Log::info("---Sponsor Controller (Edit | Request 1) ---");
 
         $sponsorData = Sponsor::find($id);
 
@@ -118,7 +118,7 @@ class SponsorController extends Controller
      */
     public function update(Request $request, Int $id): JsonResponse
     {
-        Log::info("---Sponsor Controller (Update | Request 1) ---");
+        //Log::info("---Sponsor Controller (Update | Request 1) ---");
         //Log::info($request);
 
         $request->validate([
@@ -152,12 +152,12 @@ class SponsorController extends Controller
      */
     public function destroy(Request $request)
     {
-        Log::info("---Function Sponsor : Destroy---");
+        //Log::info("---Function Sponsor : Destroy---");
         $request->validate([
             "id" => "required|integer",
         ]);
 
-        Log::info($request);
+        //Log::info($request);
 
         $sponsorDestroy = Sponsor::findOrFail($request->id);
         $sponsorDestroy->delete();

@@ -19,7 +19,7 @@ class UserController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : Index ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function userlist() {
         // Récupère tous les users enregistrés dans la bdd
-        Log::info("---LIST USER---");
+        //Log::info("---LIST USER---");
         // $users = DB::table('users')->get();
         return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->get();
         // Log::info($users);
@@ -42,7 +42,7 @@ class UserController extends Controller
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER IMPORT CSV ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function uploadcsv(Request $request)
     {
-        Log::info("---UPLOAD CSV---");
+        //Log::info("---UPLOAD CSV---");
         // Valider que le fichier est bien un CSV
         /*$request->validate([
             'file' => 'required|mimes:csv,txt|max:2048',
@@ -89,7 +89,7 @@ class UserController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER USER : Create ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function useradd(Request $request)
     {
-        Log::info("---CREA USER---");
+        //Log::info("---CREA USER---");
         $request->validate([
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
@@ -108,7 +108,7 @@ class UserController extends Controller
             $filename = 'img_default_drake.jpg';
         }
 
-        Log::info($request);
+        //Log::info($request);
 
         $user = User::create([
             'lastname' => $request->lastname,
@@ -116,11 +116,11 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => bcrypt(Str::random(12)),
         ]);
-        Log::info('USER!');
-        Log::info($user);
+        //Log::info('USER!');
+        //Log::info($user);
 
         $token = $user->createToken('remember_token')->plainTextToken;
-
+        Log::info("JOURNAL : ---Controller USER ADD : Ajout de l'user $request->lastname $request->firstname");
         Evenement_user::create([
             'evenement_id' => '1', // A modifier dans le futur pour le prochain evenement.
             'user_id'  => $user->id,
@@ -139,7 +139,7 @@ class UserController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : OrganizerIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function organizerlist() {
         // Récupère tous les users enregistrés dans la bdd
-        Log::info("---User Controller (OrganizerIndex | Request 1/1) ---");
+        //Log::info("---User Controller (OrganizerIndex | Request 1/1) ---");
         // $users = DB::table('users')->get();
         //return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
         
@@ -158,17 +158,17 @@ class UserController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : AnimatorIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animatorIndex() {
         
-        Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
+        //Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
         
         // Récupération des animateurs
         $userAnimators = User::select('id','lastname','firstname','picture')->where('type', '=', "animateur")->get();
-        Log::info("userAnimator --- >");
-        Log::info($userAnimators);
+        //Log::info("userAnimator --- >");
+        //Log::info($userAnimators);
 
         // Récupération des animations
         $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')->where('validate', '=','1')->get();
-        Log::info("animations --- >");
-        Log::info($animations);
+        //Log::info("animations --- >");
+        //Log::info($animations);
 
         return response()->json([
             'status' => 'true',
@@ -191,7 +191,7 @@ class UserController extends Controller
         // Récupère le user par son ID
         $userShow = User::find($id);
 
-        Log::info("---User Controller (Show | Request 1/1) ---");
+        //Log::info("---User Controller (Show | Request 1/1) ---");
         // $userShow = $request->user();
 
         $userData = [
@@ -207,7 +207,7 @@ class UserController extends Controller
             'type' => $userShow->type,
         ];
 
-        Log::info($userData);
+        //Log::info($userData);
 
         // return response()->json(['success' => $userData]);
         return response()->json([
@@ -284,7 +284,7 @@ class UserController extends Controller
      */
     public function userAdminUpdate(Request $request)
     {
-        Log::info("---User Controller (ADMIN Update | Request 1) ---");
+        //Log::info("---User Controller (ADMIN Update | Request 1) ---");
 
         //Log::info($request);
         // Verification de présence d'image et gestion :
@@ -299,7 +299,7 @@ class UserController extends Controller
         $userUpdate->email = $request->email;
         $userUpdate->presentation = $request->presentation;
         $userUpdate->type = $request->type;
-        Log::info("---User Controller (ADMIN Update | Request avant save) ---");
+        //Log::info("---User Controller (ADMIN Update | Request avant save) ---");
         $userUpdate->save();
 
         //Log::info("---User Controller (Update | Request 3) ---");
@@ -322,11 +322,11 @@ class UserController extends Controller
      */
     public function userUpdateMdp(Request $request) 
     {
-        Log::info("---User Controller (UpdateMdp | Request 1) ---");
+        //Log::info("---User Controller (UpdateMdp | Request 1) ---");
 
         $myUserRequest = User::findOrFail($request->user_id);
-        Log::info($myUserRequest->password);
-        Log::info($myUserRequest->password);
+        //Log::info($myUserRequest->password);
+        //Log::info($myUserRequest->password);
         
         if(password_verify($request->oldPassword, $myUserRequest->password)){
             if($request->newPassword1 == $request->newPassword2){
@@ -353,7 +353,6 @@ class UserController extends Controller
             ]);
         }
         //Log::info($request);
-        
         //transformation du String en tableau
         //$myUserRequest = json_decode($request->user, true); 
 
@@ -363,16 +362,17 @@ class UserController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USERS : Destroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function userDelete(Request $request)
     {
-        Log::info("---User Controller (Destroy | Request 1/1) ---");
+        //Log::info("---User Controller (Destroy | Request 1/1) ---");
         $request->validate([
             "id" => "required|integer",
         ]);
 
-        Log::info($request);
+        //Log::info($request);
 
         $userDelete = User::findOrFail($request->id);
+        Log::info("JOURNAL : ---Controller USER $userDelete a été supprimé");
         $userDelete->delete();
-               
+        
         return response()->json([
             'status' => 'true',
             'message' => 'L\'utilisateur a été supprimé !',

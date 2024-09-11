@@ -15,7 +15,7 @@ class TypeAnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : typeAnimation ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function getTypeAnimation() {
         // Récupère tous les types d'animations enregistrés dans la bdd
-        Log::info("---INDEX DES TYPES D'ANIMATIONS---");
+        //Log::info("---INDEX DES TYPES D'ANIMATIONS---");
         $typeAnimation = Type_animation::select('id', 'type')->get();
         //Log::info($typeAnimation);
         // Récupere l'evenement actif pour limiter la conv
