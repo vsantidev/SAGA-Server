@@ -131,7 +131,7 @@ class AnimationController extends Controller
             }
 
             foreach($ListeRoom as $room){
-                if($anim->id == $room->id)
+                if($anim->room_id == $room->id)
                 {
                     $anim->room_name = $room->name;
                 }
@@ -286,7 +286,7 @@ class AnimationController extends Controller
                 $animationShow->capacity = $RoomAnim->capacity;
             }
 
-            Log::info("---Function : AnimationShow Data Salle=> ---");
+            //Log::info("---Function : AnimationShow Data Salle=> ---");
             $animationData = [
                 'id' => $animationShow->id,
                 'title' => $animationShow->title,
