@@ -20,11 +20,11 @@ class AdminController extends Controller
     public function createBug(Request $request)
     {
         Log::info("---BUG CONTROLLER : Function Create ---");
-        Log::info($request);
+        //Log::info($request);
 
         $user = User::where('id', $request->userId)->first();
-        Log::info($user);
-        Log::info("---BUG CREATE : BugCreate avant JSON---");
+        //Log::info($user);
+        //Log::info("---BUG CREATE : BugCreate avant JSON---");
 
         Mail::send('emails.new-bug', ['senderFirstname' => $user->firstname, 'senderLastname' => $user->lastname ,'description' => $request->description, 'subject' => $request->subject ], function ($message){
             $message->to("jsowyvern@gmail.com")

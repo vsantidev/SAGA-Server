@@ -83,12 +83,12 @@ class LikeController extends Controller
      */
     public function showLike(Request $request, Int $id): JsonResponse
     {
-        Log::info("---Function Like : Show ---");
+        //Log::info("---Function Like : Show ---");
         $request->validate([
             "id" => "required|integer",
         ]);
 
-        Log::info($request);
+        //Log::info($request);
 
         $likeTable = Like::select('user_id')->where('animation_id', '=', $id)->get();
 

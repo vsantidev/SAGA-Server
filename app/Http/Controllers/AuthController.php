@@ -16,11 +16,11 @@ class AuthController extends Controller
     
     public function login(Request $request)
     {
-        Log::info("---LOGIN---");
+        //Log::info("---LOGIN---");
         $user = User::where('email', $request->email)->first();
 
 
-        Log::info($user);
+        //Log::info($user);
         if ($user && Hash::check($request->password, $user->password)) {
             // Utilisation de Sanctum pour créer un jeton d'accès
             $token = $user->createToken(time())->plainTextToken;
@@ -34,20 +34,6 @@ class AuthController extends Controller
         } else {
             return response()->json(['error login' => 'Email ou mot de passe incorrect'], 401);
         }
-
-
-        // $request->validate([
-        //     'email'=> 'required|string|email|',
-        //     'password' => 'required|string',
-        // ]);
-
-        // if(!Auth::attempt($request->only('email','password'))) {
-        //     return response()->json(['message' => 'Invalid detail login'], 401);
-        // }
-
-        // $user = $request->user();
-        // $token = $user->createToken('authToken')->plainTextToken;
-        // return response()->json(['user' => $user, 'token' => $token]);
     }
 
     public function dashboard(Request $request): JsonResponse
@@ -76,7 +62,7 @@ class AuthController extends Controller
 
     public function getUser(Request $request)
     {
-        Log::info("---GET USER LOGIN---");
+        //Log::info("---GET USER LOGIN---");
         return response()->json([
             'user' => $request->user(),
             'message' => 'Token is valid',

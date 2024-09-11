@@ -15,7 +15,7 @@ class ForgotPasswordController extends Controller
     {
         // Validation de l'email
         $request->validate(['email' => 'required|email']);
-        Log::info($request);
+        //Log::info($request);
         // Recherche de l'utilisateur par email
         $user = User::where('email', $request->email)->first();
 
