@@ -76,6 +76,8 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     Route::get('/animationList', [AnimationController::class, 'animationListIndex']);
     // delete an animation to the database
     Route::delete('/animationList', [AnimationController::class, 'animationDestroy']);
+    // duplicate an animation to the database
+    Route::post('/animationList', [AnimationController::class, 'animationDuplicate']);
     // add an animation to the database
     Route::post('/animationCreate', [AnimationController::class, 'animationCreate']);
     // TODO - importer le type animation pour la creation.
