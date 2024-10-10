@@ -29,9 +29,11 @@ class AnimationController extends Controller
         //Log::info("--- ANIMATION INDEX : IdUser ---");
         //Log::info($IdUser);
         //Recuperation des animations
-        $Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity' ,'picture', 'validate','user_id', 'registration' , 'registration_date', 'fight', 'roleplay', 'reflection')->get();
+        //$Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity' ,'picture', 'validate','user_id', 'registration' , 'registration_date', 'fight', 'roleplay', 'reflection')->get();
         // $Animations = Animation::find($id);
-
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity', 'picture', 'validate', 'user_id', 'registration', 'registration_date', 'fight', 'roleplay', 'reflection')
+        ->orderBy('open_time', 'asc') // 'asc' pour un ordre croissant, 'desc' pour un ordre décroissant
+        ->get();
         //Recupération des likes de l'utilisateur en cours
         $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
         //ajout de la colonne like dans le tableau des animations
@@ -469,4 +471,31 @@ class AnimationController extends Controller
             'Animation supprimée : ' => $request->id
         ]);
     }
+
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationDuplicate ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        public function animationDuplicate (Request $request)
+        {
+            $request->validate([
+                "id" => "required|integer",
+            ]);
+    
+    
+            $Animation = Animation::findOrFail($request->id);
+    
+            $newAnimation = $Animation->replicate();
+
+            //Changement de statut pour permettre a l'orga de modifier des éléments.
+            $newAnimation->validate = 0;
+
+            $newAnimation->save();
+            
+            Log::info("JOURNAL : ---Controller ANIMATION DUPLICATE : DUPLICATE de l'animation $request->id -> $newAnimation->id ---");
+    
+            return response()->json([
+                'status' => 'true',
+                'message' => 'L\'animation a été dupliquée !',
+                'idNewAnimation' => $newAnimation->id
+            ]);
+        }
 }
+
