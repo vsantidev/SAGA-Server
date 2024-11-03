@@ -104,7 +104,7 @@ class AnimationController extends Controller
     public function animationListIndex()
     {
         //Log::info("---Controller Animation : Index List Animation | Connexion---");
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();
         $alltypeAnimation = Type_animation::select('id','type')->get();
         $ListeUser = User::select('id', 'firstname','lastname')->get();
         $ListeRoom = Room::select('id', 'name')->get();
@@ -387,12 +387,19 @@ class AnimationController extends Controller
             //$payload['picture']= 'public/images/'.$filename;
         }
 
-        //Log::info("---Controller Animation : update Animation |  Request 2 ---");
+        //Récupération de l'animation
         $myAnimationRequest = json_decode($request->animation, true);
-        //Log::info($myAnimationRequest['url'].$myAnimationRequest['time']);
-
+        //Récupération de celui qui post
+        $myUserRequest = json_decode($request->userUpdate, true);
         // Récupère le lieu par son ID
         $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
+
+        Log::info($myUserRequest);
+        $author = User::findOrFail($animationUpdate->user_id);
+        
+
+
+        
         $animationUpdate->title = $myAnimationRequest['title'];
         $animationUpdate->content = $myAnimationRequest['content'];
         $animationUpdate->url = $myAnimationRequest['url'];
@@ -407,7 +414,14 @@ class AnimationController extends Controller
         $animationUpdate->type_animation_id = $myAnimationRequest['type_animation_id'];
         $animationUpdate->open_time = $myAnimationRequest['open_time'];
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
-        $animationUpdate->validate = $myAnimationRequest['validate'];
+        //Si l'auteur modifie l'animation alors qu'elle est déjà validée, elle repasse en "non validée"
+        if ($author->id == $myUserRequest['id'] && $animationUpdate['validate'] == true)
+        {
+            $animationUpdate->validate = false;
+        }else
+        {
+            $animationUpdate->validate = $myAnimationRequest['validate'];
+        }
         $animationUpdate->time = $myAnimationRequest['time'];
         if($request->adminAnimator){$animationUpdate->user_id = $request->adminAnimator;}else{$animationUpdate->user_id = $myAnimationRequest['user_id'];}
         $animationUpdate->other_time = $myAnimationRequest['other_time'];
@@ -421,7 +435,7 @@ class AnimationController extends Controller
         //Log::info("---Controller Inscripton : update Animation |  Request 3---");
         //Log::info($animationUpdate);
 
-        $author = User::findOrFail($animationUpdate->user_id);
+        
 
         if ($animationUpdate->validate == true && $author->type != "admin")
         {
