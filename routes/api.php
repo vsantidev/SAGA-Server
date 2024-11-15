@@ -58,11 +58,13 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::post('/userimport', [UserController::class, 'uploadcsv']);
     // import users type animators
     Route::get('/animatorIndex', [UserController::class, 'animatorIndex']); 
-    
+    // Reward an animator
+    Route::post('/animatorIndex/{id}', [UserController::class, 'animatorReward']);
+    // Reward an animator
+    Route::post('/usermaj', [UserController::class, 'usermajevent']);   
 });
 
 Route::middleware('auth:sanctum')->prefix('like')->group(function () {
-
     // return a page that shows all user
     Route::get('/animationIndex', [LikeController::class, 'likeShow']);
     // updates a user
@@ -114,12 +116,6 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::delete('/index', [SponsorController::class, 'destroy']);
 
 });
-
-Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
-});
-
-
-
 
 Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {
     Route::post('/animationShow/{id}', [AnimationController::class, 'createValidation']);

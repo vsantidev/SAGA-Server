@@ -21,7 +21,56 @@ class AnimationController extends Controller
 {
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function animationIndex(Request $request)
+    public function animationIndex(Request $request) 
+{
+    $IdUser = $request->query('param1');
+
+    $Animations = Animation::select(
+            'animations.id',
+            'animations.title',
+            'animations.content',
+            'animations.type_animation_id',
+            'animations.open_time',
+            'animations.closed_time',
+            'animations.capacity',
+            'animations.picture',
+            'animations.validate',
+            'animations.user_id',
+            'animations.registration',
+            'animations.registration_date',
+            'animations.fight',
+            'animations.roleplay',
+            'animations.reflection',
+            'type_animations.type as type_animation_name',
+            DB::raw('CONCAT(UCASE(LEFT(users.firstname, 1)), LCASE(SUBSTRING(users.firstname, 2)), " ", UPPER(users.lastname)) as author_name'),
+            DB::raw('COUNT(inscriptions.id) as nb_inscrits')
+        )
+        ->leftJoin('type_animations', 'animations.type_animation_id', '=', 'type_animations.id')
+        ->leftJoin('users', 'animations.user_id', '=', 'users.id')
+        ->leftJoin('inscriptions', 'inscriptions.animation_id', '=', 'animations.id')
+        ->groupBy('animations.id')
+        ->orderBy('animations.open_time', 'asc')
+        ->get();
+
+    // Récupère les likes de l'utilisateur pour ajouter l'information de like
+    $listeLike = Like::where('user_id', $IdUser)->pluck('animation_id')->toArray();
+
+    // Applique les likes aux animations
+    $Animations->map(function($animation) use ($listeLike) {
+        $animation->like = in_array($animation->id, $listeLike) ? "1" : "0";
+        return $animation;
+    });
+
+    Log::info($Animations);
+
+    return response()->json([
+        'status' => 'true',
+        'message' => 'Affichage des animations + bonus Like!',
+        'listeAnimation' => $Animations,
+    ]);
+}
+
+    /*public function animationIndex(Request $request)
     {
         //Log::info("--- ANIMATION INDEX ---");
 
@@ -96,7 +145,7 @@ class AnimationController extends Controller
             //'allTypeAnimations' => $alltypeAnimation,
         ]);
 
-    }
+    }*/
 
 
     // =================================================================================
