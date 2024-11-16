@@ -60,7 +60,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/animatorIndex', [UserController::class, 'animatorIndex']); 
     // Reward an animator
     Route::post('/animatorIndex/{id}', [UserController::class, 'animatorReward']);
-    // Reward an animator
+    // Maj des users / event
     Route::post('/usermaj', [UserController::class, 'usermajevent']);   
 });
 
