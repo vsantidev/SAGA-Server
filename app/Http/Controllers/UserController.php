@@ -148,6 +148,7 @@ class UserController extends Controller
             'lastname' => $request->lastname,
             'firstname' => $request->firstname,
             'email' => $request->email,
+            'picture' => "images/users/$filename",
             'password' => bcrypt(Str::random(12)),
         ]);
         //Log::info('USER!');
