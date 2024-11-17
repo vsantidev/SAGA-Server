@@ -88,6 +88,37 @@ class UserController extends Controller
         ]);
     }
 
+    public function usermajevent(Request $request)
+    {
+        Log::info("JOURNAL : ---Controller USER USERMAJEVENT : MAJ de la table Evenement_user");
+        // Définir l'ID de l'événement souhaité
+        $evenementId = 1;
+
+        // Récupérer les ID des utilisateurs non présents dans `evenement_users` pour cet `evenement_id`
+        $users = User::whereNotIn('id', function($query) use ($evenementId) {
+            $query->select('user_id')
+                ->from('evenement_users')
+                ->where('evenement_id', $evenementId);
+        })->get();
+
+        // Préparer les données pour insertion
+        $data = $users->map(function($user) use ($evenementId) {
+            return [
+                'user_id' => $user->id,
+                'evenement_id' => $evenementId,
+                'masters' => 0,
+                'rewards' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        })->toArray();
+
+    // Insérer les données en une seule requête
+    Evenement_user::insert($data);
+
+    return response()->json(['message' => 'Table `evenement_users` remplie avec succès pour les utilisateurs non présents.']);
+    }
+
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTROLLER USER : Create ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function useradd(Request $request)
@@ -158,28 +189,72 @@ class UserController extends Controller
     }
 
         // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : AnimatorIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function animatorIndex() {
-        
-        //Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
-        
-        // Récupération des animateurs
-        $userAnimators = User::select('id','lastname','firstname','picture')->where('type', '=', "animateur")->get();
-        //Log::info("userAnimator --- >");
-        //Log::info($userAnimators);
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : AnimatorIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        public function animatorIndex() {
+            
+            //Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
+            
+            // Récupération des animateurs
+            $userAnimators = User::select('id','lastname','firstname','picture')->where('type', '=', "animateur")->get();
 
-        // Récupération des animations
-        $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')->where('validate', '=','1')->get();
-        //Log::info("animations --- >");
-        //Log::info($animations);
 
-        return response()->json([
-            'status' => 'true',
-            'message' => 'Voici les animateurs !',
-            'listeAnimateurs' => $userAnimators,
-            'listeAnimations'=> $animations,
+            // Récupération des animations
+            $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')->where('validate', '=','1')->get();
+            //Log::info("animations --- >");
+            //Log::info($animations);
+
+            //$evenement_users=Evenement_user::select('rewards', 'user_id')->where('evenement_id', '=','1')->get();
+
+            $userAnimators = User::select('users.id', 'users.lastname', 'users.firstname', 'users.picture', 'evenement_users.rewards')
+            ->join('evenement_users', 'users.id', '=', 'evenement_users.user_id')
+            ->where('users.type', '=', 'animateur')
+            ->where('evenement_users.evenement_id', '=', 1) // Remplacez "1" par l'ID de votre événement
+            ->get();
+
+            return response()->json([
+                'status' => 'true',
+                'message' => 'Voici les animateurs !',
+                'listeAnimateurs' => $userAnimators,
+                'listeAnimations'=> $animations,
+                //'listeRewards'=> $evenement_users,
+            ]);
+        }
+
+    public function animatorReward(Request $request, int $id): JsonResponse
+    {
+        // Validation de la requête pour s'assurer que `rewards` est bien un booléen ou entier binaire
+        $validatedData = $request->validate([
+            'rewards' => 'required|boolean',  // Assurez-vous que la valeur `rewards` est correcte
         ]);
+
+        try {
+        // Rechercher l'enregistrement `Evenement_user` avec le `user_id` et `evenement_id` spécifiés
+        $evenementUser = Evenement_user::where('user_id', $id)
+                                        ->where('evenement_id', '=', 1)
+                                        ->firstOrFail();
+
+        // Mise à jour de la valeur `rewards`
+        $evenementUser->rewards = $validatedData['rewards'];
+        $evenementUser->save();
+
+            Log::info("JOURNAL : ---Controller ANIMATOR REWARD : Modificationn Reward de l'user $id");
+
+            // Réponse JSON de succès
+            return response()->json([
+                'success' => true,
+                'message' => 'Rewards updated successfully',
+                'user' => $evenementUser
+            ], 200);
+
+        } catch (\Exception $e) {
+            // En cas d'erreur, retourner une réponse JSON avec un message d'erreur
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating rewards: ' . $e->getMessage()
+            ], 500);
+        }
     }
+
 
 
 
