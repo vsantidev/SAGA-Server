@@ -19,3 +19,4 @@ yarn-error.log
 /.vscode
 /config/cors.php
 /database/seeders/UserSeeder.php
+public/images/animations/6734e3802f687_test.png

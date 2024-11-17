@@ -21,7 +21,56 @@ class AnimationController extends Controller
 {
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function animationIndex(Request $request)
+    public function animationIndex(Request $request) 
+{
+    $IdUser = $request->query('param1');
+
+    $Animations = Animation::select(
+            'animations.id',
+            'animations.title',
+            'animations.content',
+            'animations.type_animation_id',
+            'animations.open_time',
+            'animations.closed_time',
+            'animations.capacity',
+            'animations.picture',
+            'animations.validate',
+            'animations.user_id',
+            'animations.registration',
+            'animations.registration_date',
+            'animations.fight',
+            'animations.roleplay',
+            'animations.reflection',
+            'type_animations.type as type_animation_name',
+            DB::raw('CONCAT(UCASE(LEFT(users.firstname, 1)), LCASE(SUBSTRING(users.firstname, 2)), " ", UPPER(users.lastname)) as author_name'),
+            DB::raw('COUNT(inscriptions.id) as nb_inscrits')
+        )
+        ->leftJoin('type_animations', 'animations.type_animation_id', '=', 'type_animations.id')
+        ->leftJoin('users', 'animations.user_id', '=', 'users.id')
+        ->leftJoin('inscriptions', 'inscriptions.animation_id', '=', 'animations.id')
+        ->groupBy('animations.id')
+        ->orderBy('animations.open_time', 'asc')
+        ->get();
+
+    // Récupère les likes de l'utilisateur pour ajouter l'information de like
+    $listeLike = Like::where('user_id', $IdUser)->pluck('animation_id')->toArray();
+
+    // Applique les likes aux animations
+    $Animations->map(function($animation) use ($listeLike) {
+        $animation->like = in_array($animation->id, $listeLike) ? "1" : "0";
+        return $animation;
+    });
+
+    Log::info($Animations);
+
+    return response()->json([
+        'status' => 'true',
+        'message' => 'Affichage des animations + bonus Like!',
+        'listeAnimation' => $Animations,
+    ]);
+}
+
+    /*public function animationIndex(Request $request)
     {
         //Log::info("--- ANIMATION INDEX ---");
 
@@ -96,7 +145,7 @@ class AnimationController extends Controller
             //'allTypeAnimations' => $alltypeAnimation,
         ]);
 
-    }
+    }*/
 
 
     // =================================================================================
@@ -104,7 +153,7 @@ class AnimationController extends Controller
     public function animationListIndex()
     {
         //Log::info("---Controller Animation : Index List Animation | Connexion---");
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();
         $alltypeAnimation = Type_animation::select('id','type')->get();
         $ListeUser = User::select('id', 'firstname','lastname')->get();
         $ListeRoom = Room::select('id', 'name')->get();
@@ -387,12 +436,19 @@ class AnimationController extends Controller
             //$payload['picture']= 'public/images/'.$filename;
         }
 
-        //Log::info("---Controller Animation : update Animation |  Request 2 ---");
+        //Récupération de l'animation
         $myAnimationRequest = json_decode($request->animation, true);
-        //Log::info($myAnimationRequest['url'].$myAnimationRequest['time']);
-
+        //Récupération de celui qui post
+        $myUserRequest = json_decode($request->userUpdate, true);
         // Récupère le lieu par son ID
         $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
+
+        Log::info($myUserRequest);
+        $author = User::findOrFail($animationUpdate->user_id);
+        
+
+
+        
         $animationUpdate->title = $myAnimationRequest['title'];
         $animationUpdate->content = $myAnimationRequest['content'];
         $animationUpdate->url = $myAnimationRequest['url'];
@@ -407,7 +463,14 @@ class AnimationController extends Controller
         $animationUpdate->type_animation_id = $myAnimationRequest['type_animation_id'];
         $animationUpdate->open_time = $myAnimationRequest['open_time'];
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
-        $animationUpdate->validate = $myAnimationRequest['validate'];
+        //Si l'auteur modifie l'animation alors qu'elle est déjà validée, elle repasse en "non validée"
+        if ($author->id == $myUserRequest['id'] && $animationUpdate['validate'] == true)
+        {
+            $animationUpdate->validate = false;
+        }else
+        {
+            $animationUpdate->validate = $myAnimationRequest['validate'];
+        }
         $animationUpdate->time = $myAnimationRequest['time'];
         if($request->adminAnimator){$animationUpdate->user_id = $request->adminAnimator;}else{$animationUpdate->user_id = $myAnimationRequest['user_id'];}
         $animationUpdate->other_time = $myAnimationRequest['other_time'];
@@ -421,7 +484,7 @@ class AnimationController extends Controller
         //Log::info("---Controller Inscripton : update Animation |  Request 3---");
         //Log::info($animationUpdate);
 
-        $author = User::findOrFail($animationUpdate->user_id);
+        
 
         if ($animationUpdate->validate == true && $author->type != "admin")
         {
