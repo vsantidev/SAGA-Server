@@ -119,6 +119,8 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
 
 Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {
     Route::post('/animationShow/{id}', [AnimationController::class, 'createValidation']);
+    // register an user to an animation (admin)
+    Route::post('/animationShow/{id}', [InscriptionController::class, 'createRegisterAdmin']);
     // unsubcribe the user from an animation (Admin)
     Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistrationAdmin']);
 });
