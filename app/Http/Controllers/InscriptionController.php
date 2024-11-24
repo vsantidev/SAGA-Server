@@ -6,6 +6,8 @@ use App\Models\Inscription;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Log;
 
 class InscriptionController extends Controller
@@ -21,7 +23,7 @@ class InscriptionController extends Controller
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : handleRegisterUser ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function createRegister(Request $request, Int $id): JsonResponse
+    public function createRegisterAdmin(Request $request, Int $id): JsonResponse
     {
         //Log::info("---Controller Inscription : createRegister | connected---");
         $request->validate([
@@ -61,6 +63,64 @@ class InscriptionController extends Controller
         ]);
     }
 
+
+    public function createRegister(Request $request, Int $id): JsonResponse
+    {
+        //Log::info("---Controller Inscription : createRegister | connected---");
+        $request->validate([
+            'user_id' => 'required'
+        ]);
+
+        $userRegister = User::find($request->user_id);
+
+        //Log::info("---Controller Inscription : createRegister | userData---");
+
+        $userData = [
+            'id' => $userRegister->id,
+            'lastname' => $userRegister->lastname,
+            'firstname' => $userRegister->firstname
+        ];
+
+        $result = DB::table('animations')
+        ->leftJoin('inscriptions', 'animations.id', '=', 'inscriptions.animation_id')
+        ->select('animations.capacity', DB::raw('COUNT(inscriptions.id) as total_inscriptions'))
+        ->where('animations.id', $id)
+        ->groupBy('animations.id', 'animations.capacity') // Ajoute 'animations.id' pour éviter des erreurs de regroupement
+        ->first();
+
+  
+        //Log::info("TOTAL INSCRIPTION $result->total_inscriptions");
+        //Log::info("CAPACITY $result->capacity");
+
+        if (($result && $result->total_inscriptions >= $result->capacity) || !$result) {
+        //Log::info("JOURNAL : CAPA MAX atteinte");
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Il n\'y a plus de place sur cette animation!',
+            'animation_id' => $id,
+        ]);
+        }else
+        {
+            $registerInscription = Inscription::firstOrNew([
+                'user_id' => $request->user_id,
+                'animation_id' => $id
+            ]);
+            $registerInscription->save();
+    
+            Log::info("JOURNAL : ---Controller INSCRIPTION ADD : Inscription de l'user $userRegister->lastname $userRegister->firstname ds l'animation : $id ---");
+            //Log::info("---Controller Inscription : createRegister | Create Inscription---");
+            return response()->json([
+                'status' => 'true',
+                'message' => 'L\'utilisateur a été inscrit sur l\'animation !',
+                'id' => $userRegister->id,
+                'lastname' => $userRegister->lastname,
+                'firstname' => $userRegister->firstname,
+                'animation_id' => $id,
+            ]);
+        }
+
+        }
 
 
     /**

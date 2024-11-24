@@ -61,7 +61,7 @@ class AnimationController extends Controller
         return $animation;
     });
 
-    Log::info($Animations);
+    //Log::info($Animations);
 
     return response()->json([
         'status' => 'true',
