@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Evenement;
+use App\Models\Evenement_user;
 use App\Models\Animation;
 use App\Models\Room;
 use App\Models\Inscription;
@@ -48,6 +49,8 @@ class AnimationController extends Controller
         ->leftJoin('type_animations', 'animations.type_animation_id', '=', 'type_animations.id')
         ->leftJoin('users', 'animations.user_id', '=', 'users.id')
         ->leftJoin('inscriptions', 'inscriptions.animation_id', '=', 'animations.id')
+        ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
+        ->where('evenements.actif', 1)
         ->groupBy('animations.id')
         ->orderBy('animations.open_time', 'asc')
         ->get();
@@ -153,7 +156,8 @@ class AnimationController extends Controller
     public function animationListIndex()
     {
         //Log::info("---Controller Animation : Index List Animation | Connexion---");
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();          
+       
         $alltypeAnimation = Type_animation::select('id','type')->get();
         $ListeUser = User::select('id', 'firstname','lastname')->get();
         $ListeRoom = Room::select('id', 'name')->get();
@@ -161,11 +165,14 @@ class AnimationController extends Controller
             $Animation->room_name = "";
             $Animation->type_animation_name = "";
             $Animation->author_name ="";
+            $Animation->evenement_year ="";
         return $Animation;
         });
 
         foreach($listeAnimationComplete as $anim)
         {
+            $anim->evenement_year = \Carbon\Carbon::parse($anim->open_time)->year;
+
             foreach($alltypeAnimation as $type_anim){
                 
                 if($anim->type_animation_id == $type_anim->id)
@@ -202,9 +209,34 @@ class AnimationController extends Controller
     public function animationCreate(Request $request)
     {
         //Log::info("---ANIMATION CONTROLLER : Function AnimationCreate ---");
-        //Log::info("---ANIMATION CREATE : Request---");
+        Log::info("---ANIMATION CREATE : Request---");
         //Log::info($request);
         //Log::info("---ANIMATION CREATE : debut picture---");
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required',
+            'fight' => 'required',
+            'reflection' => 'required',
+            'roleplay' => 'required',
+            'open_time' => 'required|date',
+            'closed_time' => 'required|date',
+            'time' => 'required|integer|min:1',
+            'capacity' => 'required',
+            'type_animation_id' => 'required',
+        ], [
+            'titre.required' => 'Merci de renseigner un titre',
+            'content.required' => 'Merci de renseigner une description',
+            'fight.required' => 'Merci de renseigner une valeur d\'affrontement',
+            'reflection.required' => 'Merci de renseigner de stratégie',
+            'roleplay.required' => 'Merci de renseigner d\'ambiance',
+            'open_time.required' => 'Merci de selectionner une tranche horaire',
+            'closed_time.required' => 'Merci de renseigner une tranche horaire',
+            'time.required' => 'Merci de renseigner la durée de l\'animation',
+            'capacity.required' => 'Merci de renseigner le nombre de joueurs',
+            'type_animation_id.required' => 'Merci de selectionner un type d\'animation',
+        ]);
+        
+        Log::info("---ANIMATION CREATE : Fin validation---");
 
         if($request->hasFile('picture')){
             $file = $request->file('picture');
@@ -214,7 +246,7 @@ class AnimationController extends Controller
             $file->move(public_path('images/animations/'), $filename);
             //$payload['picture']= 'public/images/'.$filename;
         }else{
-            $filename = 'img_default.jpg';
+            $filename = 'img_default_conv5.png';
         }
 
         //Log::info("---ANIMATION CREATE : fin picture---");
@@ -486,16 +518,23 @@ class AnimationController extends Controller
 
         
 
-        if ($animationUpdate->validate == true && $author->type != "admin")
+        if ($animationUpdate->validate == true)
         {
             
             //Log::info("---Controller Inscripton : update Animation |  verif author---");
-            //Log::info($author);
-            //Log::info($author->type);
-            $author->type="animateur";
-            //Log::info($author->type);
-            $author->save();
+            // On positionne le statut du membre en animateur sauf pour les admins
+            if ($author->type != "admin")
+            {   
+                $author->type="animateur";
+                $author->save();
+            }
             
+            // Ajout du master en 1 dans la table event-user
+            $evenementActif = Evenement::where('actif', 1)->first();
+            Evenement_user::where('evenement_id', $evenementActif->id)
+            ->where('user_id', $author->id)
+            ->update(['masters' => true]);
+
 
         }// on ne supprime pas le statut de l'animateur si il a déjà été validé une fois.
         // Sinon cela risque d'annuler pour des personnes qui ont déjà fait plusieurs animations.

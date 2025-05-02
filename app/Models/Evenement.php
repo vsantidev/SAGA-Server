@@ -13,6 +13,7 @@ class Evenement extends Model
             'logo',
             'actif',
             'title',
+            'site_id',
             'subtitle',
             'content',
             'date_opening',

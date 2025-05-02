@@ -20,19 +20,26 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
 
+
         //Log::info($user);
         if ($user && Hash::check($request->password, $user->password)) {
-            // Utilisation de Sanctum pour créer un jeton d'accès
-            $token = $user->createToken(time())->plainTextToken;
-            Log::info($token);
-            return response()->json([
-                'token' => $token,
-                'user' => $user,
-                'user_id' => $user->id,
-                'type' => $user->type
-            ]);
+            //test si utilisateur est desactivé
+            if($user->type != "archive")
+            {
+                // Utilisation de Sanctum pour créer un jeton d'accès
+                $token = $user->createToken(time())->plainTextToken;
+                Log::info($token);
+                return response()->json([
+                    'token' => $token,
+                    'user' => $user,
+                    'user_id' => $user->id,
+                    'type' => $user->type
+                ]);
+            } else {
+                return response()->json(['message' => 'L\'utilisateur a été archivé, contactez un administrateur'], 401);
+            }
         } else {
-            return response()->json(['error login' => 'Email ou mot de passe incorrect'], 401);
+            return response()->json(['message' => 'Email ou mot de passe incorrect'], 401);
         }
     }
 
