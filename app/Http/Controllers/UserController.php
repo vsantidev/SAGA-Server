@@ -44,11 +44,6 @@ class UserController extends Controller
         'data' => $users,
     ]);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Voici vos users !',
-            'data' => $users,
-        ]);
     }
 
     // =================================================================================
