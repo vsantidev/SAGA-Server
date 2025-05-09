@@ -445,6 +445,13 @@ class AnimationController extends Controller
         ->where('masters', true)
         ->count();
 
+        // Ajout des likes
+        $userLikes = Like::where('animation_id', $animationShow->id)
+                 ->pluck('user_id')
+                 ->toArray();
+        Log::info("User Like");
+        Log::info($userLikes);
+
 
         return response()->json([
             'status' => 'true',
@@ -454,7 +461,8 @@ class AnimationController extends Controller
             'authorLastname' => $author->lastname,
             'authorFirstname'=> $author->firstname,
             'authorMedals'=> $author->medals,
-            'allTypeAnim' => $alltypeAnimation
+            'allTypeAnim' => $alltypeAnimation,
+            'userLikes'=> $userLikes
 
         ]);
     }
