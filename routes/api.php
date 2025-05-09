@@ -59,7 +59,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::post('/mdp', [UserController::class, 'userUpdateMdp']); 
     // import users by csv
     Route::post('/userimport', [UserController::class, 'uploadcsv']);
-    // import users type animators
+    // return all animators
     Route::get('/animatorIndex', [UserController::class, 'animatorIndex']); 
     // Reward an animator
     Route::post('/animatorIndex/{id}', [UserController::class, 'animatorReward']);

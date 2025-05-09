@@ -269,25 +269,40 @@ class UserController extends Controller
         public function animatorIndex() {
             
             //Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
-            
+            $evenementActif = Evenement::where('actif', 1)->first();
+            if ($evenementActif) {
+                $evenementId = $evenementActif->id;
             // Récupération des animateurs
             //$userAnimators = User::select('id','lastname','firstname','picture')->where('type', '=', "animateur")->get();
 
             // Récupération des animations
-            $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')->where('validate', '=','1')->get();
+            $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')
+            ->where('validate', '=','1')
+            ->where('evenement_id', $evenementId) // Filtrer par la convention spécifique
+            ->get();
             //Log::info("animations --- >");
             //Log::info($animations);
 
-            //$evenement_users=Evenement_user::select('rewards', 'user_id')->where('evenement_id', '=','1')->get();
-            $evenementActif = Evenement::where('actif', 1)->first();
-            if ($evenementActif) {
-                $evenementId = $evenementActif->id;
-        
-                $userAnimators = User::select('users.id', 'users.lastname', 'users.firstname', 'users.picture', 'evenement_users.rewards')
-                ->join('evenement_users', 'users.id', '=', 'evenement_users.user_id')
-                ->where('evenement_users.evenement_id', '=', $evenementId)
-                ->where('evenement_users.masters', true)
+                  $userAnimators = DB::table('evenement_users as eu')
+                ->join('users', 'users.id', '=', 'eu.user_id')
+                ->select(
+                    'users.id',
+                    'users.lastname',
+                    'users.firstname',
+                    'users.picture',
+                    DB::raw('(
+                        SELECT COUNT(*) 
+                        FROM evenement_users 
+                        WHERE user_id = users.id 
+                        AND masters = true
+                    ) as medals')
+                )
+                ->where('eu.evenement_id', $evenementId) // Filtrer par la convention spécifique
+                ->where('eu.masters', true) // Filtrer uniquement les animateurs (si applicable)
+                ->orderByDesc(DB::raw('medals'))
                 ->get();
+
+        
 
                 return response()->json([
                     'status' => 'true',

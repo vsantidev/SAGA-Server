@@ -24,6 +24,7 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationIndex(Request $request) 
 {
+    //Récupération de l'ID de l'utilisateur
     $IdUser = $request->query('param1');
 
     $Animations = Animation::select(
@@ -44,7 +45,15 @@ class AnimationController extends Controller
             'animations.reflection',
             'type_animations.type as type_animation_name',
             DB::raw('CONCAT(UCASE(LEFT(users.firstname, 1)), LCASE(SUBSTRING(users.firstname, 2)), " ", UPPER(users.lastname)) as author_name'),
-            DB::raw('COUNT(inscriptions.id) as nb_inscrits')
+            DB::raw('COUNT(inscriptions.id) as nb_inscrits'),
+            DB::raw('COUNT(inscriptions.id) as nb_inscrits'),
+            DB::raw('(
+                SELECT COUNT(*) 
+                FROM evenement_users 
+                WHERE user_id = animations.user_id 
+                AND masters = true
+            ) as medals')
+        
         )
         ->leftJoin('type_animations', 'animations.type_animation_id', '=', 'type_animations.id')
         ->leftJoin('users', 'animations.user_id', '=', 'users.id')
@@ -429,6 +438,14 @@ class AnimationController extends Controller
         //récupération de l'autheur
         $author = User::findOrFail($animationShow->user_id);
 
+        
+        // Ajout du nombre de médailles
+        $author->medals = DB::table('evenement_users')
+        ->where('user_id', $author->id)
+        ->where('masters', true)
+        ->count();
+
+
         return response()->json([
             'status' => 'true',
             'message' => 'Voici le détail de l\'animation !',
@@ -436,6 +453,7 @@ class AnimationController extends Controller
             'animationData' => $animationData,
             'authorLastname' => $author->lastname,
             'authorFirstname'=> $author->firstname,
+            'authorMedals'=> $author->medals,
             'allTypeAnim' => $alltypeAnimation
 
         ]);
