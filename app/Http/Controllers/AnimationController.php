@@ -449,8 +449,8 @@ class AnimationController extends Controller
         $userLikes = Like::where('animation_id', $animationShow->id)
                  ->pluck('user_id')
                  ->toArray();
-        Log::info("User Like");
-        Log::info($userLikes);
+        //Log::info("User Like");
+        //Log::info($userLikes);
 
 
         return response()->json([

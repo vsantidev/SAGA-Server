@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnimationController;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\AuthController;
@@ -99,15 +100,20 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // delete a like
     Route::delete('/animationIndex', [LikeController::class, 'destroyLike']);
 
+    //----ANIMATION -> INSCRIPTION----
     // register an user to an animation
     Route::post('/animationShow/{id}', [InscriptionController::class, 'createRegister']);
     // unsubcribe a user from an animation
     Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistration']);
 
-    // ----- Animation -> Type_Animation
+    // ----- ANIMATION -> Type_Animation
     Route::get('/typeAnimation', [TypeAnimationController::class, 'getTypeAnimation']);
 
+});
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ ROOM ~~~~~~~~~~~~~~~~~~~~~~~~~~
+Route::middleware('auth:sanctum')->prefix('rooms')->group(function () {
+    Route::get('/showAvailable', [RoomController::class, 'getRoomAvailable']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ SPONSORS ~~~~~~~~~~~~~~~~~~~~~~~~~~
