@@ -72,21 +72,6 @@ class UserController extends Controller
     public function uploadcsv(Request $request)
     {
         //Log::info("---UPLOAD CSV---");
-        // Valider que le fichier est bien un CSV
-        /*$request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048',
-        ]);*/
-        //Log::info($request);
-        // Récupérer le fichier
-        /*$file = $request->file('file');
-
-        // Lire le fichier CSV
-        $data = array_map('str_getcsv', file($file));
-
-        // Extraire les en-têtes du CSV (la première ligne)
-        $headers = array_shift($data);*/
-
-        // Insérer les données dans la table 'users'
 
         $usersArray = $request->all();
 
@@ -126,7 +111,6 @@ class UserController extends Controller
                 ]);
             } else {
                 // Gère le cas où aucun événement actif n'est trouvé
-                // Tu peux logger ou lancer une exception selon le besoin
                 Log::warning('Aucun événement actif trouvé lors de la création d\'Evenement_user.');
             }
         }
@@ -254,7 +238,7 @@ class UserController extends Controller
         //return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
         
         return User::select('id', 'lastname', 'firstname', 'birthday', 'phone', 'email', 'type', 'picture', 'presentation')
-        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16])
         ->get();
         
         return response()->json([

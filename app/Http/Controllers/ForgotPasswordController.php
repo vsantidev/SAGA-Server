@@ -21,6 +21,8 @@ class ForgotPasswordController extends Controller
 
         if (!$user) {
             return response()->json(['message' => 'Email non trouvé, Veuillez contacter les organisateurs par message privé sur facebook.'], 404);
+        }elseif($user->type == 'archive'){
+            return response()->json(['message' => 'Cet utilisateur n’est pas présent sur la convention active., Veuillez contacter les organisateurs par message privé sur facebook.'], 404);
         }
 
         // Générer un mot de passe aléatoire
