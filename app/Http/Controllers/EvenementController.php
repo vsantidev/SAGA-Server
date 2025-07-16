@@ -110,17 +110,9 @@ class EvenementController extends Controller
             $evenementId=$evenementUpdate->id;
             //les autres conv se desactivent
             Evenement::where('id', '!=', $evenementUpdate->id)->update(['actif' => 0]);
-
-            //affectation des admins a la convention :
-            /*$users = User::where('type', 'admin')
-            ->whereNotIn('id', function($query) use ($evenementId) {
-                $query->select('user_id')
-                ->from('evenement_users')
-                ->where('evenement_id', $evenementId); // 👈 seulement pour l'event actuel
-            })->get();*/
-
+            
+            //affectation des admins à la convention (admin appli + orga event non admin + tv)
             $users = User::where(function ($query) use ($evenementId) {
-                // Admins non inscrits à l'événement
                 $query->where('type', 'admin')
                     ->whereNotIn('id', function($subquery) use ($evenementId) {
                         $subquery->select('user_id')
@@ -128,7 +120,7 @@ class EvenementController extends Controller
                             ->where('evenement_id', $evenementId);
                     });
             })
-            ->orWhereIn('id', [2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+            ->orWhereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16, 122])
             ->get();
             
             // Préparer les données pour insertion
@@ -151,22 +143,7 @@ class EvenementController extends Controller
             $evenementId = $evenementUpdate->id; // ID de l'événement que vous voulez vérifier
 
             // Liste d'User IDs à inclure en plus
-            $extraUserIds = [2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-
-            // Récupérer les utilisateurs qui ne sont pas associés à cet événement
-            /*$usersToArchive = DB::table('users')
-                                ->where('type', '!=', 'admin')
-                                ->whereNotIn('id', function ($query) use ($evenementId) {
-                                    $query->select('user_id')
-                                          ->from('evenement_users')
-                                          ->where('evenement_id', $evenementId);
-                                })
-                                ->pluck('id'); // Récupère les IDs des utilisateurs à archiver
-            
-            // Mettre à jour le champ 'type' des utilisateurs récupérés en 'archive'
-            DB::table('users')
-            ->whereIn('id', $usersToArchive)
-            ->update(['type' => 'archive']);*/
+            $extraUserIds = [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16, 122];
 
             // Récupérer les utilisateurs non-admin non associés à l'événement
             $usersToArchive = DB::table('users')
