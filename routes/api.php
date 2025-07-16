@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnimationController;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\AuthController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\SponsorController;
 use App\Http\Controllers\TypeAnimationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\EvenementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ForgotPasswordController;
 
@@ -40,6 +42,8 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::post('/useradd', [UserController::class, 'useradd']);
     // return a page that shows all user
     Route::get('/userlist', [UserController::class, 'userlist']);
+    // return a page that shows all user of the event
+    Route::get('/userlistevent', [UserController::class, 'userlistevent']);
     // returns the form for editing a user
     Route::get('/userprofile/{id}', [UserController::class, 'userShow']);
     // updates a user
@@ -56,7 +60,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::post('/mdp', [UserController::class, 'userUpdateMdp']); 
     // import users by csv
     Route::post('/userimport', [UserController::class, 'uploadcsv']);
-    // import users type animators
+    // return all animators
     Route::get('/animatorIndex', [UserController::class, 'animatorIndex']); 
     // Reward an animator
     Route::post('/animatorIndex/{id}', [UserController::class, 'animatorReward']);
@@ -96,15 +100,20 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // delete a like
     Route::delete('/animationIndex', [LikeController::class, 'destroyLike']);
 
+    //----ANIMATION -> INSCRIPTION----
     // register an user to an animation
     Route::post('/animationShow/{id}', [InscriptionController::class, 'createRegister']);
     // unsubcribe a user from an animation
     Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistration']);
 
-    // ----- Animation -> Type_Animation
+    // ----- ANIMATION -> Type_Animation
     Route::get('/typeAnimation', [TypeAnimationController::class, 'getTypeAnimation']);
 
+});
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ ROOM ~~~~~~~~~~~~~~~~~~~~~~~~~~
+Route::middleware('auth:sanctum')->prefix('rooms')->group(function () {
+    Route::get('/showAvailable', [RoomController::class, 'getRoomAvailable']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ SPONSORS ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -112,9 +121,19 @@ Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::get('/index', [SponsorController::class, 'sponsorsIndex']);
     Route::post('/create', [SponsorController::class, 'create']);
     Route::get('/edit/{id}', [SponsorController::class, 'edit']);
-    Route::put('/edit/{id}', [SponsorController::class, 'update']);
+    Route::post('/edit/{id}', [SponsorController::class, 'update']);
     Route::delete('/index', [SponsorController::class, 'destroy']);
 
+});
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ EVENEMENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~
+Route::middleware('auth:sanctum')->prefix('event')->group(function () {
+    Route::get('/eventlist', [EvenementController::class, 'index']);
+    Route::post('/eventadd', [EvenementController::class, 'create']);
+    Route::delete('/eventlist', [EvenementController::class, 'destroy']);
+    Route::get('/eventshow/{id}', [EvenementController::class, 'show']);
+    Route::post('/eventshow/{id}', [EvenementController::class, 'update']);
+    //Route::delete('/index', [EvenementController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {

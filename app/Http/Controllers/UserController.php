@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Animation;
 use App\Models\User;
+use App\Models\Evenement;
 use App\Models\Evenement_user;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,26 +19,51 @@ class UserController extends Controller
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : Index ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function userlist() {
-        // Récupère tous les users enregistrés dans la bdd
-        //Log::info("---LIST USER---");
-        // $users = DB::table('users')->get();
-        //return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->get();
-        return $Users = User::select('id', 'lastname', 'firstname', 'birthday', 'phone', 'email', 'type', 'picture', 'presentation')
-        ->orderBy('lastname', 'asc') // 'asc' pour ordre alphabétique croissant, 'desc' pour ordre décroissant
+        // Récupère tous les users enregistrés dans la bdd et y ajoute un type_code pour gérer le datagrid non payant
+        $users = User::selectRaw("
+            id,
+            lastname,
+            firstname,
+            phone,
+            email,
+            type,
+            CASE
+                WHEN type = 'archive' THEN 0
+                WHEN type = 'membre' THEN 1
+                WHEN type = 'animateur' THEN 2
+                WHEN type = 'admin' THEN 3
+                ELSE NULL
+            END AS type_code
+        ")
+        ->orderBy('lastname', 'asc')
         ->get();
-        // Log::info($users);
-        // Génère pour chaque lieu une url de l'image associée au lieu
-        // foreach ($users as $user) {
-        //     $user->file = asset('storage/images/' . $user->file);
-        // }
 
-        // $token = $request->bearerToken;
-        // $token = $user->createToken('remember_token')->plainTextToken;
+    return response()->json([
+        'status' => true,
+        'message' => 'Voici vos users !',
+        'data' => $users,
+    ]);
+
+    }
+
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : LIST OF THE EVENT ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function userlistevent() {
+        // Récupère tous les users enregistrés dans la bdd
+        Log::info("---LIST USER EVENT---");
+
+        $activeEvent = Evenement::where('actif', 1)->first();
+        
+        return $Users = User::select('users.id', 'lastname', 'firstname', 'birthday', 'phone', 'email', 'type', 'picture', 'presentation')
+        ->join('evenement_users', 'users.id', '=', 'evenement_users.user_id')
+        ->where('evenement_users.evenement_id', $activeEvent->id)
+        ->orderBy('lastname', 'asc')
+        ->get();
 
         return response()->json([
             'status' => 'true',
             // 'token' => $token,
-            'message' => 'Voici vos users !',
+            'message' => 'Voici vos users de la conv!',
             // $users
         ]);
     }
@@ -46,45 +72,51 @@ class UserController extends Controller
     public function uploadcsv(Request $request)
     {
         //Log::info("---UPLOAD CSV---");
-        // Valider que le fichier est bien un CSV
-        /*$request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048',
-        ]);*/
-        //Log::info($request);
-        // Récupérer le fichier
-        /*$file = $request->file('file');
-
-        // Lire le fichier CSV
-        $data = array_map('str_getcsv', file($file));
-
-        // Extraire les en-têtes du CSV (la première ligne)
-        $headers = array_shift($data);*/
-
-        // Insérer les données dans la table 'users'
 
         $usersArray = $request->all();
 
 
         foreach ($usersArray as $row) {
-            //$userData = array_combine($headers, $row);
-            $user = User::create([
-                'lastname' => strtoupper($row['lastname']),
-                'firstname' => ucfirst(strtolower($row['firstname'])),
-                'email' => strtolower($row['email']),
-                'password' => bcrypt(Str::random(12)),
-                'picture' => 'images/users/img_default_drake.jpg'
-            ]);
-            //Log::info('USER!');
-            //Log::info($user);
+            //test de la présence d'email    
+            $user = User::where('email', strtolower($row['email']))->first();
 
-            Evenement_user::create([
-                'evenement_id' => '1', // A modifier dans le futur pour le prochain evenement.
-                'user_id'  => $user->id,
-            ]);
+            // Si l'utilisateur n'existe pas, le crée
+            if (!$user) {
+                $user = User::create([
+                    'lastname' => strtoupper($row['lastname']),
+                    'firstname' => ucfirst(strtolower($row['firstname'])),
+                    'email' => strtolower($row['email']),
+                    'password' => bcrypt(Str::random(12)),
+                    'picture' => 'images/users/img_default_viking.png'
+                ]);
+            }elseif($user->type != "admin") {
+                if ($user->picture == '/images/users/img_default_drake.jpg'){
+                    $user->update([
+                        'type' => 'membre',
+                        'picture' => 'images/users/img_default_viking.png'
+                    ]);
+                }else{
+                    $user->update([
+                        'type' => 'membre',
+                    ]);
+                }                
+            }
+
+            //Log::info($user);
+            $evenementActif = Evenement::where('actif', 1)->first();
+            if ($evenementActif) {
+                Evenement_user::create([
+                    'evenement_id' => $evenementActif->id,
+                    'user_id'  => $user->id,
+                ]);
+            } else {
+                // Gère le cas où aucun événement actif n'est trouvé
+                Log::warning('Aucun événement actif trouvé lors de la création d\'Evenement_user.');
+            }
         }
 
         return response()->json([
-            'message' => 'Les utilisateurs ont été importés',
+            'message' => "Les utilisateurs ont été importés et associé à l\evenement : $evenementActif->title (si pas de nom de conv....faire maj user-event)",
         ]);
     }
 
@@ -92,31 +124,47 @@ class UserController extends Controller
     {
         Log::info("JOURNAL : ---Controller USER USERMAJEVENT : MAJ de la table Evenement_user");
         // Définir l'ID de l'événement souhaité
-        $evenementId = 1;
+        $evenementActif = Evenement::where('actif', 1)->first();
+        if ($evenementActif) {
+            $evenementId = $evenementActif->id;
+        
+            // Récupérer les ID des utilisateurs non présents dans `evenement_users` pour cet `evenement_id`
+            /*$users = User::whereNotIn('id', function($query) use ($evenementId) {
+                $query->select('user_id')
+                    ->from('evenement_users')
+                    ->where('evenement_id', $evenementId);
+            })->get();*/
 
-        // Récupérer les ID des utilisateurs non présents dans `evenement_users` pour cet `evenement_id`
-        $users = User::whereNotIn('id', function($query) use ($evenementId) {
-            $query->select('user_id')
-                ->from('evenement_users')
-                ->where('evenement_id', $evenementId);
-        })->get();
+            // Récupérer les ID des utilisateurs non présents dans `evenement_users`
+            $users = User::whereNotIn('id', function($query) {
+                $query->select('user_id')
+                      ->from('evenement_users');
+            })->get();
+            
 
-        // Préparer les données pour insertion
-        $data = $users->map(function($user) use ($evenementId) {
-            return [
-                'user_id' => $user->id,
-                'evenement_id' => $evenementId,
-                'masters' => 0,
-                'rewards' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        })->toArray();
-
-    // Insérer les données en une seule requête
-    Evenement_user::insert($data);
-
-    return response()->json(['message' => 'Table `evenement_users` remplie avec succès pour les utilisateurs non présents.']);
+    
+            // Préparer les données pour insertion
+            $data = $users->map(function($user) use ($evenementId) {
+                return [
+                    'user_id' => $user->id,
+                    'evenement_id' => $evenementId,
+                    'masters' => 0,
+                    'rewards' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            })->toArray();
+    
+            // Insérer les données en une seule requête
+            Evenement_user::insert($data);
+        
+            return response()->json(['message' => 'Table `evenement_users` remplie avec succès pour les utilisateurs non présents.']);
+        }else{
+            // Gère le cas où aucun événement actif n'est trouvé
+                // Tu peux logger ou lancer une exception selon le besoin
+                Log::warning('Aucun événement actif trouvé lors de la création d\'Evenement_user.');
+        }
+           
     }
 
     // =================================================================================
@@ -139,7 +187,7 @@ class UserController extends Controller
             //$payload['picture']= 'public/images/'.$filename;
         }else{
 
-            $filename = 'img_default_drake.jpg';
+            $filename = 'img_default_viking.png';
         }
 
         //Log::info($request);
@@ -153,21 +201,32 @@ class UserController extends Controller
         ]);
         //Log::info('USER!');
         //Log::info($user);
+        $evenementActif = Evenement::where('actif', 1)->first();
+        if ($evenementActif) {
+            $evenementId = $evenementActif->id;
 
-        $token = $user->createToken('remember_token')->plainTextToken;
-        Log::info("JOURNAL : ---Controller USER ADD : Ajout de l'user $request->lastname $request->firstname");
-        Evenement_user::create([
-            'evenement_id' => '1', // A modifier dans le futur pour le prochain evenement.
-            'user_id'  => $user->id,
-        ]);
+            $token = $user->createToken('remember_token')->plainTextToken;
+            Log::info("JOURNAL : ---Controller USER ADD : Ajout de l'user $request->lastname $request->firstname");
+            Evenement_user::create([
+                'evenement_id' => $evenementId,
+                'user_id'  => $user->id,
+            ]);
 
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-            'message' => 'Inscription réussie !'
-        ], 201);
-        Log::info($user);
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+                'message' => 'Inscription réussie !'
+            ], 201);
+            Log::info($user);
+        
+        }else{
+                // Gère le cas où aucun événement actif n'est trouvé
+                // Tu peux logger ou lancer une exception selon le besoin
+                Log::warning('Aucun événement actif trouvé lors de la création d\'user.');
+        }
+
+        
     }
   
     // =================================================================================
@@ -179,7 +238,7 @@ class UserController extends Controller
         //return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
         
         return User::select('id', 'lastname', 'firstname', 'birthday', 'phone', 'email', 'type', 'picture', 'presentation')
-        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16])
         ->get();
         
         return response()->json([
@@ -194,31 +253,52 @@ class UserController extends Controller
         public function animatorIndex() {
             
             //Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
-            
+            $evenementActif = Evenement::where('actif', 1)->first();
+            if ($evenementActif) {
+                $evenementId = $evenementActif->id;
             // Récupération des animateurs
-            $userAnimators = User::select('id','lastname','firstname','picture')->where('type', '=', "animateur")->get();
-
+            //$userAnimators = User::select('id','lastname','firstname','picture')->where('type', '=', "animateur")->get();
 
             // Récupération des animations
-            $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')->where('validate', '=','1')->get();
+            $animations=Animation::select('id', 'title', 'type_animation_id', 'user_id')
+            ->where('validate', '=','1')
+            ->where('evenement_id', $evenementId) // Filtrer par la convention spécifique
+            ->get();
             //Log::info("animations --- >");
             //Log::info($animations);
 
-            //$evenement_users=Evenement_user::select('rewards', 'user_id')->where('evenement_id', '=','1')->get();
+                  $userAnimators = DB::table('evenement_users as eu')
+                ->join('users', 'users.id', '=', 'eu.user_id')
+                ->select(
+                    'users.id',
+                    'users.lastname',
+                    'users.firstname',
+                    'users.picture',
+                    DB::raw('(
+                        SELECT COUNT(*) 
+                        FROM evenement_users 
+                        WHERE user_id = users.id 
+                        AND masters = true
+                    ) as medals')
+                )
+                ->where('eu.evenement_id', $evenementId) // Filtrer par la convention spécifique
+                ->where('eu.masters', true) // Filtrer uniquement les animateurs (si applicable)
+                ->orderByDesc(DB::raw('medals'))
+                ->get();
 
-            $userAnimators = User::select('users.id', 'users.lastname', 'users.firstname', 'users.picture', 'evenement_users.rewards')
-            ->join('evenement_users', 'users.id', '=', 'evenement_users.user_id')
-            ->where('users.type', '=', 'animateur')
-            ->where('evenement_users.evenement_id', '=', 1) // Remplacez "1" par l'ID de votre événement
-            ->get();
+        
 
-            return response()->json([
-                'status' => 'true',
-                'message' => 'Voici les animateurs !',
-                'listeAnimateurs' => $userAnimators,
-                'listeAnimations'=> $animations,
-                //'listeRewards'=> $evenement_users,
-            ]);
+                return response()->json([
+                    'status' => 'true',
+                    'message' => 'Voici les animateurs !',
+                    'listeAnimateurs' => $userAnimators,
+                    'listeAnimations'=> $animations,
+                ]);
+            }else{
+                // Gère le cas où aucun événement actif n'est trouvé
+                // Tu peux logger ou lancer une exception selon le besoin
+                Log::warning('Aucun événement actif trouvé lors de la création d\'user.');
+            }
         }
 
     public function animatorReward(Request $request, int $id): JsonResponse
@@ -229,23 +309,31 @@ class UserController extends Controller
         ]);
 
         try {
-        // Rechercher l'enregistrement `Evenement_user` avec le `user_id` et `evenement_id` spécifiés
-        $evenementUser = Evenement_user::where('user_id', $id)
-                                        ->where('evenement_id', '=', 1)
-                                        ->firstOrFail();
+            $evenementActif = Evenement::where('actif', 1)->first();
+            if ($evenementActif) {
+                $evenementId = $evenementActif->id;
+                // Rechercher l'enregistrement `Evenement_user` avec le `user_id` et `evenement_id` spécifiés
+                $evenementUser = Evenement_user::where('user_id', $id)
+                                                ->where('evenement_id', '=', $evenementId)
+                                                ->firstOrFail();
 
-        // Mise à jour de la valeur `rewards`
-        $evenementUser->rewards = $validatedData['rewards'];
-        $evenementUser->save();
+                // Mise à jour de la valeur `rewards`
+                $evenementUser->rewards = $validatedData['rewards'];
+                $evenementUser->save();
 
-            Log::info("JOURNAL : ---Controller ANIMATOR REWARD : Modificationn Reward de l'user $id");
+                Log::info("JOURNAL : ---Controller ANIMATOR REWARD : Modificationn Reward de l'user $id");
 
-            // Réponse JSON de succès
-            return response()->json([
-                'success' => true,
-                'message' => 'Rewards updated successfully',
-                'user' => $evenementUser
-            ], 200);
+                // Réponse JSON de succès
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Rewards updated successfully',
+                    'user' => $evenementUser
+                ], 200);
+            }else{
+                // Gère le cas où aucun événement actif n'est trouvé
+                // Tu peux logger ou lancer une exception selon le besoin
+                Log::warning('Aucun événement actif trouvé lors de la création d\'user.');
+            }
 
         } catch (\Exception $e) {
             // En cas d'erreur, retourner une réponse JSON avec un message d'erreur
