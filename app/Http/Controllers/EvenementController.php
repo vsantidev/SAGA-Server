@@ -120,7 +120,7 @@ class EvenementController extends Controller
                             ->where('evenement_id', $evenementId);
                     });
             })
-            ->orWhereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16, 122])
+            ->orWhereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 15, 16, 122])
             ->get();
             
             // Préparer les données pour insertion
@@ -143,7 +143,7 @@ class EvenementController extends Controller
             $evenementId = $evenementUpdate->id; // ID de l'événement que vous voulez vérifier
 
             // Liste d'User IDs à inclure en plus
-            $extraUserIds = [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16, 122];
+            $extraUserIds = [2, 3, 4, 5, 6, 8, 9, 11, 12, 15, 16, 122];
 
             // Récupérer les utilisateurs non-admin non associés à l'événement
             $usersToArchive = DB::table('users')
