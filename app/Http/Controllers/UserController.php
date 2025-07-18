@@ -433,6 +433,7 @@ class UserController extends Controller
         //Log::info("---User Controller (Update | Request 3) ---");
         //Log::info($userUpdate);
 
+
         Log::info("JOURNAL : ---Controller USER $userUpdate->firstname $userUpdate->lastname à MAJ son profil: $userUpdate ---");
 
         return response()->json([
@@ -471,6 +472,22 @@ class UserController extends Controller
 
         //Log::info("---User Controller (Update | Request 3) ---");
         //Log::info($userUpdate);
+
+        $evenementActif = Evenement::where('actif', 1)->first();
+        if ($evenementActif) {
+            $evenementId = $evenementActif->id;
+
+            $exists = Evenement_user::where('evenement_id', $evenementId)
+                ->where('user_id', $userUpdate->id)
+                ->exists();
+
+            if (!$exists) {
+                Evenement_user::create([
+                    'evenement_id' => $evenementId,
+                    'user_id'      => $userUpdate->id,
+                ]);
+            }
+        }
 
         Log::info("JOURNAL : ---Controller USER $userUpdate->firstname $userUpdate->lastname à été MAJ par un ADMIN : $userUpdate ---");
 
