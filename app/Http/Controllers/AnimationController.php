@@ -263,9 +263,9 @@ class AnimationController extends Controller
         $DatesEvent = Evenement::select('id','date_opening','date_ending')->where('actif', '=', '1')->first();
         //comparaison dates events
         //Log::info("---ANIMATION CREATE : verif date---");
-    
-        if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
-        {        
+        
+        /*if($request->open_time >= $DatesEvent->date_opening && $request->closed_time <= $DatesEvent->date_ending)
+        { */       
                 $animationCreate = Animation::create([
                 'registration' => $request->registration,
                 'title' => $request->title,
@@ -301,11 +301,11 @@ class AnimationController extends Controller
 
             //Log::info("---ANIMATION CREATE : AnimationCreate après json---");
             Log::info("JOURNAL : ---Controller ANIMATION CREATE: $request->user_id à crée l'animation $request->title ---");
-        }else{
+        /*}else{
             return response()->json([
                 'message' => 'Erreur dans l\'insertion!'
             ], 520);
-        }
+        }*/
     }
 
 
