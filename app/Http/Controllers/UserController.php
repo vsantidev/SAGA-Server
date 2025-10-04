@@ -238,7 +238,7 @@ class UserController extends Controller
         //return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
         
         return User::select('id', 'lastname', 'firstname', 'birthday', 'phone', 'email', 'type', 'picture', 'presentation')
-        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16])
+        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15])
         ->get();
         
         return response()->json([
