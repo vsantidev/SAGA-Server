@@ -11,11 +11,11 @@ class RoomController extends Controller
 {
 
     public function getRoomAvailable(Request $request){
-    Log::info("getRoomAvailable");
+    //Log::info("getRoomAvailable");
     $dateDebut = $request->query('open_time');
     $dateFin = $request->query('closed_time');
-    Log::info($dateDebut);
-    Log::info($dateFin);
+    //Log::info($dateDebut);
+    //Log::info($dateFin);
     if (!$dateDebut || !$dateFin) {
         return response()->json(['error' => 'Dates manquantes'], 400);
     }

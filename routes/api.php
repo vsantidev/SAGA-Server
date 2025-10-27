@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EvenementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\StatsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -150,4 +151,11 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ADMIN - BUG ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/bug', [AdminController::class, 'createBug']);
+});
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ ADMIN - BUG ~~~~~~~~~~~~~~~~~~~~~~~~~~
+Route::middleware('auth:sanctum')->prefix('stats')->group(function () {
+    Route::get('/animations', [StatsController::class, 'animations']);
+    Route::get('/capacity-by-tranche', [StatsController::class, 'capacityByTranche']);
+
 });

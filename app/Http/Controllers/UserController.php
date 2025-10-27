@@ -284,6 +284,7 @@ class UserController extends Controller
                 ->where('eu.evenement_id', $evenementId) // Filtrer par la convention spécifique
                 ->where('eu.masters', true) // Filtrer uniquement les animateurs (si applicable)
                 ->orderByDesc(DB::raw('medals'))
+                ->orderBy('users.lastname')
                 ->get();
 
         
