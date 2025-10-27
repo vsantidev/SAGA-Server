@@ -17,6 +17,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use \DateTime;
+use \DateInterval;
 
 class AnimationController extends Controller
 {
@@ -53,7 +55,7 @@ class AnimationController extends Controller
                 WHERE user_id = animations.user_id 
                 AND masters = true
             ) as medals')
-        
+
         )
         ->leftJoin('type_animations', 'animations.type_animation_id', '=', 'type_animations.id')
         ->leftJoin('users', 'animations.user_id', '=', 'users.id')
@@ -363,7 +365,9 @@ class AnimationController extends Controller
         $type_animation = Type_animation::find($animationShow->type_animation_id);
 
         //Log::info('type_animation');
-
+        $animationShow->nb_likes = DB::table('likes')
+            ->where('animation_id', $animationShow->id)
+            ->count();
         //Log::info($type_animation);
 
         //Recupération des salles si renseigné. -> uniquement SIEGRIES en V1
@@ -403,6 +407,7 @@ class AnimationController extends Controller
                 'registration_date' => $animationShow->registration_date,
                 'room' => $RoomAnim->name,
                 'room_id' => $animationShow->room_id,
+                'nb_likes' => $animationShow->nb_likes,
             ];
         }else{
             //Log::info("---Function : AnimationShow Data Sans Salle=> ---");
@@ -428,6 +433,7 @@ class AnimationController extends Controller
                 'other_time' => $animationShow->other_time,
                 'registration' => $animationShow->registration,
                 'registration_date' => $animationShow->registration_date,
+                'nb_likes' => $animationShow->nb_likes,
                 //'room' => "",
                 //'capacity' => "",
             ];
@@ -503,10 +509,7 @@ class AnimationController extends Controller
 
         Log::info($myUserRequest);
         $author = User::findOrFail($animationUpdate->user_id);
-        
-
-
-        
+               
         $animationUpdate->title = $myAnimationRequest['title'];
         $animationUpdate->content = $myAnimationRequest['content'];
         $animationUpdate->url = $myAnimationRequest['url'];
@@ -536,6 +539,15 @@ class AnimationController extends Controller
         $animationUpdate->registration_date = $myAnimationRequest['registration_date'];
         if($request->hasFile('picture')){$animationUpdate->picture = "images/animations/$filename";}
 
+        // Si le champ "time" a changé, on recalcule "closed_time"
+        if ($animationUpdate->isDirty('time')) {
+        $openTime = new DateTime($myAnimationRequest['open_time']);
+            $hoursToAdd = intval($myAnimationRequest['time']); // ex: 4
+            $interval = new DateInterval('PT' . $hoursToAdd . 'H');
+            $closedTime = clone $openTime;
+            $closedTime->add($interval);
+            $animationUpdate->closed_time = $closedTime->format('Y-m-d H:i:s');
+        }
 
         $animationUpdate->save();
 
