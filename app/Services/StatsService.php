@@ -131,7 +131,7 @@ class StatsService
                 ];
             }
 
-            $tranchesParJour[$date][$tranche]['capacity'] += $anim->capacity;
+            $tranchesParJour[$date][$tranche]['capacity'] += $anim->capacity+1;
         }
 
         // Nombre total de participants sur l'événement
