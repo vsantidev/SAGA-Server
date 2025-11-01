@@ -167,7 +167,7 @@ class AnimationController extends Controller
     public function animationListIndex()
     {
         //Log::info("---Controller Animation : Index List Animation | Connexion---");
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();          
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time','closed_time','other_time','multiple','roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();          
        
         $alltypeAnimation = Type_animation::select('id','type')->get();
         $ListeUser = User::select('id', 'firstname','lastname')->get();
