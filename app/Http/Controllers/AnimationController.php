@@ -167,7 +167,7 @@ class AnimationController extends Controller
     public function animationListIndex()
     {
         //Log::info("---Controller Animation : Index List Animation | Connexion---");
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time', 'closed_time', 'roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();          
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time','closed_time','other_time','multiple','roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();          
        
         $alltypeAnimation = Type_animation::select('id','type')->get();
         $ListeUser = User::select('id', 'firstname','lastname')->get();
@@ -226,13 +226,13 @@ class AnimationController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required',
-            'fight' => 'required',
-            'reflection' => 'required',
-            'roleplay' => 'required',
+            'fight' => 'required|integer|min:1',
+            'reflection' => 'required|integer|min:1',
+            'roleplay' => 'required|integer|min:1',
             'open_time' => 'required|date',
             'closed_time' => 'required|date',
             'time' => 'required|integer|min:1',
-            'capacity' => 'required',
+            'capacity' => 'required|integer|min:1',
             'type_animation_id' => 'required',
         ], [
             'titre.required' => 'Merci de renseigner un titre',
