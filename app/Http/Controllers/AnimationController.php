@@ -226,13 +226,13 @@ class AnimationController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required',
-            'fight' => 'required',
-            'reflection' => 'required',
-            'roleplay' => 'required',
+            'fight' => 'required|integer|min:1',
+            'reflection' => 'required|integer|min:1',
+            'roleplay' => 'required|integer|min:1',
             'open_time' => 'required|date',
             'closed_time' => 'required|date',
             'time' => 'required|integer|min:1',
-            'capacity' => 'required',
+            'capacity' => 'required|integer|min:1',
             'type_animation_id' => 'required',
         ], [
             'titre.required' => 'Merci de renseigner un titre',
