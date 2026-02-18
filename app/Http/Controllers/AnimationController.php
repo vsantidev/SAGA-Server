@@ -46,6 +46,7 @@ class AnimationController extends Controller
             'animations.roleplay',
             'animations.reflection',
             'type_animations.type as type_animation_name',
+            'rooms.name as room',
             DB::raw('CONCAT(UCASE(LEFT(users.firstname, 1)), LCASE(SUBSTRING(users.firstname, 2)), " ", UPPER(users.lastname)) as author_name'),
             DB::raw('COUNT(inscriptions.id) as nb_inscrits'),
             DB::raw('COUNT(inscriptions.id) as nb_inscrits'),
@@ -60,6 +61,7 @@ class AnimationController extends Controller
         ->leftJoin('type_animations', 'animations.type_animation_id', '=', 'type_animations.id')
         ->leftJoin('users', 'animations.user_id', '=', 'users.id')
         ->leftJoin('inscriptions', 'inscriptions.animation_id', '=', 'animations.id')
+        ->leftJoin('rooms', 'animations.room_id', '=', 'rooms.id')
         ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
         ->where('evenements.actif', 1)
         ->groupBy('animations.id')
