@@ -24,12 +24,14 @@ class Animation extends Model
         'open_time',
         'closed_time',
         'capacity',
+        'min_capacity',
         'user_id',
         'room_id',
         'evenement_id',
         'type_animation_id',
         'picture',
         'registration_date',
+        'system',
     ];
 
 

@@ -85,91 +85,12 @@ class AnimationController extends Controller
         'listeAnimation' => $Animations,
     ]);
 }
-
-    /*public function animationIndex(Request $request)
-    {
-        //Log::info("--- ANIMATION INDEX ---");
-
-        $IdUser = $request->query('param1');
-        //Log::info("--- ANIMATION INDEX : IdUser ---");
-        //Log::info($IdUser);
-        //Recuperation des animations
-        //$Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity' ,'picture', 'validate','user_id', 'registration' , 'registration_date', 'fight', 'roleplay', 'reflection')->get();
-        // $Animations = Animation::find($id);
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity', 'picture', 'validate', 'user_id', 'registration', 'registration_date', 'fight', 'roleplay', 'reflection')
-        ->orderBy('open_time', 'asc') // 'asc' pour un ordre croissant, 'desc' pour un ordre décroissant
-        ->get();
-        //Recupération des likes de l'utilisateur en cours
-        $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
-        //ajout de la colonne like dans le tableau des animations
-        $listeAnimationLike=$Animations->map(function($Animation){
-            $Animation->like = "0";
-            $Animation->type_animation_name = "";
-            $Animation->author_name ="";
-            $Animation->nb_inscrits = 0;
-
-        return $Animation;
-        });
-
-        $inscriptionsCount = Inscription::select('animation_id', DB::raw('count(*) as total'))
-        ->groupBy('animation_id')
-        ->get();
-
-        //Log::info($inscriptionsCount);
-        //Log::info($Animations);
-        //Log::info('--- AnimationController - INDEX | type_animation');
-        $alltypeAnimation = Type_animation::select('id','type')->get();
-        //Log::info($alltypeAnimation);
-        $ListeUser = User::select('id', 'firstname','lastname')->get();
-        //Log::info($ListeUser);
-        foreach($listeAnimationLike as $anim)
-        {
-            foreach($alltypeAnimation as $type_anim){
-                
-                if($anim->type_animation_id == $type_anim->id)
-                {
-                    $anim->type_animation_name=$type_anim->type;
-                }
-            }
-
-            foreach($listeLike as $like)
-            {
-                if($anim->id == $like->animation_id)
-                {
-                    $anim->like="1";
-                }
-            }
-            foreach($ListeUser as $user){
-                if($anim->user_id == $user->id)
-                {
-                    $anim->author_name= ucfirst(strtolower($user->firstname))." ".strtoupper($user->lastname);
-                }
-            }
-
-            foreach($inscriptionsCount as $inscription){
-                if($anim->id == $inscription->animation_id)
-                {
-                    $anim->nb_inscrits = $inscription->total;
-                }
-            }
-        }
-
-        return response()->json([
-            'status' => 'true',
-            'message' => 'Affichage des animations + bonus Like!',
-            'listeAnimation' => $listeAnimationLike ,
-            //'allTypeAnimations' => $alltypeAnimation,
-        ]);
-
-    }*/
-
-
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationListIndex()
     {
         //Log::info("---Controller Animation : Index List Animation | Connexion---");
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time','closed_time','other_time','multiple','roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();          
+        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time','closed_time','other_time','multiple','roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'min_capacity', 'validate', 'system')->get();          
        
         $alltypeAnimation = Type_animation::select('id','type')->get();
         $ListeUser = User::select('id', 'firstname','lastname')->get();
@@ -286,11 +207,13 @@ class AnimationController extends Controller
                 'time' => $request->time,
                 'other_time' => $request->other_time,
                 'capacity' => $request->capacity,
+                'min_capacity' => $request->min_capacity,
                 'evenement_id' => $DatesEvent->id,
                 'type_animation_id' => $request->type_animation_id,
                 'user_id' => $request->user_id,
                 'registration_date' => $request->registrationDate,
-                'picture'=> "images/animations/$filename"
+                'picture'=> "images/animations/$filename",
+                'system' => $request->system,
                 
             ]);
             
@@ -394,6 +317,7 @@ class AnimationController extends Controller
                 'multiple' => $animationShow->multiple,
                 'picture' => $animationShow->picture,
                 'capacity' => $animationShow->capacity,
+                'min_capacity' => $animationShow->min_capacity,
                 'fight' => $animationShow->fight,
                 'reflection' => $animationShow->reflection,
                 'roleplay' => $animationShow->roleplay,
@@ -410,6 +334,7 @@ class AnimationController extends Controller
                 'room' => $RoomAnim->name,
                 'room_id' => $animationShow->room_id,
                 'nb_likes' => $animationShow->nb_likes,
+                'system' => $animationShow->system,
             ];
         }else{
             //Log::info("---Function : AnimationShow Data Sans Salle=> ---");
@@ -422,6 +347,7 @@ class AnimationController extends Controller
                 'multiple' => $animationShow->multiple,
                 'picture' => $animationShow->picture,
                 'capacity' => $animationShow->capacity,
+                'min_capacity' => $animationShow->min_capacity,
                 'fight' => $animationShow->fight,
                 'reflection' => $animationShow->reflection,
                 'roleplay' => $animationShow->roleplay,
@@ -436,8 +362,7 @@ class AnimationController extends Controller
                 'registration' => $animationShow->registration,
                 'registration_date' => $animationShow->registration_date,
                 'nb_likes' => $animationShow->nb_likes,
-                //'room' => "",
-                //'capacity' => "",
+                'system' => $animationShow->system,
             ];
         }
 
@@ -519,6 +444,7 @@ class AnimationController extends Controller
         $animationUpdate->multiple = $myAnimationRequest['multiple'];
         $animationUpdate->picture = $myAnimationRequest['picture'];
         if(isset($myAnimationRequest['capacity'])){$animationUpdate->capacity = $myAnimationRequest['capacity'];}
+        if(isset($myAnimationRequest['min_capacity'])){$animationUpdate->min_capacity = $myAnimationRequest['min_capacity'];}
         if(isset($myAnimationRequest['room_id'])){$animationUpdate->room_id = $myAnimationRequest['room_id'];}
         $animationUpdate->fight = $myAnimationRequest['fight'];
         $animationUpdate->reflection = $myAnimationRequest['reflection'];
@@ -526,6 +452,7 @@ class AnimationController extends Controller
         $animationUpdate->type_animation_id = $myAnimationRequest['type_animation_id'];
         $animationUpdate->open_time = $myAnimationRequest['open_time'];
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
+        if(isset($myAnimationRequest['system'])){$animationUpdate->system = $myAnimationRequest['system'];}
         //Si l'auteur modifie l'animation alors qu'elle est déjà validée, elle repasse en "non validée"
         if ($author->id == $myUserRequest['id'] && $animationUpdate['validate'] == true)
         {
