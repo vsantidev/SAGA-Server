@@ -251,7 +251,6 @@ class UserController extends Controller
         // =================================================================================
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : AnimatorIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
         public function animatorIndex() {
-            
             //Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
             $evenementActif = Evenement::where('actif', 1)->first();
             if ($evenementActif) {
@@ -274,6 +273,7 @@ class UserController extends Controller
                     'users.lastname',
                     'users.firstname',
                     'users.picture',
+                    'eu.rewards',
                     DB::raw('(
                         SELECT COUNT(*) 
                         FROM evenement_users 
@@ -283,7 +283,6 @@ class UserController extends Controller
                 )
                 ->where('eu.evenement_id', $evenementId) // Filtrer par la convention spécifique
                 ->where('eu.masters', true) // Filtrer uniquement les animateurs (si applicable)
-                ->orderByDesc(DB::raw('medals'))
                 ->orderBy('users.lastname')
                 ->get();
 

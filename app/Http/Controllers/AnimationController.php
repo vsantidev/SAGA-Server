@@ -89,51 +89,41 @@ class AnimationController extends Controller
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationListIndex()
     {
-        //Log::info("---Controller Animation : Index List Animation | Connexion---");
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time','closed_time','other_time','multiple','roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'min_capacity', 'validate', 'system')->get();          
-       
-        $alltypeAnimation = Type_animation::select('id','type')->get();
-        $ListeUser = User::select('id', 'firstname','lastname')->get();
-        $ListeRoom = Room::select('id', 'name')->get();
-        $listeAnimationComplete=$Animations->map(function($Animation){
-            $Animation->room_name = "";
-            $Animation->type_animation_name = "";
-            $Animation->author_name ="";
-            $Animation->evenement_year ="";
-        return $Animation;
+        $animations = Animation::with(['type_animation'])
+            ->select(
+                'animations.id', 'animations.title', 'animations.content', 'animations.type_animation_id',
+                'animations.registration_date', 'animations.open_time', 'animations.closed_time',
+                'animations.other_time', 'animations.multiple', 'animations.roleplay', 'animations.reflection',
+                'animations.fight', 'animations.picture', 'animations.room_id', 'animations.user_id',
+                'animations.capacity', 'animations.min_capacity', 'animations.validate', 'animations.system'
+            )
+            ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
+            ->get();
+
+        $userIds = $animations->pluck('user_id')->unique();
+        $users = User::whereIn('id', $userIds)->select('id', 'firstname', 'lastname')->get()->keyBy('id');
+
+        $roomIds = $animations->pluck('room_id')->unique();
+        $rooms = Room::whereIn('id', $roomIds)->select('id', 'name')->get()->keyBy('id');
+
+        $animations = $animations->map(function($anim) use ($users, $rooms) {
+            $user = $users->get($anim->user_id);
+            $room = $rooms->get($anim->room_id);
+            return [
+                ...$anim->toArray(),
+                'room_name'           => $room?->name ?? '',
+                'type_animation_name' => $anim->type_animation?->type ?? '',
+                'author_name'         => $user
+                                            ? ucfirst(strtolower($user->firstname)).' '.strtoupper($user->lastname)
+                                            : '',
+                'evenement_year'      => \Carbon\Carbon::parse($anim->open_time)->year,
+            ];
         });
 
-        foreach($listeAnimationComplete as $anim)
-        {
-            $anim->evenement_year = \Carbon\Carbon::parse($anim->open_time)->year;
-
-            foreach($alltypeAnimation as $type_anim){
-                
-                if($anim->type_animation_id == $type_anim->id)
-                {
-                    $anim->type_animation_name=$type_anim->type;
-                }
-            }
-
-            foreach($ListeUser as $user){
-                if($anim->user_id == $user->id)
-                {
-                    $anim->author_name= ucfirst(strtolower($user->firstname))." ".strtoupper($user->lastname);
-                }
-            }
-
-            foreach($ListeRoom as $room){
-                if($anim->room_id == $room->id)
-                {
-                    $anim->room_name = $room->name;
-                }
-            }
-        }
-        //Log::info($listeAnimationComplete);
         return response()->json([
-            'status' => 'true',
-            'message' => 'AnimationListIndex : Affichage des animations !',
-            'listeAnimation' => $listeAnimationComplete ,
+            'status'         => true,
+            'message'        => 'Affichage des animations !',
+            'listeAnimation' => $animations,
         ]);
     }
 
@@ -149,14 +139,13 @@ class AnimationController extends Controller
                 'animations.fight', 'animations.picture', 'animations.room_id', 'animations.user_id',
                 'animations.capacity', 'animations.min_capacity', 'animations.validate', 'animations.system'
             )
-            ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
             ->where('animations.validate', 1)
             ->where('evenements.actif', 1)
+            ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
             ->get();
 
         // Likes de l'utilisateur connecté
         $likedAnimationIds = Like::where('user_id', $IdUser)->pluck('animation_id')->toArray();
-        Log::info($IdUser);
         $userIds = $animations->pluck('user_id')->unique();
         $users = User::whereIn('id', $userIds)->select('id', 'firstname', 'lastname')->get()->keyBy('id');
 
