@@ -81,6 +81,7 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
     // return a page that shows all animation
     Route::get('/animationIndex', [AnimationController::class, 'animationIndex']);
     Route::get('/animationList', [AnimationController::class, 'animationListIndex']);
+    Route::get('/animationListValidate', [AnimationController::class, 'animationListValidate']);
     // delete an animation to the database
     Route::delete('/animationList', [AnimationController::class, 'animationDestroy']);
     // duplicate an animation to the database

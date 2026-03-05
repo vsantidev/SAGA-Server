@@ -137,6 +137,54 @@ class AnimationController extends Controller
         ]);
     }
 
+    public function animationListValidate(Request $request)
+    {
+        $IdUser = $request->query('param1');
+
+        $animations = Animation::with(['type_animation'])
+            ->select(
+                'animations.id', 'animations.title', 'animations.content', 'animations.type_animation_id',
+                'animations.registration_date', 'animations.open_time', 'animations.closed_time',
+                'animations.other_time', 'animations.multiple', 'animations.roleplay', 'animations.reflection',
+                'animations.fight', 'animations.picture', 'animations.room_id', 'animations.user_id',
+                'animations.capacity', 'animations.min_capacity', 'animations.validate', 'animations.system'
+            )
+            ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
+            ->where('animations.validate', 1)
+            ->where('evenements.actif', 1)
+            ->get();
+
+        // Likes de l'utilisateur connecté
+        $likedAnimationIds = Like::where('user_id', $IdUser)->pluck('animation_id')->toArray();
+        Log::info($IdUser);
+        $userIds = $animations->pluck('user_id')->unique();
+        $users = User::whereIn('id', $userIds)->select('id', 'firstname', 'lastname')->get()->keyBy('id');
+
+        $roomIds = $animations->pluck('room_id')->unique();
+        $rooms = Room::whereIn('id', $roomIds)->select('id', 'name')->get()->keyBy('id');
+
+        $animations = $animations->map(function($anim) use ($users, $rooms, $likedAnimationIds) {
+            $user = $users->get($anim->user_id);
+            $room = $rooms->get($anim->room_id);
+            return [
+                ...$anim->toArray(),
+                'room_name'           => $room?->name ?? '',
+                'type_animation_name' => $anim->type_animation?->type ?? '',
+                'author_name'         => $user
+                                            ? ucfirst(strtolower($user->firstname)).' '.strtoupper($user->lastname)
+                                            : '',
+                'evenement_year'      => \Carbon\Carbon::parse($anim->open_time)->year,
+                'is_liked'            => in_array($anim->id, $likedAnimationIds),
+            ];
+        });
+
+        return response()->json([
+            'status'         => true,
+            'message'        => 'Affichage des animations !',
+            'listeAnimation' => $animations,
+        ]);
+    }
+
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationCreate ~~~~~~~~~~~~~~~~~~~~~~~~~~
