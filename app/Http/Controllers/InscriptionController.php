@@ -66,61 +66,46 @@ class InscriptionController extends Controller
 
     public function createRegister(Request $request, Int $id): JsonResponse
     {
-        //Log::info("---Controller Inscription : createRegister | connected---");
         $request->validate([
-            'user_id' => 'required'
+            'user_id' => 'required',
+            'weight'  => 'required|integer|min:1|max:10'
         ]);
 
-        $userRegister = User::find($request->user_id);
+        $userRegister = User::findOrFail($request->user_id);
 
-        //Log::info("---Controller Inscription : createRegister | userData---");
+        // Vérifier que l'user n'a pas déjà un vœu sur cette animation
+        $alreadyRegistered = Inscription::where('user_id', $request->user_id)
+            ->where('animation_id', $id)
+            ->exists();
 
-        $userData = [
-            'id' => $userRegister->id,
-            'lastname' => $userRegister->lastname,
-            'firstname' => $userRegister->firstname
-        ];
+        if ($alreadyRegistered) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Vous etes deja inscrit sur cette animation',
+            ], 409);
+        }
 
-        $result = DB::table('animations')
-        ->leftJoin('inscriptions', 'animations.id', '=', 'inscriptions.animation_id')
-        ->select('animations.capacity', DB::raw('COUNT(inscriptions.id) as total_inscriptions'))
-        ->where('animations.id', $id)
-        ->groupBy('animations.id', 'animations.capacity') // Ajoute 'animations.id' pour éviter des erreurs de regroupement
-        ->first();
+        // Créer le vœu
+        $inscription = Inscription::create([
+            'user_id'       => $request->user_id,
+            'animation_id'  => $id,
+            'weight'        => $request->weight,
+            'status'        => 'pending',
+            'registered_at' => now(),
+        ]);
 
-  
-        //Log::info("TOTAL INSCRIPTION $result->total_inscriptions");
-        //Log::info("CAPACITY $result->capacity");
-
-        if (($result && $result->total_inscriptions >= $result->capacity) || !$result) {
-        //Log::info("JOURNAL : CAPA MAX atteinte");
+        Log::info("REGISTER: User {$userRegister->lastname} {$userRegister->firstname} registered wish (weight: {$request->weight}) for animation {$id}");
 
         return response()->json([
-            'status' => 'true',
-            'message' => 'Il n\'y a plus de place sur cette animation!',
+            'status'       => 'true',
+            'message'      => 'Your wish has been registered!',
+            'id'           => $userRegister->id,
+            'lastname'     => $userRegister->lastname,
+            'firstname'    => $userRegister->firstname,
             'animation_id' => $id,
-        ]);
-        }else
-        {
-            $registerInscription = Inscription::firstOrNew([
-                'user_id' => $request->user_id,
-                'animation_id' => $id
-            ]);
-            $registerInscription->save();
-    
-            Log::info("JOURNAL : ---Controller INSCRIPTION ADD : Inscription de l'user $userRegister->lastname $userRegister->firstname ds l'animation : $id ---");
-            //Log::info("---Controller Inscription : createRegister | Create Inscription---");
-            return response()->json([
-                'status' => 'true',
-                'message' => 'L\'utilisateur a été inscrit sur l\'animation !',
-                'id' => $userRegister->id,
-                'lastname' => $userRegister->lastname,
-                'firstname' => $userRegister->firstname,
-                'animation_id' => $id,
-            ]);
-        }
-
-        }
+            'weight'       => $request->weight,
+        ], 201);
+    }
 
 
     /**

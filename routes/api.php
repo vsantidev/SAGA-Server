@@ -13,7 +13,7 @@ use App\Http\Controllers\EvenementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\StatsController;
-
+use App\Http\Controllers\TimeSlotController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -136,6 +136,16 @@ Route::middleware('auth:sanctum')->prefix('event')->group(function () {
     Route::get('/eventshow/{id}', [EvenementController::class, 'show']);
     Route::post('/eventshow/{id}', [EvenementController::class, 'update']);
     //Route::delete('/index', [EvenementController::class, 'destroy']);
+});
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ TIMESLOT ~~~~~~~~~~~~~~~~~~~~~~~~~~
+Route::middleware('auth:sanctum')->prefix('timeslot')->group(function () {
+    Route::get('/timeslotlist', [TimeSlotController::class, 'index']);
+    Route::post('/timeslotadd', [TimeSlotController::class, 'store']);
+    Route::delete('/timeslotlist/{id}', [TimeSlotController::class, 'destroy']);
+    Route::get('/timeslotshow/{id}', [TimeSlotController::class, 'show']);
+    Route::post('/timeslotshow/{id}', [TimeSlotController::class, 'update']);
+    Route::post('/timeslotdraw/{id}', [TimeSlotController::class, 'draw']);
 });
 
 Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {

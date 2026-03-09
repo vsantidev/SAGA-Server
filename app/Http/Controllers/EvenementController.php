@@ -76,6 +76,7 @@ class EvenementController extends Controller
         return response()->json([
             'status' => 'true',
             'message' => 'Voici l evenement !',
+            'id' => $evenementShow->id,
             'title' => $evenementShow->title,
             'date_opening' => $evenementShow->date_opening,
             'date_ending' => $evenementShow->date_ending,
