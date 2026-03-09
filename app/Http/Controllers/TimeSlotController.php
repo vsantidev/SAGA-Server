@@ -36,9 +36,15 @@ class TimeSlotController extends Controller
     {
         $timeSlot = TimeSlot::with('animations')->findOrFail($id);
 
+        // Calcul des places restantes sur le créneau (animations confirmed)
+        $placesLeft = $timeSlot->animations->sum(function ($animation) {
+            $confirmed = $animation->inscriptions()->where('status', 'confirmed')->count();
+            return max(0, $animation->capacity - $confirmed);
+        });
+
         return response()->json([
             'status' => 'true',
-            'data'   => $timeSlot
+            'data'   => array_merge($timeSlot->toArray(), ['places_left' => $placesLeft])
         ]);
     }
 

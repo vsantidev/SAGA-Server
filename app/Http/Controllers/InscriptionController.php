@@ -12,15 +12,6 @@ use Illuminate\Support\Facades\Log;
 
 class InscriptionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : handleRegisterUser ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function createRegisterAdmin(Request $request, Int $id): JsonResponse
@@ -107,40 +98,6 @@ class InscriptionController extends Controller
         ], 201);
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Inscription $inscription)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Inscription $inscription)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Inscription $inscription)
-    {
-        //
-    }
-
-
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION SHOW : UnsubscribeRegisterDestroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function destroyRegistration(Request $request)
@@ -198,6 +155,43 @@ class InscriptionController extends Controller
             'status' => 'true',
             'message' => 'Ce membre a été désinscrit à l\'animation !',
             'Inscription supprimée : ' => $request->animation_id
+        ]);
+    }
+
+    // Get priorities for the slot
+    public function getUserPrioritiesBySlot(Request $request): JsonResponse
+    {
+        $request->validate([
+            'user_id'      => 'required|exists:users,id',
+            'time_slot_id' => 'required|exists:time_slots,id',
+        ]);
+
+        $usedPriorities = Inscription::where('user_id', $request->user_id)
+            ->whereHas('animation', fn($q) =>
+                $q->where('time_slot_id', $request->time_slot_id)
+            )
+            ->pluck('weight');
+
+        return response()->json([
+            'status' => 'true',
+            'used_priorities' => $usedPriorities,
+        ]);
+    }
+
+    public function getUserInscription(Request $request): JsonResponse
+    {
+        $request->validate([
+            'user_id'      => 'required|exists:users,id',
+            'animation_id' => 'required|exists:animations,id',
+        ]);
+
+        $inscription = Inscription::where('user_id', $request->user_id)
+            ->where('animation_id', $request->animation_id)
+            ->first();
+
+        return response()->json([
+            'status'      => 'true',
+            'inscription' => $inscription,
         ]);
     }
 }

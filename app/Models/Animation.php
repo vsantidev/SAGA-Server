@@ -32,6 +32,7 @@ class Animation extends Model
         'picture',
         'registration_date',
         'system',
+        'time_slot_id',
     ];
 
 

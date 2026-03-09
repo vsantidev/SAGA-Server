@@ -7,6 +7,7 @@ use App\Models\Evenement_user;
 use App\Models\Animation;
 use App\Models\Room;
 use App\Models\Inscription;
+use App\Models\TimeSlot;
 use App\Models\Like;
 use App\Models\User;
 use App\Models\Type_animation;
@@ -194,6 +195,7 @@ class AnimationController extends Controller
             'time' => 'required|integer|min:1',
             'capacity' => 'required|integer|min:1',
             'type_animation_id' => 'required',
+            'time_slot_id'     => 'required|exists:time_slots,id',
         ], [
             'titre.required' => 'Merci de renseigner un titre',
             'content.required' => 'Merci de renseigner une description',
@@ -205,6 +207,7 @@ class AnimationController extends Controller
             'time.required' => 'Merci de renseigner la durée de l\'animation',
             'capacity.required' => 'Merci de renseigner le nombre de joueurs',
             'type_animation_id.required' => 'Merci de selectionner un type d\'animation',
+            'time_slot_id.required'     => 'Merci de selectionner un créneau'
         ]);
         
         Log::info("---ANIMATION CREATE : Fin validation---");
@@ -218,6 +221,17 @@ class AnimationController extends Controller
             //$payload['picture']= 'public/images/'.$filename;
         }else{
             $filename = 'img_default_conv5.png';
+        }
+
+        // Convertir les ids en noms de créneaux
+        $otherTimeNames = null;
+        if ($request->other_time) {
+            $ids = explode(' - ', $request->other_time);
+            $otherTimeNames = TimeSlot::whereIn('id', $ids)
+                ->pluck('name')
+                ->join(' - ');
+        } else {
+            $otherTimeNames = null;
         }
 
         //Log::info("---ANIMATION CREATE : fin picture---");
@@ -242,7 +256,7 @@ class AnimationController extends Controller
                 'open_time' => $request->open_time,
                 'closed_time' => $request->closed_time,
                 'time' => $request->time,
-                'other_time' => $request->other_time,
+                'other_time' => $otherTimeNames,
                 'capacity' => $request->capacity,
                 'min_capacity' => $request->min_capacity,
                 'evenement_id' => $DatesEvent->id,
@@ -251,7 +265,7 @@ class AnimationController extends Controller
                 'registration_date' => $request->registrationDate,
                 'picture'=> "images/animations/$filename",
                 'system' => $request->system,
-                
+                'time_slot_id' => $request->time_slot_id,         
             ]);
             
 
@@ -477,7 +491,7 @@ class AnimationController extends Controller
         $animationUpdate->title = $myAnimationRequest['title'];
         $animationUpdate->content = $myAnimationRequest['content'];
         $animationUpdate->url = $myAnimationRequest['url'];
-        if(isset($myAnimationRequest['registration_date'])){$animationUpdate->remark = $myAnimationRequest['remark'];}
+        if(isset($myAnimationRequest['remark'])){$animationUpdate->remark = $myAnimationRequest['remark'];}
         $animationUpdate->multiple = $myAnimationRequest['multiple'];
         $animationUpdate->picture = $myAnimationRequest['picture'];
         if(isset($myAnimationRequest['capacity'])){$animationUpdate->capacity = $myAnimationRequest['capacity'];}
@@ -502,7 +516,6 @@ class AnimationController extends Controller
         if($request->adminAnimator){$animationUpdate->user_id = $request->adminAnimator;}else{$animationUpdate->user_id = $myAnimationRequest['user_id'];}
         $animationUpdate->other_time = $myAnimationRequest['other_time'];
         $animationUpdate->registration = $myAnimationRequest['registration'];
-        $animationUpdate->registration_date = $myAnimationRequest['registration_date'];
         if($request->hasFile('picture')){$animationUpdate->picture = "images/animations/$filename";}
 
         // Si le champ "time" a changé, on recalcule "closed_time"
