@@ -25,12 +25,12 @@ class Inscription extends Model
     // RELATION AVEC LA TABLE USER
     public function users()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // RELATION AVEC LA TABLE ANIMATION
     public function animations()
     {
-        return $this->belongsTo(Animation::class);
+        return $this->belongsTo(Animation::class, 'animation_id');
     }
 }

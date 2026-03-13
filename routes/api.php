@@ -108,10 +108,9 @@ Route::middleware('auth:sanctum')->prefix('animation')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->prefix('inscription')->group(function () {
-    Route::get('/inscriptionpriorities', [InscriptionController::class, 'getUserPrioritiesBySlot']);
-    Route::get('/userinscription', [InscriptionController::class, 'getUserInscription']);
     Route::post('/inscriptionadd/{id}', [InscriptionController::class, 'createRegister']);
-    Route::delete('/inscriptiondelete/{id}', [InscriptionController::class, 'destroy']);
+    Route::delete('/inscriptiondelete/{id}', [InscriptionController::class, 'destroyRegistration']);
+    Route::get('/inscriptionstatus', [InscriptionController::class, 'getRegistrationStatus']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ROOM ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -155,8 +154,6 @@ Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {
     Route::post('/animationShow/{id}', [InscriptionController::class, 'createRegisterAdmin']);
     // unsubcribe the user from an animation (Admin)
     Route::delete('/animationShow/{id}', [InscriptionController::class, 'destroyRegistrationAdmin']);
-    // get priorité for the timeslot
-    Route::get('/inscriptionpriorities', [InscriptionController::class, 'getUserPrioritiesBySlot']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ LOGOUT ~~~~~~~~~~~~~~~~~~~~~~~~~~
