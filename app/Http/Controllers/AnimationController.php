@@ -143,11 +143,13 @@ class AnimationController extends Controller
                 'animations.id', 'animations.title', 'animations.content', 'animations.type_animation_id',
                 'animations.registration_date', 'animations.open_time', 'animations.closed_time',
                 'animations.other_time', 'animations.multiple', 'animations.roleplay', 'animations.reflection',
-                'animations.fight', 'animations.picture', 'animations.room_id', 'animations.user_id',
-                'animations.capacity', 'animations.min_capacity', 'animations.validate', 'animations.system'
+                'animations.fight', 'animations.picture', 'animations.room_id', 'animations.user_id', 'animations.time_slot_id', 
+                'animations.capacity', 'animations.min_capacity', 'animations.validate', 'animations.system','time_slots.start_time as slot_start_time',
+            'time_slots.draw_status as slot_draw_status','time_slots.name as slot_name'
             )
             ->where('animations.validate', 1)
             ->where('evenements.actif', 1)
+            ->leftJoin('time_slots', 'animations.time_slot_id', '=', 'time_slots.id')
             ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
             ->get();
 
@@ -386,6 +388,7 @@ class AnimationController extends Controller
         'time_slot_id'        => $animationShow->time_slot_id,
         'room'                => $RoomAnim?->name,
         'room_id'             => $animationShow->room_id,
+        'evenement_id'        => $animationShow->evenement_id,
     ];
 
     // ~~~~~ AUTEUR ~~~~~
@@ -463,6 +466,7 @@ class AnimationController extends Controller
         $animationUpdate->reflection = $myAnimationRequest['reflection'];
         $animationUpdate->roleplay = $myAnimationRequest['roleplay'];
         $animationUpdate->type_animation_id = $myAnimationRequest['type_animation_id'];
+        if(isset($myAnimationRequest['time_slot_id'])){$animationUpdate->time_slot_id = $myAnimationRequest['time_slot_id'];}
         $animationUpdate->open_time = $myAnimationRequest['open_time'];
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
         if(isset($myAnimationRequest['system'])){$animationUpdate->system = $myAnimationRequest['system'];}
