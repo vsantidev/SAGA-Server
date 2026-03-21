@@ -111,6 +111,7 @@ Route::middleware('auth:sanctum')->prefix('inscription')->group(function () {
     Route::post('/inscriptionadd/{id}', [InscriptionController::class, 'createRegister']);
     Route::delete('/inscriptiondelete/{id}', [InscriptionController::class, 'destroyRegistration']);
     Route::get('/inscriptionstatus', [InscriptionController::class, 'getRegistrationStatus']);
+    Route::get('/userInscriptions', [InscriptionController::class, 'getUserInscriptions']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ROOM ~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -131,37 +131,62 @@ class InscriptionController extends Controller
         ]);
     }
 
-        // =================================================================================
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION SHOW (ADMIN) : UnsubscribeRegisterDestroy ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /*public function destroyRegistrationAdmin(Request $request)
+    //Recup toutes les animations d'un user
+    public function getUserInscriptions(Request $request): JsonResponse
     {
-        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Connexion---");
         $request->validate([
-            "animation_id" => "required|integer",
-            "user_id" => "required|integer",
-            // "id" => "required|integer",
+            'user_id' => 'required|exists:users,id',
         ]);
 
-        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Request 1---");
-        Log::info($request);
-
-        // $animationUnsubscribe = Inscription::('user_id',$request->user_id);
-        $animationUnsubscribe = Inscription::where('animation_id', $request->animation_id)
-        ->where('user_id', $request->user_id)
-        // ->where('id', $id)
-        ->delete();
-        // $animationUnsubscribe->delete();
-
-        Log::info("---Controller Inscripton : destroy Registration AnimationShow (admin) | Request 2---");
-        Log::info($request);
+        $inscriptions = Inscription::where('user_id', $request->user_id)
+            ->whereHas('animations', fn($q) =>
+                $q->whereHas('evenements', fn($q2) =>
+                    $q2->where('actif', 1)
+                )
+            )
+            ->with([
+                'animations' => fn($q) => $q
+                    ->select('animations.id', 'title', 'open_time', 'closed_time', 'capacity', 'min_capacity', 'time_slot_id', 'user_id', 'room_id')
+                    ->whereHas('evenements', fn($q2) => $q2->where('actif', 1))
+                    ->with([
+                        'timeSlot:id,name,start_time,end_time',
+                        'rooms:id,name',        // ← relation directe
+                        'user:id,firstname,lastname', // ← attention c'est belongsTo donc user singulier si tu renommes
+                    ]),
+            ])
+            ->get()
+            ->map(fn($inscription) => [
+                'inscription_id' => $inscription->id,
+                'weight'         => $inscription->weight,
+                'status'         => $inscription->status,
+                'animation' => $inscription->animations ? [
+                    'id'          => $inscription->animations->id,
+                    'title'       => $inscription->animations->title,
+                    'open_time'   => $inscription->animations->open_time,
+                    'closed_time' => $inscription->animations->closed_time,
+                    'capacity'    => $inscription->animations->capacity,
+                    'room_name'   => $inscription->animations->rooms?->name ?? '',
+                    'animator' => $inscription->animations->user
+                        ? ucfirst(strtolower($inscription->animations->user->firstname)) . ' ' . strtoupper($inscription->animations->user->lastname)
+                        : '',
+                ] : null,
+                'time_slot' => $inscription->animations?->timeSlot?->id ? [
+                    'id'       => $inscription->animations->timeSlot->id,
+                    'name'     => $inscription->animations->timeSlot->name,
+                    'open_time'=> $inscription->animations->timeSlot->start_time,
+                    'end_time' => $inscription->animations->timeSlot->end_time,
+                ] : null,
+            ])
+            ->filter(fn($item) => $item['animation'] !== null)
+            ->values();
 
         return response()->json([
-            'status' => 'true',
-            'message' => 'Ce membre a été désinscrit à l\'animation !',
-            'Inscription supprimée : ' => $request->animation_id
+            'status'       => 'true',
+            'inscriptions' => $inscriptions,
         ]);
-    }*/
+    }
 
+    // =================================================================================
     // Get priorities for the slot
     public function getUserPrioritiesBySlot(Request $request): JsonResponse
     {
