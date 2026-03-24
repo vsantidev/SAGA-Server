@@ -274,6 +274,7 @@ class UserController extends Controller
                     'users.firstname',
                     'users.picture',
                     'eu.rewards',
+                    'eu.reward_prio',
                     DB::raw('(
                         SELECT COUNT(*) 
                         FROM evenement_users 
@@ -321,7 +322,7 @@ class UserController extends Controller
                 $evenementUser->rewards = $validatedData['rewards'];
                 $evenementUser->save();
 
-                Log::info("JOURNAL : ---Controller ANIMATOR REWARD : Modificationn Reward de l'user $id");
+                Log::info("JOURNAL : ---Controller ANIMATOR REWARD : Modification Reward de l'user $id");
 
                 // Réponse JSON de succès
                 return response()->json([

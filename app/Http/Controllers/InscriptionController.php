@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscription;
+use App\Models\Evenement;
 use App\Models\User;
 use App\Models\Timeslot;
 use Illuminate\Http\JsonResponse;
@@ -45,6 +46,17 @@ class InscriptionController extends Controller
             'registered_at' => now(),
         ]);
 
+        //Préciser l'info pour les admins :
+        $evenement = Evenement::where('actif', 1)->first();
+        DB::table('evenement_users')
+        ->where('user_id', $request->user_id)
+        ->where('evenement_id', $evenement->id)
+        ->update([
+        'reward_prio' => 1,
+        'updated_at'  => now(),
+        ]);
+
+
         Log::info("REGISTER: User {$userRegister->lastname} {$userRegister->firstname} registered wish (weight: {$request->weight}) for animation {$id}");
 
         return response()->json([
@@ -65,7 +77,6 @@ class InscriptionController extends Controller
             'user_id' => 'required',
             'weight'  => 'required|integer|min:1|max:10'
         ]);
-
         $userRegister = User::findOrFail($request->user_id);
 
         // Vérifier que l'user n'a pas déjà un vœu sur cette animation

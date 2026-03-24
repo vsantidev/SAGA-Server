@@ -151,6 +151,8 @@ class AnimationController extends Controller
             ->where('evenements.actif', 1)
             ->leftJoin('time_slots', 'animations.time_slot_id', '=', 'time_slots.id')
             ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
+            ->join('rooms', 'animations.room_id', '=', 'rooms.id')
+            ->where('rooms.active', 1) 
             ->get();
 
         // Likes de l'utilisateur connecté
@@ -205,15 +207,15 @@ class AnimationController extends Controller
             'type_animation_id' => 'required',
             'time_slot_id'     => 'required|exists:time_slots,id',
         ], [
-            'titre.required' => 'Merci de renseigner un titre',
+            'title.required' => 'Merci de renseigner un titre',
             'content.required' => 'Merci de renseigner une description',
-            'fight.required' => 'Merci de renseigner une valeur d\'affrontement',
-            'reflection.required' => 'Merci de renseigner de stratégie',
-            'roleplay.required' => 'Merci de renseigner d\'ambiance',
+            'fight.min' => 'Merci de renseigner une valeur d\'affrontement',
+            'reflection.min' => 'Merci de renseigner de stratégie',
+            'roleplay.min' => 'Merci de renseigner d\'ambiance',
             'open_time.required' => 'Merci de selectionner une tranche horaire',
             'closed_time.required' => 'Merci de renseigner une tranche horaire',
             'time.required' => 'Merci de renseigner la durée de l\'animation',
-            'capacity.required' => 'Merci de renseigner le nombre de joueurs',
+            'capacity.integer' => 'Merci de renseigner le nombre de joueurs max',
             'type_animation_id.required' => 'Merci de selectionner un type d\'animation',
             'time_slot_id.required'     => 'Merci de selectionner un créneau'
         ]);
@@ -423,10 +425,6 @@ class AnimationController extends Controller
     {
         //
     }
-
-    
-
-
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationUpdate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationUpdate(Request $request)
@@ -470,14 +468,16 @@ class AnimationController extends Controller
         $animationUpdate->open_time = $myAnimationRequest['open_time'];
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
         if(isset($myAnimationRequest['system'])){$animationUpdate->system = $myAnimationRequest['system'];}
+        
+        if(isset($myAnimationRequest['validate'])){$animationUpdate->validate = $myAnimationRequest['validate'];}
         //Si l'auteur modifie l'animation alors qu'elle est déjà validée, elle repasse en "non validée"
-        if ($author->id == $myUserRequest['id'] && $animationUpdate['validate'] == true)
+        /*if ($author->id == $myUserRequest['id'] && $animationUpdate['validate'] == true && $author->type != "admin")
         {
             $animationUpdate->validate = false;
         }else
         {
             $animationUpdate->validate = $myAnimationRequest['validate'];
-        }
+        }*/
         $animationUpdate->time = $myAnimationRequest['time'];
         if($request->adminAnimator){$animationUpdate->user_id = $request->adminAnimator;}else{$animationUpdate->user_id = $myAnimationRequest['user_id'];}
         $animationUpdate->other_time = $myAnimationRequest['other_time'];
@@ -546,9 +546,11 @@ class AnimationController extends Controller
         //Log::info($request);
 
         $animationDestroy = Animation::findOrFail($request->id);
+        // ── supprime toutes les inscriptions liées ──
+        Inscription::where('animation_id', $request->id)->delete();
         $animationDestroy->delete();
         
-        Log::info("JOURNAL : ---Controller ANIMATION DESTROY : SUPRESSION de l'animation $request->id ---");
+        Log::info("JOURNAL : ---Controller ANIMATION DESTROY : SUPRESSION de l'animation $request->id et des inscriptions liées---");
 
         return response()->json([
             'status' => 'true',

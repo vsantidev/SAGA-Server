@@ -116,12 +116,18 @@ Route::middleware('auth:sanctum')->prefix('inscription')->group(function () {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ROOM ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('rooms')->group(function () {
+    Route::get('/roomList', [RoomController::class, 'getAllRooms']);
     Route::get('/showAvailable', [RoomController::class, 'getRoomAvailable']);
+    Route::post('/roomEdit/{id}', [RoomController::class, 'update']);
+    Route::get('/{id}', [RoomController::class, 'show']);
+    Route::post('/rooms',     [RoomController::class, 'store']);
+    Route::delete('/{id}', [RoomController::class, 'destroy']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ SPONSORS ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Route::middleware('auth:sanctum')->prefix('sponsors')->group(function () {
     Route::get('/index', [SponsorController::class, 'sponsorsIndex']);
+    Route::get('/rooms/{id}', [RoomController::class, 'show']);
     Route::post('/create', [SponsorController::class, 'create']);
     Route::get('/edit/{id}', [SponsorController::class, 'edit']);
     Route::post('/edit/{id}', [SponsorController::class, 'update']);
