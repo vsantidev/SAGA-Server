@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TimeSlotController;
+use App\Http\Controllers\AnnouncementController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -176,4 +177,14 @@ Route::middleware('auth:sanctum')->prefix('stats')->group(function () {
     Route::get('/animations', [StatsController::class, 'animations']);
     Route::get('/capacity-by-tranche', [StatsController::class, 'capacityByTranche']);
 
+});
+
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
+    Route::get('/admin/announcements',         [AnnouncementController::class, 'adminIndex']);
+    Route::post('/admin/announcements',        [AnnouncementController::class, 'store']);
+    Route::put('/admin/announcements/{announcement}', [AnnouncementController::class, 'update']);
+    Route::delete('/admin/announcements/{announcement}', [AnnouncementController::class, 'destroy']);
 });

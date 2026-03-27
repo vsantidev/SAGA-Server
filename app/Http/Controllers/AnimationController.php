@@ -25,6 +25,7 @@ class AnimationController extends Controller
 {
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Accueil
     public function animationIndex(Request $request) 
 {
     //Récupération de l'ID de l'utilisateur
@@ -49,6 +50,7 @@ class AnimationController extends Controller
             'animations.time_slot_id', 
             'type_animations.type as type_animation_name',
             'rooms.name as room',
+            'rooms.picture as roomPicture',
             'time_slots.start_time as slot_start_time',
             'time_slots.draw_status as slot_draw_status',
             'time_slots.name as slot_name',
@@ -94,6 +96,7 @@ class AnimationController extends Controller
 }
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Liste pour les admins
     public function animationListIndex()
     {
         $animations = Animation::with(['type_animation'])
@@ -111,7 +114,7 @@ class AnimationController extends Controller
         $users = User::whereIn('id', $userIds)->select('id', 'firstname', 'lastname')->get()->keyBy('id');
 
         $roomIds = $animations->pluck('room_id')->unique();
-        $rooms = Room::whereIn('id', $roomIds)->select('id', 'name')->get()->keyBy('id');
+        $rooms = Room::whereIn('id', $roomIds)->select('id', 'name','picture')->get()->keyBy('id');
 
         $animations = $animations->map(function($anim) use ($users, $rooms) {
             $user = $users->get($anim->user_id);
@@ -119,6 +122,7 @@ class AnimationController extends Controller
             return [
                 ...$anim->toArray(),
                 'room_name'           => $room?->name ?? '',
+                'room_picture'           => $room?->picture ?? '',
                 'type_animation_name' => $anim->type_animation?->type ?? '',
                 'author_name'         => $user
                                             ? ucfirst(strtolower($user->firstname)).' '.strtoupper($user->lastname)
@@ -134,6 +138,9 @@ class AnimationController extends Controller
         ]);
     }
 
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Calendrier
     public function animationListValidate(Request $request)
     {
         $IdUser = $request->query('param1');
@@ -161,7 +168,7 @@ class AnimationController extends Controller
         $users = User::whereIn('id', $userIds)->select('id', 'firstname', 'lastname')->get()->keyBy('id');
 
         $roomIds = $animations->pluck('room_id')->unique();
-        $rooms = Room::whereIn('id', $roomIds)->select('id', 'name')->get()->keyBy('id');
+        $rooms = Room::whereIn('id', $roomIds)->select('id', 'name','picture')->get()->keyBy('id');
 
         $animations = $animations->map(function($anim) use ($users, $rooms, $likedAnimationIds) {
             $user = $users->get($anim->user_id);
@@ -169,6 +176,7 @@ class AnimationController extends Controller
             return [
                 ...$anim->toArray(),
                 'room_name'           => $room?->name ?? '',
+                'room_picture'           => $room?->picture ?? '',
                 'type_animation_name' => $anim->type_animation?->type ?? '',
                 'author_name'         => $user
                                             ? ucfirst(strtolower($user->firstname)).' '.strtoupper($user->lastname)
@@ -274,10 +282,9 @@ class AnimationController extends Controller
                 'user_id' => $request->user_id,
                 'registration_date' => $request->registrationDate,
                 'picture'=> "images/animations/$filename",
-                'system' => $request->system,
+                'system' => $request->filled('system') ? $request->system : null,
                 'time_slot_id' => $request->time_slot_id,         
             ]);
-            
 
             //Log::info("---ANIMATION CREATE : AnimationCreate avant json---");
             //Log::info($animationCreate);
