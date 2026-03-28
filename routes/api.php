@@ -154,6 +154,7 @@ Route::middleware('auth:sanctum')->prefix('timeslot')->group(function () {
     Route::get('/timeslotshow/{id}', [TimeSlotController::class, 'show']);
     Route::post('/timeslotshow/{id}', [TimeSlotController::class, 'update']);
     Route::post('/timeslotdraw/{id}', [TimeSlotController::class, 'draw']);
+    Route::post('timeslotdraw/{id}/undraw', [TimeSlotController::class, 'undraw']);
 });
 
 Route::middleware('auth:sanctum')->prefix('animationAdmin')->group(function () {

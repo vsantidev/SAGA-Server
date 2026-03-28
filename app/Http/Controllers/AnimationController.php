@@ -368,6 +368,12 @@ class AnimationController extends Controller
         ->where('animation_id', $animationShow->id)
         ->count();
 
+    // ~~~~~ Status de slot ~~~~~
+        $timeSlot = null;
+        if ($animationShow->time_slot_id) {
+            $timeSlot = \App\Models\TimeSlot::find($animationShow->time_slot_id);
+        }
+
     // ~~~~~ ANIMATIONDATA ~~~~~
     $animationData = [
         'id'                  => $animationShow->id,
@@ -395,6 +401,7 @@ class AnimationController extends Controller
         'nb_likes'            => $animationShow->nb_likes,
         'system'              => $animationShow->system,
         'time_slot_id'        => $animationShow->time_slot_id,
+        'slot_draw_status'    => $timeSlot?->draw_status ?? null,
         'room'                => $RoomAnim?->name,
         'room_id'             => $animationShow->room_id,
         'evenement_id'        => $animationShow->evenement_id,

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscription;
+use App\Models\Animation;
 use App\Models\Evenement;
 use App\Models\User;
 use App\Models\Timeslot;
@@ -259,15 +260,16 @@ class InscriptionController extends Controller
             ->whereHas('animations', fn($q) =>
                 $q->where('time_slot_id', $request->time_slot_id)
             )
+            ->orderBy('weight')
             ->pluck('weight');
 
         Log::info($usedPriorities);
         // 3. Statut du créneau + places restantes
         $timeSlot = TimeSlot::with('animations')->findOrFail($request->time_slot_id);
-        $placesLeft = $timeSlot->animations->sum(function ($animation) {
-            $confirmed = $animation->inscriptions()->where('status', 'confirmed')->count();
-            return max(0, $animation->capacity - $confirmed);
-        });
+        $animation = Animation::findOrFail($request->animation_id);
+        $confirmed = $animation->inscriptions()->where('status', 'confirmed')->count();
+        $placesLeft = max(0, $animation->capacity - $confirmed);
+        
         Log::info($placesLeft);
 
         return response()->json([

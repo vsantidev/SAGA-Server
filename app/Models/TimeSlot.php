@@ -39,6 +39,6 @@ class TimeSlot extends Model
     // RELATION AVEC LES INSCRIPTIONS (via animations)
     public function inscriptions()
     {
-        return $this->hasManyThrough(Inscription::class, Animation::class);
+        return $this->hasManyThrough(Inscription::class, Animation::class, 'time_slot_id', 'animation_id');
     }
 }

@@ -120,6 +120,14 @@ class TimeSlotController extends Controller
             ], 403);
         }
 
+        // Empêcher la suppression si des animations sont liées
+        if ($timeSlot->animations()->count() > 0) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Cannot delete a time slot that has animations linked to it!',
+            ], 403);
+        }
+
         $timeSlot->delete();
 
         return response()->json([
@@ -142,6 +150,7 @@ class TimeSlotController extends Controller
 
         // Tirage
         $inscriptions = $timeSlot->inscriptions()
+            ->with('animations')
             ->orderBy('weight')
             ->orderBy('registered_at')
             ->get();
@@ -158,7 +167,8 @@ class TimeSlotController extends Controller
 
             // Init compteur places
             if (!isset($placesLeft[$inscription->animation_id])) {
-                $placesLeft[$inscription->animation_id] = $inscription->animation->capacity;
+                $capacity = $inscription->animations->capacity ?? 0;  // ← animations au lieu de animation
+                $placesLeft[$inscription->animation_id] = $capacity;
             }
 
             if ($placesLeft[$inscription->animation_id] > 0) {
@@ -183,6 +193,35 @@ class TimeSlotController extends Controller
                 'rejected'          => $timeSlot->inscriptions()->where('status', 'rejected')->count(),
                 'cascade_cancelled' => $timeSlot->inscriptions()->where('status', 'cascade_cancelled')->count(),
             ]
+        ]);
+    }
+
+    public function undraw(Int $id): JsonResponse
+    {
+        $timeSlot = TimeSlot::with('animations')->findOrFail($id);
+
+        // Vérifier que le tirage a bien été effectué
+        if ($timeSlot->draw_status !== 'drawn') {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'No draw to undo for this time slot!',
+            ], 403);
+        }
+
+        // Remettre toutes les inscriptions du créneau en pending
+        $timeSlot->inscriptions()->update([
+            'status' => 'pending',
+        ]);
+
+        // Remettre le slot en open
+        $timeSlot->update([
+            'draw_status' => 'open',
+            'drawn_at'    => null,
+        ]);
+
+        return response()->json([
+            'status'  => 'true',
+            'message' => 'Draw successfully undone!',
         ]);
     }
 }

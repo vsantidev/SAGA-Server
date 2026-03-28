@@ -58,6 +58,7 @@ class UserController extends Controller
         ->join('evenement_users', 'users.id', '=', 'evenement_users.user_id')
         ->where('evenement_users.evenement_id', $activeEvent->id)
         ->orderBy('lastname', 'asc')
+        ->distinct()
         ->get();
 
         return response()->json([
@@ -284,6 +285,14 @@ class UserController extends Controller
                 )
                 ->where('eu.evenement_id', $evenementId) // Filtrer par la convention spécifique
                 ->where('eu.masters', true) // Filtrer uniquement les animateurs (si applicable)
+                ->groupBy(
+                    'users.id',
+                    'users.lastname',
+                    'users.firstname',
+                    'users.picture',
+                    'eu.rewards',
+                    'eu.reward_prio'
+                )  // ← groupBy pour dédoublonner
                 ->orderBy('users.lastname')
                 ->get();
 
