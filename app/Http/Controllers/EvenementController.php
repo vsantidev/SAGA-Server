@@ -113,15 +113,15 @@ class EvenementController extends Controller
             Evenement::where('id', '!=', $evenementUpdate->id)->update(['actif' => 0]);
             
             //affectation des admins à la convention (admin appli + orga event non admin + tv)
-            $users = User::where(function ($query) use ($evenementId) {
+            $users = User::where(function ($query) {
                 $query->where('type', 'admin')
-                    ->whereNotIn('id', function($subquery) use ($evenementId) {
-                        $subquery->select('user_id')
-                            ->from('evenement_users')
-                            ->where('evenement_id', $evenementId);
-                    });
+                      ->orWhere('is_orga', true);
             })
-            ->orWhereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 15, 16, 122])
+            ->whereNotIn('id', function($subquery) use ($evenementId) {
+                $subquery->select('user_id')
+                    ->from('evenement_users')
+                    ->where('evenement_id', $evenementId);
+            })
             ->get();
             
             // Préparer les données pour insertion
@@ -137,34 +137,27 @@ class EvenementController extends Controller
             })->toArray();
         
             // Insérer les données en une seule requête
+
+            if (!empty($data)) {
             Evenement_user::insert($data);
+            }
 
 
-            //Archiver tout les anciens utilisateurs
-            $evenementId = $evenementUpdate->id; // ID de l'événement que vous voulez vérifier
+            //Archiver tout les anciens utilisateurs/non orga
 
-            // Liste d'User IDs à inclure en plus
-            $extraUserIds = [2, 3, 4, 5, 6, 8, 9, 11, 12, 15, 16, 122];
-
-            // Récupérer les utilisateurs non-admin non associés à l'événement
             $usersToArchive = DB::table('users')
-                ->where(function ($query) use ($evenementId) {
-                    $query->where('type', '!=', 'admin')
-                        ->whereNotIn('id', function ($subquery) use ($evenementId) {
-                            $subquery->select('user_id')
-                                    ->from('evenement_users')
-                                    ->where('evenement_id', $evenementId);
-                        });
+                ->where('type', '!=', 'admin')
+                ->where('is_orga', false)
+                ->whereNotIn('id', function ($subquery) use ($evenementId) {
+                    $subquery->select('user_id')
+                        ->from('evenement_users')
+                        ->where('evenement_id', $evenementId);
                 })
-                ->whereNotIn('id', $extraUserIds)
                 ->pluck('id');
 
-            // Mettre à jour le champ 'type' des utilisateurs récupérés en 'archive'
             DB::table('users')
                 ->whereIn('id', $usersToArchive)
                 ->update(['type' => 'archive']);
-
-
         }
         
         $evenementUpdate->save();
@@ -211,4 +204,110 @@ class EvenementController extends Controller
         }
         //
     }
+
+    // GET /eventresults
+    public function results(Request $request): JsonResponse
+    {
+        $request->validate([
+            'evenement_id' => 'required|exists:evenements,id',
+        ]);
+
+        $winners = Evenement_user::where('evenement_id', $request->evenement_id)
+            ->where('masters', true)
+            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->where('winner_lot', true)
+            ->orderBy('winner_lot_pos')
+            ->with('user:id,firstname,lastname')
+            ->get();
+
+        $total = Evenement_user::where('evenement_id', $request->evenement_id)
+            ->where('masters', true)
+            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->count();
+
+        return response()->json([
+            'status'  => 'true',
+            'winners' => $winners,
+            'total'   => $total,
+        ]);
+    }
+
+    // POST /eventdraw
+    public function draw(Request $request): JsonResponse
+    {
+        $request->validate([
+            'evenement_id' => 'required|exists:evenements,id',
+            'nb_lots'      => 'required|integer|min:1',
+        ]);
+
+        // Récupérer tous les animateurs de l'événement
+        $animateurs = Evenement_user::where('evenement_id', $request->evenement_id)
+            ->where('masters', true)
+            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->get();
+
+        if ($animateurs->count() < $request->nb_lots) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Pas assez d\'animateurs pour ' . $request->nb_lots . ' lots !',
+            ], 422);
+        }
+
+        // Reset du tirage précédent
+        Evenement_user::where('evenement_id', $request->evenement_id)
+            ->where('masters', true)
+            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->update([
+                'winner_lot'     => false,
+                'winner_lot_pos' => 0,
+            ]);
+
+        // Tirage aléatoire
+        $shuffled = $animateurs->shuffle()->take($request->nb_lots)->values();
+
+        foreach ($shuffled as $index => $animateur) {
+            $animateur->update([
+                'winner_lot'     => true,
+                'winner_lot_pos' => $index + 1,
+            ]);
+        }
+
+        // Retourner les gagnants
+        $winners = Evenement_user::where('evenement_id', $request->evenement_id)
+            ->where('masters', true)
+            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->where('winner_lot', true)
+            ->orderBy('winner_lot_pos')
+            ->with('user:id,firstname,lastname')
+            ->get();
+
+        return response()->json([
+            'status'  => 'true',
+            'message' => 'Tirage effectué !',
+            'winners' => $winners,
+            'total_animateurs' => $animateurs->count(),
+        ]);
+    }
+
+
+    public function reset(Request $request): JsonResponse
+    {
+        $request->validate([
+            'evenement_id' => 'required|exists:evenements,id',
+        ]);
+
+        Evenement_user::where('evenement_id', $request->evenement_id)
+            ->where('masters', true)
+            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->update([
+                'winner_lot'     => false,
+                'winner_lot_pos' => 0,
+            ]);
+
+        return response()->json([
+            'status'  => 'true',
+            'message' => 'Tirage réinitialisé !',
+        ]);
+    }
+    
 }

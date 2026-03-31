@@ -143,7 +143,9 @@ Route::middleware('auth:sanctum')->prefix('event')->group(function () {
     Route::delete('/eventlist', [EvenementController::class, 'destroy']);
     Route::get('/eventshow/{id}', [EvenementController::class, 'show']);
     Route::post('/eventshow/{id}', [EvenementController::class, 'update']);
-    //Route::delete('/index', [EvenementController::class, 'destroy']);
+    Route::post('/eventdraw', [EvenementController::class, 'draw']);
+    Route::get('/eventresults', [EvenementController::class, 'results']);
+    Route::post('/eventreset', [EvenementController::class, 'reset']);
 });
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ TIMESLOT ~~~~~~~~~~~~~~~~~~~~~~~~~~

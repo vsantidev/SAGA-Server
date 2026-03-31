@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'presentation',
         'picture',
+        'is_orga',
     ];
 
     /**
