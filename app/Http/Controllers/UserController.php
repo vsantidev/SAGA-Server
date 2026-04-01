@@ -239,7 +239,7 @@ class UserController extends Controller
         //return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
         
         return User::select('id', 'lastname', 'firstname', 'birthday', 'phone', 'email', 'type', 'picture', 'presentation')
-        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15])
+        ->where('is_orga', 1)
         ->get();
         
         return response()->json([
@@ -382,6 +382,7 @@ class UserController extends Controller
             'password' => $userShow->password,
             'presentation' => $userShow->presentation,
             'type' => $userShow->type,
+            'is_orga' => $userShow->is_orga,
         ];
 
         //Log::info($userData);
@@ -401,6 +402,7 @@ class UserController extends Controller
             'password' => $userShow->password,
             'presentation' => $userShow->presentation,
             'type' => $userShow->type,
+            'is_orga' => $userShow->is_orga,
         ]);
     }
 
@@ -437,7 +439,6 @@ class UserController extends Controller
         $userUpdate->phone = $myUserRequest['phone'];
         $userUpdate->email = $myUserRequest['email'];
         $userUpdate->presentation = $myUserRequest['presentation'];
-
         $userUpdate->save();
 
         //Log::info("---User Controller (Update | Request 3) ---");
@@ -477,6 +478,7 @@ class UserController extends Controller
         $userUpdate->email = $request->email;
         $userUpdate->presentation = $request->presentation;
         $userUpdate->type = $request->type;
+        $userUpdate->is_orga = $request->is_orga;
         //Log::info("---User Controller (ADMIN Update | Request avant save) ---");
         $userUpdate->save();
 
