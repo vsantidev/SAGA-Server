@@ -162,8 +162,8 @@ class InscriptionController extends Controller
                     ->whereHas('evenements', fn($q2) => $q2->where('actif', 1))
                     ->with([
                         'timeSlot:id,name,start_time,end_time',
-                        'rooms:id,name',        // ← relation directe
-                        'user:id,firstname,lastname', // ← attention c'est belongsTo donc user singulier si tu renommes
+                        'rooms:id,name,picture',
+                        'user:id,firstname,lastname', 
                     ]),
             ])
             ->get()
@@ -177,6 +177,7 @@ class InscriptionController extends Controller
                     'open_time'   => $inscription->animations->open_time,
                     'closed_time' => $inscription->animations->closed_time,
                     'capacity'    => $inscription->animations->capacity,
+                    'room_picture'   => $inscription->animations->rooms?->picture ?? '',
                     'room_name'   => $inscription->animations->rooms?->name ?? '',
                     'animator' => $inscription->animations->user
                         ? ucfirst(strtolower($inscription->animations->user->firstname)) . ' ' . strtoupper($inscription->animations->user->lastname)

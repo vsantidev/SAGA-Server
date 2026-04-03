@@ -133,6 +133,8 @@ class EvenementController extends Controller
                     'rewards' => 0,
                     'created_at' => now(),
                     'updated_at' => now(),
+                    'winner_lot'     => false,
+                    'winner_lot_pos' => 0,
                 ];
             })->toArray();
         
@@ -213,7 +215,6 @@ class EvenementController extends Controller
         ]);
 
         $winners = Evenement_user::where('evenement_id', $request->evenement_id)
-            ->where('masters', true)
             ->whereHas('user', fn($q) => $q->where('is_orga', false))
             ->where('winner_lot', true)
             ->orderBy('winner_lot_pos')
@@ -221,7 +222,6 @@ class EvenementController extends Controller
             ->get();
 
         $total = Evenement_user::where('evenement_id', $request->evenement_id)
-            ->where('masters', true)
             ->whereHas('user', fn($q) => $q->where('is_orga', false))
             ->count();
 
@@ -242,7 +242,6 @@ class EvenementController extends Controller
 
         // Récupérer tous les animateurs de l'événement
         $animateurs = Evenement_user::where('evenement_id', $request->evenement_id)
-            ->where('masters', true)
             ->whereHas('user', fn($q) => $q->where('is_orga', false))
             ->get();
 
@@ -255,7 +254,6 @@ class EvenementController extends Controller
 
         // Reset du tirage précédent
         Evenement_user::where('evenement_id', $request->evenement_id)
-            ->where('masters', true)
             ->whereHas('user', fn($q) => $q->where('is_orga', false))
             ->update([
                 'winner_lot'     => false,
@@ -274,7 +272,6 @@ class EvenementController extends Controller
 
         // Retourner les gagnants
         $winners = Evenement_user::where('evenement_id', $request->evenement_id)
-            ->where('masters', true)
             ->whereHas('user', fn($q) => $q->where('is_orga', false))
             ->where('winner_lot', true)
             ->orderBy('winner_lot_pos')
@@ -297,7 +294,6 @@ class EvenementController extends Controller
         ]);
 
         Evenement_user::where('evenement_id', $request->evenement_id)
-            ->where('masters', true)
             ->whereHas('user', fn($q) => $q->where('is_orga', false))
             ->update([
                 'winner_lot'     => false,
