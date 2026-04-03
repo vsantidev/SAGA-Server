@@ -58,6 +58,7 @@ class UserController extends Controller
         ->join('evenement_users', 'users.id', '=', 'evenement_users.user_id')
         ->where('evenement_users.evenement_id', $activeEvent->id)
         ->orderBy('lastname', 'asc')
+        ->distinct()
         ->get();
 
         return response()->json([
@@ -238,7 +239,7 @@ class UserController extends Controller
         //return User::select('id','lastname','firstname','birthday','phone','email', 'type', 'picture', 'presentation')->where('type', '=', "admin")->get();
         
         return User::select('id', 'lastname', 'firstname', 'birthday', 'phone', 'email', 'type', 'picture', 'presentation')
-        ->whereIn('id', [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 15])
+        ->where('is_orga', 1)
         ->get();
         
         return response()->json([
@@ -251,7 +252,6 @@ class UserController extends Controller
         // =================================================================================
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER : AnimatorIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
         public function animatorIndex() {
-            
             //Log::info("---User Controller (AnimatorIndex | Request 1/1) ---");
             $evenementActif = Evenement::where('actif', 1)->first();
             if ($evenementActif) {
@@ -274,6 +274,8 @@ class UserController extends Controller
                     'users.lastname',
                     'users.firstname',
                     'users.picture',
+                    'eu.rewards',
+                    'eu.reward_prio',
                     DB::raw('(
                         SELECT COUNT(*) 
                         FROM evenement_users 
@@ -283,7 +285,14 @@ class UserController extends Controller
                 )
                 ->where('eu.evenement_id', $evenementId) // Filtrer par la convention spécifique
                 ->where('eu.masters', true) // Filtrer uniquement les animateurs (si applicable)
-                ->orderByDesc(DB::raw('medals'))
+                ->groupBy(
+                    'users.id',
+                    'users.lastname',
+                    'users.firstname',
+                    'users.picture',
+                    'eu.rewards',
+                    'eu.reward_prio'
+                )  // ← groupBy pour dédoublonner
                 ->orderBy('users.lastname')
                 ->get();
 
@@ -322,7 +331,7 @@ class UserController extends Controller
                 $evenementUser->rewards = $validatedData['rewards'];
                 $evenementUser->save();
 
-                Log::info("JOURNAL : ---Controller ANIMATOR REWARD : Modificationn Reward de l'user $id");
+                Log::info("JOURNAL : ---Controller ANIMATOR REWARD : Modification Reward de l'user $id");
 
                 // Réponse JSON de succès
                 return response()->json([
@@ -373,6 +382,7 @@ class UserController extends Controller
             'password' => $userShow->password,
             'presentation' => $userShow->presentation,
             'type' => $userShow->type,
+            'is_orga' => $userShow->is_orga,
         ];
 
         //Log::info($userData);
@@ -392,6 +402,7 @@ class UserController extends Controller
             'password' => $userShow->password,
             'presentation' => $userShow->presentation,
             'type' => $userShow->type,
+            'is_orga' => $userShow->is_orga,
         ]);
     }
 
@@ -428,7 +439,6 @@ class UserController extends Controller
         $userUpdate->phone = $myUserRequest['phone'];
         $userUpdate->email = $myUserRequest['email'];
         $userUpdate->presentation = $myUserRequest['presentation'];
-
         $userUpdate->save();
 
         //Log::info("---User Controller (Update | Request 3) ---");
@@ -468,6 +478,7 @@ class UserController extends Controller
         $userUpdate->email = $request->email;
         $userUpdate->presentation = $request->presentation;
         $userUpdate->type = $request->type;
+        $userUpdate->is_orga = $request->is_orga;
         //Log::info("---User Controller (ADMIN Update | Request avant save) ---");
         $userUpdate->save();
 

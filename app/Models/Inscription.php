@@ -11,18 +11,26 @@ class Inscription extends Model
 
     protected $fillable = [
         'user_id',
-        'animation_id'
+        'animation_id',
+        'weight',
+        'status',
+        'registered_at',
+    ];
+
+    protected $casts = [
+        'registered_at' => 'datetime',
+        'weight' => 'integer',
     ];
 
     // RELATION AVEC LA TABLE USER
     public function users()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // RELATION AVEC LA TABLE ANIMATION
     public function animations()
     {
-        return $this->belongsToMany(Animation::class);
+        return $this->belongsTo(Animation::class, 'animation_id');
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Evenement_user;
 use App\Models\Animation;
 use App\Models\Room;
 use App\Models\Inscription;
+use App\Models\TimeSlot;
 use App\Models\Like;
 use App\Models\User;
 use App\Models\Type_animation;
@@ -24,6 +25,7 @@ class AnimationController extends Controller
 {
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Accueil
     public function animationIndex(Request $request) 
 {
     //Récupération de l'ID de l'utilisateur
@@ -45,7 +47,13 @@ class AnimationController extends Controller
             'animations.fight',
             'animations.roleplay',
             'animations.reflection',
+            'animations.time_slot_id', 
             'type_animations.type as type_animation_name',
+            'rooms.name as room',
+            'rooms.picture as roomPicture',
+            'time_slots.start_time as slot_start_time',
+            'time_slots.draw_status as slot_draw_status',
+            'time_slots.name as slot_name',
             DB::raw('CONCAT(UCASE(LEFT(users.firstname, 1)), LCASE(SUBSTRING(users.firstname, 2)), " ", UPPER(users.lastname)) as author_name'),
             DB::raw('COUNT(inscriptions.id) as nb_inscrits'),
             DB::raw('COUNT(inscriptions.id) as nb_inscrits'),
@@ -60,9 +68,12 @@ class AnimationController extends Controller
         ->leftJoin('type_animations', 'animations.type_animation_id', '=', 'type_animations.id')
         ->leftJoin('users', 'animations.user_id', '=', 'users.id')
         ->leftJoin('inscriptions', 'inscriptions.animation_id', '=', 'animations.id')
+        ->leftJoin('rooms', 'animations.room_id', '=', 'rooms.id')
+        ->leftJoin('time_slots', 'animations.time_slot_id', '=', 'time_slots.id')
         ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
         ->where('evenements.actif', 1)
         ->groupBy('animations.id')
+        ->orderBy('time_slots.start_time', 'asc')
         ->orderBy('animations.open_time', 'asc')
         ->get();
 
@@ -83,134 +94,102 @@ class AnimationController extends Controller
         'listeAnimation' => $Animations,
     ]);
 }
-
-    /*public function animationIndex(Request $request)
+    // =================================================================================
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Liste pour les admins
+    public function animationListIndex()
     {
-        //Log::info("--- ANIMATION INDEX ---");
+        $animations = Animation::with(['type_animation'])
+            ->select(
+                'animations.id', 'animations.title', 'animations.content', 'animations.type_animation_id',
+                'animations.registration_date', 'animations.open_time', 'animations.closed_time',
+                'animations.other_time', 'animations.multiple', 'animations.roleplay', 'animations.reflection',
+                'animations.fight', 'animations.picture', 'animations.room_id', 'animations.user_id',
+                'animations.capacity', 'animations.min_capacity', 'animations.validate', 'animations.system'
+            )
+            ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
+            ->get();
 
-        $IdUser = $request->query('param1');
-        //Log::info("--- ANIMATION INDEX : IdUser ---");
-        //Log::info($IdUser);
-        //Recuperation des animations
-        //$Animations=Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity' ,'picture', 'validate','user_id', 'registration' , 'registration_date', 'fight', 'roleplay', 'reflection')->get();
-        // $Animations = Animation::find($id);
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'open_time', 'closed_time', 'capacity', 'picture', 'validate', 'user_id', 'registration', 'registration_date', 'fight', 'roleplay', 'reflection')
-        ->orderBy('open_time', 'asc') // 'asc' pour un ordre croissant, 'desc' pour un ordre décroissant
-        ->get();
-        //Recupération des likes de l'utilisateur en cours
-        $listeLike=Like::select('animation_id')->where('user_id', '=', $IdUser)->get();
-        //ajout de la colonne like dans le tableau des animations
-        $listeAnimationLike=$Animations->map(function($Animation){
-            $Animation->like = "0";
-            $Animation->type_animation_name = "";
-            $Animation->author_name ="";
-            $Animation->nb_inscrits = 0;
+        $userIds = $animations->pluck('user_id')->unique();
+        $users = User::whereIn('id', $userIds)->select('id', 'firstname', 'lastname')->get()->keyBy('id');
 
-        return $Animation;
+        $roomIds = $animations->pluck('room_id')->unique();
+        $rooms = Room::whereIn('id', $roomIds)->select('id', 'name','picture')->get()->keyBy('id');
+
+        $animations = $animations->map(function($anim) use ($users, $rooms) {
+            $user = $users->get($anim->user_id);
+            $room = $rooms->get($anim->room_id);
+            return [
+                ...$anim->toArray(),
+                'room_name'           => $room?->name ?? '',
+                'room_picture'           => $room?->picture ?? '',
+                'type_animation_name' => $anim->type_animation?->type ?? '',
+                'author_name'         => $user
+                                            ? ucfirst(strtolower($user->firstname)).' '.strtoupper($user->lastname)
+                                            : '',
+                'evenement_year'      => \Carbon\Carbon::parse($anim->open_time)->year,
+            ];
         });
 
-        $inscriptionsCount = Inscription::select('animation_id', DB::raw('count(*) as total'))
-        ->groupBy('animation_id')
-        ->get();
-
-        //Log::info($inscriptionsCount);
-        //Log::info($Animations);
-        //Log::info('--- AnimationController - INDEX | type_animation');
-        $alltypeAnimation = Type_animation::select('id','type')->get();
-        //Log::info($alltypeAnimation);
-        $ListeUser = User::select('id', 'firstname','lastname')->get();
-        //Log::info($ListeUser);
-        foreach($listeAnimationLike as $anim)
-        {
-            foreach($alltypeAnimation as $type_anim){
-                
-                if($anim->type_animation_id == $type_anim->id)
-                {
-                    $anim->type_animation_name=$type_anim->type;
-                }
-            }
-
-            foreach($listeLike as $like)
-            {
-                if($anim->id == $like->animation_id)
-                {
-                    $anim->like="1";
-                }
-            }
-            foreach($ListeUser as $user){
-                if($anim->user_id == $user->id)
-                {
-                    $anim->author_name= ucfirst(strtolower($user->firstname))." ".strtoupper($user->lastname);
-                }
-            }
-
-            foreach($inscriptionsCount as $inscription){
-                if($anim->id == $inscription->animation_id)
-                {
-                    $anim->nb_inscrits = $inscription->total;
-                }
-            }
-        }
-
         return response()->json([
-            'status' => 'true',
-            'message' => 'Affichage des animations + bonus Like!',
-            'listeAnimation' => $listeAnimationLike ,
-            //'allTypeAnimations' => $alltypeAnimation,
+            'status'         => true,
+            'message'        => 'Affichage des animations !',
+            'listeAnimation' => $animations,
         ]);
-
-    }*/
-
+    }
 
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationListIndex ~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public function animationListIndex()
+    // Calendrier
+    public function animationListValidate(Request $request)
     {
-        //Log::info("---Controller Animation : Index List Animation | Connexion---");
-        $Animations = Animation::select('id', 'title', 'content', 'type_animation_id', 'registration_date','open_time','closed_time','other_time','multiple','roleplay', 'reflection', 'fight', 'picture','room_id','user_id', 'capacity', 'validate')->get();          
-       
-        $alltypeAnimation = Type_animation::select('id','type')->get();
-        $ListeUser = User::select('id', 'firstname','lastname')->get();
-        $ListeRoom = Room::select('id', 'name')->get();
-        $listeAnimationComplete=$Animations->map(function($Animation){
-            $Animation->room_name = "";
-            $Animation->type_animation_name = "";
-            $Animation->author_name ="";
-            $Animation->evenement_year ="";
-        return $Animation;
+        $IdUser = $request->query('param1');
+
+        $animations = Animation::with(['type_animation'])
+            ->select(
+                'animations.id', 'animations.title', 'animations.content', 'animations.type_animation_id',
+                'animations.registration_date', 'animations.open_time', 'animations.closed_time',
+                'animations.other_time', 'animations.multiple', 'animations.roleplay', 'animations.reflection',
+                'animations.fight', 'animations.picture', 'animations.room_id', 'animations.user_id', 'animations.time_slot_id', 
+                'animations.capacity', 'animations.min_capacity', 'animations.validate', 'animations.system','time_slots.start_time as slot_start_time',
+            'time_slots.draw_status as slot_draw_status','time_slots.name as slot_name'
+            )
+            ->where('animations.validate', 1)
+            ->where('evenements.actif', 1)
+            ->leftJoin('time_slots', 'animations.time_slot_id', '=', 'time_slots.id')
+            ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
+            ->join('rooms', 'animations.room_id', '=', 'rooms.id')
+            ->where('rooms.active', 1) 
+            ->get();
+
+        // Likes de l'utilisateur connecté
+        $likedAnimationIds = Like::where('user_id', $IdUser)->pluck('animation_id')->toArray();
+        $userIds = $animations->pluck('user_id')->unique();
+        $users = User::whereIn('id', $userIds)->select('id', 'firstname', 'lastname')->get()->keyBy('id');
+
+        $roomIds = $animations->pluck('room_id')->unique();
+        $rooms = Room::whereIn('id', $roomIds)->select('id', 'name','picture')->get()->keyBy('id');
+
+        $animations = $animations->map(function($anim) use ($users, $rooms, $likedAnimationIds) {
+            $user = $users->get($anim->user_id);
+            $room = $rooms->get($anim->room_id);
+            return [
+                ...$anim->toArray(),
+                'room_name'           => $room?->name ?? '',
+                'room_picture'           => $room?->picture ?? '',
+                'type_animation_name' => $anim->type_animation?->type ?? '',
+                'author_name'         => $user
+                                            ? ucfirst(strtolower($user->firstname)).' '.strtoupper($user->lastname)
+                                            : '',
+                'evenement_year'      => \Carbon\Carbon::parse($anim->open_time)->year,
+                'is_liked'            => in_array($anim->id, $likedAnimationIds),
+            ];
         });
 
-        foreach($listeAnimationComplete as $anim)
-        {
-            $anim->evenement_year = \Carbon\Carbon::parse($anim->open_time)->year;
-
-            foreach($alltypeAnimation as $type_anim){
-                
-                if($anim->type_animation_id == $type_anim->id)
-                {
-                    $anim->type_animation_name=$type_anim->type;
-                }
-            }
-
-            foreach($ListeUser as $user){
-                if($anim->user_id == $user->id)
-                {
-                    $anim->author_name= ucfirst(strtolower($user->firstname))." ".strtoupper($user->lastname);
-                }
-            }
-
-            foreach($ListeRoom as $room){
-                if($anim->room_id == $room->id)
-                {
-                    $anim->room_name = $room->name;
-                }
-            }
-        }
-        //Log::info($listeAnimationComplete);
         return response()->json([
-            'status' => 'true',
-            'message' => 'AnimationListIndex : Affichage des animations !',
-            'listeAnimation' => $listeAnimationComplete ,
+            'status'         => true,
+            'message'        => 'Affichage des animations !',
+            'listeAnimation' => $animations,
         ]);
     }
 
@@ -234,17 +213,19 @@ class AnimationController extends Controller
             'time' => 'required|integer|min:1',
             'capacity' => 'required|integer|min:1',
             'type_animation_id' => 'required',
+            'time_slot_id'     => 'required|exists:time_slots,id',
         ], [
-            'titre.required' => 'Merci de renseigner un titre',
+            'title.required' => 'Merci de renseigner un titre',
             'content.required' => 'Merci de renseigner une description',
-            'fight.required' => 'Merci de renseigner une valeur d\'affrontement',
-            'reflection.required' => 'Merci de renseigner de stratégie',
-            'roleplay.required' => 'Merci de renseigner d\'ambiance',
+            'fight.min' => 'Merci de renseigner une valeur d\'affrontement',
+            'reflection.min' => 'Merci de renseigner de stratégie',
+            'roleplay.min' => 'Merci de renseigner d\'ambiance',
             'open_time.required' => 'Merci de selectionner une tranche horaire',
             'closed_time.required' => 'Merci de renseigner une tranche horaire',
             'time.required' => 'Merci de renseigner la durée de l\'animation',
-            'capacity.required' => 'Merci de renseigner le nombre de joueurs',
+            'capacity.integer' => 'Merci de renseigner le nombre de joueurs max',
             'type_animation_id.required' => 'Merci de selectionner un type d\'animation',
+            'time_slot_id.required'     => 'Merci de selectionner un créneau'
         ]);
         
         Log::info("---ANIMATION CREATE : Fin validation---");
@@ -258,6 +239,17 @@ class AnimationController extends Controller
             //$payload['picture']= 'public/images/'.$filename;
         }else{
             $filename = 'img_default_conv5.png';
+        }
+
+        // Convertir les ids en noms de créneaux
+        $otherTimeNames = null;
+        if ($request->other_time) {
+            $ids = explode(' - ', $request->other_time);
+            $otherTimeNames = TimeSlot::whereIn('id', $ids)
+                ->pluck('name')
+                ->join(' - ');
+        } else {
+            $otherTimeNames = null;
         }
 
         //Log::info("---ANIMATION CREATE : fin picture---");
@@ -282,16 +274,17 @@ class AnimationController extends Controller
                 'open_time' => $request->open_time,
                 'closed_time' => $request->closed_time,
                 'time' => $request->time,
-                'other_time' => $request->other_time,
+                'other_time' => $otherTimeNames,
                 'capacity' => $request->capacity,
+                'min_capacity' => $request->min_capacity,
                 'evenement_id' => $DatesEvent->id,
                 'type_animation_id' => $request->type_animation_id,
                 'user_id' => $request->user_id,
                 'registration_date' => $request->registrationDate,
-                'picture'=> "images/animations/$filename"
-                
+                'picture'=> "images/animations/$filename",
+                'system' => $request->filled('system') ? $request->system : null,
+                'time_slot_id' => $request->time_slot_id,         
             ]);
-            
 
             //Log::info("---ANIMATION CREATE : AnimationCreate avant json---");
             //Log::info($animationCreate);
@@ -340,138 +333,104 @@ class AnimationController extends Controller
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationShow ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationShow(Request $request, Int $id): JsonResponse
-    {   
-        //Log::info("---Function : AnimationShow connected---");
-        //  1 - ~~~~~ Retrouver l'animation par id + récupérer les users dans Inscription par animation_id
-        $animationShow = Animation::find($id);
-        $inscriptionsTable = Inscription::select('user_id')->where('animation_id', '=', $id)->get();
-        //Log::info($inscriptionsTable);
+{
+    $animationShow = Animation::find($id);
+    $type_animation = Type_animation::find($animationShow->type_animation_id);
 
-        //  2 - ~~~~~ Récupérer les userInscrits dans un table et les rajouter
-        //Log::info("--- Function : AnimationShow --- Affichage de chaque userInscrits");
-        $listUser= new Collection();
+    // ~~~~~ INSCRITS avec statut et priorité ~~~~~
+    $listInscrits = Inscription::where('animation_id', $id)
+        ->join('users', 'inscriptions.user_id', '=', 'users.id')
+        ->select(
+            'users.id',
+            'users.firstname',
+            'users.lastname',
+            'inscriptions.weight',
+            'inscriptions.status',
+            'inscriptions.registered_at'
+        )
+        ->orderBy('inscriptions.weight')
+        ->orderBy('inscriptions.registered_at')
+        ->get();
 
-        foreach ($inscriptionsTable as $inscriptionsTables) {
-            // ~~~~~ Récupère le users grâce a son ID
-            $usersInscrit = User::select('id', 'firstname','lastname')->where('id',$inscriptionsTables->user_id)->get();
-            //Log::info("afffichage de chaque userinscrits");
-            //Log::info($usersInscrit);
-            $listUser->push($usersInscrit);
+    // ~~~~~ SALLE ~~~~~
+    $RoomAnim = null;
+    if ($animationShow->room_id) {
+        $RoomAnim = Room::select('name', 'capacity')
+            ->where('id', $animationShow->room_id)
+            ->first();
+        if ($animationShow->capacity == null && $RoomAnim) {
+            $animationShow->capacity = $RoomAnim->capacity;
+        }
+    }
+
+    // ~~~~~ NB LIKES ~~~~~
+    $animationShow->nb_likes = DB::table('likes')
+        ->where('animation_id', $animationShow->id)
+        ->count();
+
+    // ~~~~~ Status de slot ~~~~~
+        $timeSlot = null;
+        if ($animationShow->time_slot_id) {
+            $timeSlot = \App\Models\TimeSlot::find($animationShow->time_slot_id);
         }
 
-        //Log::info($listUser);
-        $alltypeAnimation = Type_animation::select('id', 'type')->get();
-        //Log::info($alltypeAnimation);
-        $type_animation = Type_animation::find($animationShow->type_animation_id);
+    // ~~~~~ ANIMATIONDATA ~~~~~
+    $animationData = [
+        'id'                  => $animationShow->id,
+        'title'               => $animationShow->title,
+        'content'             => $animationShow->content,
+        'remark'              => $animationShow->remark,
+        'url'                 => $animationShow->url,
+        'multiple'            => $animationShow->multiple,
+        'picture'             => $animationShow->picture,
+        'capacity'            => $animationShow->capacity,
+        'min_capacity'        => $animationShow->min_capacity,
+        'fight'               => $animationShow->fight,
+        'reflection'          => $animationShow->reflection,
+        'roleplay'            => $animationShow->roleplay,
+        'type_animation_id'   => $type_animation->id,
+        'type_animation_name' => $type_animation->type,
+        'user_id'             => $animationShow->user_id,
+        'validate'            => $animationShow->validate,
+        'open_time'           => $animationShow->open_time,
+        'closed_time'         => $animationShow->closed_time,
+        'time'                => $animationShow->time,
+        'other_time'          => $animationShow->other_time,
+        'registration'        => $animationShow->registration,
+        'registration_date'   => $animationShow->registration_date,
+        'nb_likes'            => $animationShow->nb_likes,
+        'system'              => $animationShow->system,
+        'time_slot_id'        => $animationShow->time_slot_id,
+        'slot_draw_status'    => $timeSlot?->draw_status ?? null,
+        'room'                => $RoomAnim?->name,
+        'room_id'             => $animationShow->room_id,
+        'evenement_id'        => $animationShow->evenement_id,
+    ];
 
-        //Log::info('type_animation');
-        $animationShow->nb_likes = DB::table('likes')
-            ->where('animation_id', $animationShow->id)
-            ->count();
-        //Log::info($type_animation);
-
-        //Recupération des salles si renseigné. -> uniquement SIEGRIES en V1
-        if($animationShow->room_id != "")
-        {
-            $RoomAnim=Room::select('name','capacity')->where('id', '=', $animationShow->room_id)->first();
-            //$animationShow->room_id = $RoomAnim->name;
-            //Log::info($animationShow->room_id);
-            //Log::info($RoomAnim->name);
-            if ($animationShow->capacity == null)
-            {
-                $animationShow->capacity = $RoomAnim->capacity;
-            }
-
-            //Log::info("---Function : AnimationShow Data Salle=> ---");
-            $animationData = [
-                'id' => $animationShow->id,
-                'title' => $animationShow->title,
-                'content' => $animationShow->content,
-                'remark' => $animationShow->remark,
-                'url' => $animationShow->url,
-                'multiple' => $animationShow->multiple,
-                'picture' => $animationShow->picture,
-                'capacity' => $animationShow->capacity,
-                'fight' => $animationShow->fight,
-                'reflection' => $animationShow->reflection,
-                'roleplay' => $animationShow->roleplay,
-                'type_animation_id' => $type_animation->id,
-                'type_animation_name' => $type_animation->type, 
-                'user_id' => $animationShow->user_id,
-                'validate' => $animationShow->validate,
-                'open_time' => $animationShow->open_time,
-                'closed_time' => $animationShow->closed_time,
-                'time' => $animationShow->time,
-                'other_time' => $animationShow->other_time,
-                'registration' => $animationShow->registration,
-                'registration_date' => $animationShow->registration_date,
-                'room' => $RoomAnim->name,
-                'room_id' => $animationShow->room_id,
-                'nb_likes' => $animationShow->nb_likes,
-            ];
-        }else{
-            //Log::info("---Function : AnimationShow Data Sans Salle=> ---");
-            $animationData = [
-                'id' => $animationShow->id,
-                'title' => $animationShow->title,
-                'content' => $animationShow->content,
-                'remark' => $animationShow->remark,
-                'url' => $animationShow->url,
-                'multiple' => $animationShow->multiple,
-                'picture' => $animationShow->picture,
-                'capacity' => $animationShow->capacity,
-                'fight' => $animationShow->fight,
-                'reflection' => $animationShow->reflection,
-                'roleplay' => $animationShow->roleplay,
-                'type_animation_id' => $type_animation->id,
-                'type_animation_name' => $type_animation->type,
-                'user_id' => $animationShow->user_id,
-                'validate' => $animationShow->validate,
-                'open_time' => $animationShow->open_time,
-                'closed_time' => $animationShow->closed_time,
-                'time' => $animationShow->time,
-                'other_time' => $animationShow->other_time,
-                'registration' => $animationShow->registration,
-                'registration_date' => $animationShow->registration_date,
-                'nb_likes' => $animationShow->nb_likes,
-                //'room' => "",
-                //'capacity' => "",
-            ];
-        }
-
-        //Log::info($animationData);
-
-        //récupération de l'autheur
-        $author = User::findOrFail($animationShow->user_id);
-
-        
-        // Ajout du nombre de médailles
-        $author->medals = DB::table('evenement_users')
+    // ~~~~~ AUTEUR ~~~~~
+    $author = User::findOrFail($animationShow->user_id);
+    $author->medals = DB::table('evenement_users')
         ->where('user_id', $author->id)
         ->where('masters', true)
         ->count();
 
-        // Ajout des likes
-        $userLikes = Like::where('animation_id', $animationShow->id)
-                 ->pluck('user_id')
-                 ->toArray();
-        //Log::info("User Like");
-        //Log::info($userLikes);
+    // ~~~~~ LIKES ~~~~~
+    $userLikes = Like::where('animation_id', $animationShow->id)
+        ->pluck('user_id')
+        ->toArray();
 
-
-        return response()->json([
-            'status' => 'true',
-            'message' => 'Voici le détail de l\'animation !',
-            'listInscrits' => $listUser,
-            'animationData' => $animationData,
-            'authorLastname' => $author->lastname,
-            'authorFirstname'=> $author->firstname,
-            'authorMedals'=> $author->medals,
-            'allTypeAnim' => $alltypeAnimation,
-            'userLikes'=> $userLikes
-
-        ]);
-    }
+    return response()->json([
+        'status'          => 'true',
+        'message'         => 'Voici le détail de l\'animation !',
+        'listInscrits'    => $listInscrits,
+        'animationData'   => $animationData,
+        'authorLastname'  => $author->lastname,
+        'authorFirstname' => $author->firstname,
+        'authorMedals'    => $author->medals,
+        'allTypeAnim'     => Type_animation::select('id', 'type')->get(),
+        'userLikes'       => $userLikes,
+    ]);
+}
 
     /**
      * Show the form for editing the specified resource.
@@ -480,10 +439,6 @@ class AnimationController extends Controller
     {
         //
     }
-
-    
-
-
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationUpdate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationUpdate(Request $request)
@@ -513,30 +468,34 @@ class AnimationController extends Controller
         $animationUpdate->title = $myAnimationRequest['title'];
         $animationUpdate->content = $myAnimationRequest['content'];
         $animationUpdate->url = $myAnimationRequest['url'];
-        if(isset($myAnimationRequest['registration_date'])){$animationUpdate->remark = $myAnimationRequest['remark'];}
+        if(isset($myAnimationRequest['remark'])){$animationUpdate->remark = $myAnimationRequest['remark'];}
         $animationUpdate->multiple = $myAnimationRequest['multiple'];
         $animationUpdate->picture = $myAnimationRequest['picture'];
         if(isset($myAnimationRequest['capacity'])){$animationUpdate->capacity = $myAnimationRequest['capacity'];}
+        if(isset($myAnimationRequest['min_capacity'])){$animationUpdate->min_capacity = $myAnimationRequest['min_capacity'];}
         if(isset($myAnimationRequest['room_id'])){$animationUpdate->room_id = $myAnimationRequest['room_id'];}
         $animationUpdate->fight = $myAnimationRequest['fight'];
         $animationUpdate->reflection = $myAnimationRequest['reflection'];
         $animationUpdate->roleplay = $myAnimationRequest['roleplay'];
         $animationUpdate->type_animation_id = $myAnimationRequest['type_animation_id'];
+        if(isset($myAnimationRequest['time_slot_id'])){$animationUpdate->time_slot_id = $myAnimationRequest['time_slot_id'];}
         $animationUpdate->open_time = $myAnimationRequest['open_time'];
         $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
+        if(isset($myAnimationRequest['system'])){$animationUpdate->system = $myAnimationRequest['system'];}
+        
+        if(isset($myAnimationRequest['validate'])){$animationUpdate->validate = $myAnimationRequest['validate'];}
         //Si l'auteur modifie l'animation alors qu'elle est déjà validée, elle repasse en "non validée"
-        if ($author->id == $myUserRequest['id'] && $animationUpdate['validate'] == true)
+        /*if ($author->id == $myUserRequest['id'] && $animationUpdate['validate'] == true && $author->type != "admin")
         {
             $animationUpdate->validate = false;
         }else
         {
             $animationUpdate->validate = $myAnimationRequest['validate'];
-        }
+        }*/
         $animationUpdate->time = $myAnimationRequest['time'];
         if($request->adminAnimator){$animationUpdate->user_id = $request->adminAnimator;}else{$animationUpdate->user_id = $myAnimationRequest['user_id'];}
         $animationUpdate->other_time = $myAnimationRequest['other_time'];
         $animationUpdate->registration = $myAnimationRequest['registration'];
-        $animationUpdate->registration_date = $myAnimationRequest['registration_date'];
         if($request->hasFile('picture')){$animationUpdate->picture = "images/animations/$filename";}
 
         // Si le champ "time" a changé, on recalcule "closed_time"
@@ -601,9 +560,11 @@ class AnimationController extends Controller
         //Log::info($request);
 
         $animationDestroy = Animation::findOrFail($request->id);
+        // ── supprime toutes les inscriptions liées ──
+        Inscription::where('animation_id', $request->id)->delete();
         $animationDestroy->delete();
         
-        Log::info("JOURNAL : ---Controller ANIMATION DESTROY : SUPRESSION de l'animation $request->id ---");
+        Log::info("JOURNAL : ---Controller ANIMATION DESTROY : SUPRESSION de l'animation $request->id et des inscriptions liées---");
 
         return response()->json([
             'status' => 'true',

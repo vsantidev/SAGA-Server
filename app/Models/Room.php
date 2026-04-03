@@ -16,7 +16,8 @@ class Room extends Model
         'floor',
         'pmr',
         'description',
-        'picture'
+        'picture',
+        'active'
     ];
 
     // RELATION AVEC LA TABLE SITES
