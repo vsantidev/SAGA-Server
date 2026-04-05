@@ -88,7 +88,9 @@ class UserController extends Controller
                     'firstname' => ucfirst(strtolower($row['firstname'])),
                     'email' => strtolower($row['email']),
                     'password' => bcrypt(Str::random(12)),
-                    'picture' => 'images/users/img_default_viking.png'
+                    'picture' => 'images/users/img_default_viking.png',
+                    'winner_lot'     => false,
+                    'winner_lot_pos' => 0,
                 ]);
             }elseif($user->type != "admin") {
                 if ($user->picture == '/images/users/img_default_drake.jpg'){
@@ -153,6 +155,8 @@ class UserController extends Controller
                     'rewards' => 0,
                     'created_at' => now(),
                     'updated_at' => now(),
+                    'winner_lot'     => false,
+                    'winner_lot_pos' => 0,
                 ];
             })->toArray();
     
@@ -199,6 +203,8 @@ class UserController extends Controller
             'email' => $request->email,
             'picture' => "images/users/$filename",
             'password' => bcrypt(Str::random(12)),
+            'winner_lot'     => false,
+            'winner_lot_pos' => 0,
         ]);
         //Log::info('USER!');
         //Log::info($user);

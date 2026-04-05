@@ -432,13 +432,6 @@ class AnimationController extends Controller
     ]);
 }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function animationEdit(Animation $animation)
-    {
-        //
-    }
     // =================================================================================
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationUpdate ~~~~~~~~~~~~~~~~~~~~~~~~~~
     public function animationUpdate(Request $request)
@@ -574,7 +567,7 @@ class AnimationController extends Controller
     }
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~ ANIMATION : animationDuplicate ~~~~~~~~~~~~~~~~~~~~~~~~~~
-        public function animationDuplicate (Request $request)
+        public function animationDuplicate(Request $request)
         {
             $request->validate([
                 "id" => "required|integer",
