@@ -6,7 +6,7 @@ use App\Models\Inscription;
 use App\Models\Animation;
 use App\Models\Evenement;
 use App\Models\User;
-use App\Models\Timeslot;
+use App\Models\TimeSlot;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -150,6 +150,7 @@ class InscriptionController extends Controller
             'user_id' => 'required|exists:users,id',
         ]);
 
+        // --- 1. Inscriptions existantes ---
         $inscriptions = Inscription::where('user_id', $request->user_id)
             ->whereHas('animations', fn($q) =>
                 $q->whereHas('evenements', fn($q2) =>
@@ -163,7 +164,7 @@ class InscriptionController extends Controller
                     ->with([
                         'timeSlot:id,name,start_time,end_time',
                         'rooms:id,name,picture',
-                        'user:id,firstname,lastname', 
+                        'user:id,firstname,lastname',
                     ]),
             ])
             ->get()
@@ -171,6 +172,7 @@ class InscriptionController extends Controller
                 'inscription_id' => $inscription->id,
                 'weight'         => $inscription->weight,
                 'status'         => $inscription->status,
+                'is_animator'    => false,
                 'animation' => $inscription->animations ? [
                     'id'          => $inscription->animations->id,
                     'title'       => $inscription->animations->title,
@@ -179,6 +181,7 @@ class InscriptionController extends Controller
                     'capacity'    => $inscription->animations->capacity,
                     'room_picture'   => $inscription->animations->rooms?->picture ?? '',
                     'room_name'   => $inscription->animations->rooms?->name ?? '',
+                    'animator_id' => $inscription->animations->user_id, 
                     'animator' => $inscription->animations->user
                         ? ucfirst(strtolower($inscription->animations->user->firstname)) . ' ' . strtoupper($inscription->animations->user->lastname)
                         : '',
@@ -193,9 +196,55 @@ class InscriptionController extends Controller
             ->filter(fn($item) => $item['animation'] !== null)
             ->values();
 
+        // --- 2. Animations où l'user est animateur ---
+        // On récupère les animation_id déjà dans les inscriptions pour éviter les doublons
+        $alreadyInscritIds = $inscriptions->pluck('animation.id')->filter()->all();
+
+        $animationsAsAnimator = Animation::where('user_id', $request->user_id)
+            ->whereHas('evenements', fn($q) => $q->where('actif', 1))
+            ->whereNotIn('id', $alreadyInscritIds)
+            ->with([
+                'timeSlot:id,name,start_time,end_time',
+                'rooms:id,name,picture',
+                'user:id,firstname,lastname',
+            ])
+            ->select('id', 'title', 'open_time', 'closed_time', 'capacity', 'min_capacity', 'time_slot_id', 'user_id', 'room_id')
+            ->get()
+            ->map(fn($animation) => [
+                'inscription_id' => null,
+                'weight'         => null,
+                'status'         => null,
+                'is_animator'    => true,
+                'animation' => [
+                    'id'          => $animation->id,
+                    'title'       => $animation->title,
+                    'open_time'   => $animation->open_time,
+                    'closed_time' => $animation->closed_time,
+                    'capacity'    => $animation->capacity,
+                    'animator_id' => $animation->user_id,
+                    'room_picture'   => $animation->rooms?->picture ?? '',
+                    'room_name'   => $animation->rooms?->name ?? '',
+                    'animator' => $animation->user
+                        ? ucfirst(strtolower($animation->user->firstname)) . ' ' . strtoupper($animation->user->lastname)
+                        : '',
+                ],
+                'time_slot' => $animation->timeSlot?->id ? [
+                    'id'       => $animation->timeSlot->id,
+                    'name'     => $animation->timeSlot->name,
+                    'open_time'=> $animation->timeSlot->start_time,
+                    'end_time' => $animation->timeSlot->end_time,
+                ] : null,
+            ]);
+
+        // --- 3. Fusion & tri par time_slot ---
+        $result = $inscriptions
+            ->concat($animationsAsAnimator)
+            ->sortBy('time_slot.id')
+            ->values();
+
         return response()->json([
             'status'       => 'true',
-            'inscriptions' => $inscriptions,
+            'inscriptions' => $result,
         ]);
     }
 
