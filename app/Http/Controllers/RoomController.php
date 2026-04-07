@@ -103,14 +103,33 @@ class RoomController extends Controller
 
         // ── gestion image ──
         if ($request->hasFile('picture')) {
-            $file     = $request->file('picture');
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/rooms/'), $filename);
-            $data['picture'] = 'images/rooms/' . $filename;
+            $file = $request->file('picture');
+
+            // Vérifie que l'upload s'est bien passé
+            if (!$file->isValid()) {
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => 'Erreur upload image',
+                    'error'   => $file->getErrorMessage(),
+                    'code'    => $file->getError(), // 1 = trop lourd, 2 = trop lourd (form), 3 = partiel, etc.
+                ], 422);
+            }
+
+            try {
+                $filename = uniqid() . "_" . $file->getClientOriginalName();
+                $file->move(public_path('images/rooms/'), $filename);
+                $data['picture'] = 'images/rooms/' . $filename;
+            } catch (\Exception $e) {
+                Log::error("ROOM CREATE: Erreur déplacement image — " . $e->getMessage());
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => 'Impossible de sauvegarder l\'image',
+                    'error'   => $e->getMessage(),
+                ], 500);
+            }
         }
 
         $room = Room::create($data);
-
         Log::info("ROOM CREATE: Room {$room->name} created");
 
         return response()->json([
@@ -133,7 +152,8 @@ class RoomController extends Controller
      */
     public function update(Request $request, Int $id): JsonResponse
     {
-        Log::info($request);
+        //Log::info($request);
+
         $request->validate([
             'name'        => 'sometimes|string|max:255',
             'building'    => 'sometimes|nullable|string|max:255',
@@ -145,7 +165,6 @@ class RoomController extends Controller
         ]);
 
         $room = Room::findOrFail((int)$id);
-
         $roomData = json_decode($request->input('room'), true);
 
         $data = [
@@ -160,14 +179,38 @@ class RoomController extends Controller
 
         // ── gestion image ──
         if ($request->hasFile('picture')) {
-            $file     = $request->file('picture');
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/rooms/'), $filename);
-            $data['picture'] = 'images/rooms/' . $filename;
+            $file = $request->file('picture');
+
+            if (!$file->isValid()) {
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => 'Erreur upload image',
+                    'error'   => $file->getErrorMessage(),
+                    'code'    => $file->getError(),
+                ], 422);
+            }
+
+            try {
+                // Supprime l'ancienne image si elle existe
+                if ($room->picture && file_exists(public_path($room->picture))) {
+                    unlink(public_path($room->picture));
+                }
+
+                $filename = uniqid() . "_" . $file->getClientOriginalName();
+                $file->move(public_path('images/rooms/'), $filename);
+                $data['picture'] = 'images/rooms/' . $filename;
+
+            } catch (\Exception $e) {
+                Log::error("ROOM UPDATE: Erreur déplacement image — " . $e->getMessage());
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => 'Impossible de sauvegarder l\'image',
+                    'error'   => $e->getMessage(),
+                ], 500);
+            }
         }
 
         $room->update($data);
-
         Log::info("ROOM UPDATE: Room {$room->name} updated");
 
         return response()->json([

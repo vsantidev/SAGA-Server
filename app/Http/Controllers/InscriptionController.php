@@ -6,7 +6,7 @@ use App\Models\Inscription;
 use App\Models\Animation;
 use App\Models\Evenement;
 use App\Models\User;
-use App\Models\Timeslot;
+use App\Models\TimeSlot;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
