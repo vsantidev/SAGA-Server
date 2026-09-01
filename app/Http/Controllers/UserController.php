@@ -88,15 +88,14 @@ class UserController extends Controller
                     'firstname' => ucfirst(strtolower($row['firstname'])),
                     'email' => strtolower($row['email']),
                     'password' => bcrypt(Str::random(12)),
-                    'picture' => 'images/users/img_default_viking.png',
-                    'winner_lot'     => false,
-                    'winner_lot_pos' => 0,
+                    'picture' => 'images/users/img_default_esprit.png',
                 ]);
+                
             }elseif($user->type != "admin") {
-                if ($user->picture == '/images/users/img_default_drake.jpg'){
+                if ($user->picture == '/images/users/img_default_viking.png'){
                     $user->update([
                         'type' => 'membre',
-                        'picture' => 'images/users/img_default_viking.png'
+                        'picture' => 'images/users/img_default_esprit.png'
                     ]);
                 }else{
                     $user->update([
@@ -108,9 +107,11 @@ class UserController extends Controller
             //Log::info($user);
             $evenementActif = Evenement::where('actif', 1)->first();
             if ($evenementActif) {
-                Evenement_user::create([
+                Evenement_user::firstOrCreate([
                     'evenement_id' => $evenementActif->id,
                     'user_id'  => $user->id,
+                    'winner_lot_pos' => 0,
+                    'winner_lot'     => false,
                 ]);
             } else {
                 // Gère le cas où aucun événement actif n'est trouvé
@@ -192,7 +193,7 @@ class UserController extends Controller
             //$payload['picture']= 'public/images/'.$filename;
         }else{
 
-            $filename = 'img_default_viking.png';
+            $filename = 'img_default_esprit.png';
         }
 
         //Log::info($request);
@@ -203,8 +204,6 @@ class UserController extends Controller
             'email' => $request->email,
             'picture' => "images/users/$filename",
             'password' => bcrypt(Str::random(12)),
-            'winner_lot'     => false,
-            'winner_lot_pos' => 0,
         ]);
         //Log::info('USER!');
         //Log::info($user);
@@ -217,13 +216,14 @@ class UserController extends Controller
             Evenement_user::create([
                 'evenement_id' => $evenementId,
                 'user_id'  => $user->id,
+                'winner_lot_pos' => 0,
             ]);
 
 
             return response()->json([
                 'user' => $user,
                 'token' => $token,
-                'message' => 'Inscription réussie !'
+                'message' => 'création réussie !'
             ], 201);
             Log::info($user);
         

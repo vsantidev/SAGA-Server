@@ -167,7 +167,7 @@ class TimeSlotController extends Controller
 
             // Init compteur places
             if (!isset($placesLeft[$inscription->animation_id])) {
-                $capacity = $inscription->animations->capacity ?? 0;  // ← animations au lieu de animation
+                $capacity = $inscription->animations->capacity ?? 0;
                 $placesLeft[$inscription->animation_id] = $capacity;
             }
 
