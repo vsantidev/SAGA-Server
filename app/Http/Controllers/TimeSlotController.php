@@ -167,7 +167,7 @@ class TimeSlotController extends Controller
 
             // Init compteur places
             if (!isset($placesLeft[$inscription->animation_id])) {
-                $capacity = $inscription->animations->capacity ?? 0;  // ← animations au lieu de animation
+                $capacity = $inscription->animations->capacity ?? 0;
                 $placesLeft[$inscription->animation_id] = $capacity;
             }
 
@@ -177,6 +177,17 @@ class TimeSlotController extends Controller
                 $usersPlaced[$inscription->user_id] = true;
             } else {
                 $inscription->update(['status' => 'rejected']);
+            }
+        }
+
+        // Deuxième passe : convertir les rejected en cascade_cancelled
+        // si l'user a finalement été placé ailleurs
+        foreach ($inscriptions as $inscription) {
+            if (
+                $inscription->status === 'rejected' &&
+                isset($usersPlaced[$inscription->user_id])
+            ) {
+                $inscription->update(['status' => 'cascade_cancelled']);
             }
         }
 

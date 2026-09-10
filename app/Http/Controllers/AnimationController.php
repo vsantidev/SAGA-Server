@@ -238,7 +238,7 @@ class AnimationController extends Controller
             $file->move(public_path('images/animations/'), $filename);
             //$payload['picture']= 'public/images/'.$filename;
         }else{
-            $filename = 'img_default_conv5.png';
+            $filename = 'img_default_conv6.jpg';
         }
 
         // Convertir les ids en noms de créneaux
@@ -452,8 +452,67 @@ class AnimationController extends Controller
         $myAnimationRequest = json_decode($request->animation, true);
         //Récupération de celui qui post
         $myUserRequest = json_decode($request->userUpdate, true);
-        // Récupère le lieu par son ID
+
+        // Récupère par son ID
         $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
+
+        //Controle si chnagement de créneau
+        if (
+            isset($myAnimationRequest['time_slot_id']) &&
+            $animationUpdate->time_slot_id != $myAnimationRequest['time_slot_id']
+        ) {
+            // Verifie les inscrits pour bloquer si changement de créneau
+            $nbInscrits = $animationUpdate->inscriptions()->count();
+            if ($nbInscrits > 0) {
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => "Impossible de changer le créneau : {$nbInscrits} inscrit(s) sont déjà enregistré(s).",
+                ], 422);
+            }
+
+            
+                // Récupère les horaires du nouveau créneau
+                $newSlot = TimeSlot::findOrFail($myAnimationRequest['time_slot_id']);
+                $dateDebut = $newSlot->start_time->format('Y-m-d H:i:s');
+                $dateFin   = $newSlot->end_time->format('Y-m-d H:i:s');
+
+            // Vérifie si la salle est déjà prise sur ce créneau
+            if (!empty($myAnimationRequest['room_id'])) {
+                $roomTaken = Animation::where('room_id', $myAnimationRequest['room_id'])
+                    ->where('id', '!=', $animationUpdate->id)
+                    ->where('validate', true)
+                    ->where(function ($q) use ($dateDebut, $dateFin) {
+                        $q->where('open_time', '<', $dateFin)
+                        ->where('closed_time', '>', $dateDebut);
+                    })
+                    ->exists();
+
+                if ($roomTaken) {
+                    // Salles libres — même logique que getRoomAvailable
+                    $freeRooms = Room::where('active', 1)
+                        ->with(['animations' => function ($query) use ($dateDebut, $dateFin) {
+                            $query->where('validate', true)
+                                ->where('open_time', '<', $dateFin)
+                                ->where('closed_time', '>', $dateDebut);
+                        }])
+                        ->get()
+                        ->filter(fn($room) => $room->animations->isEmpty())
+                        ->values()
+                        ->map(fn($room) => [
+                            'id'       => $room->id,
+                            'name'     => $room->name,
+                            'building' => $room->building,
+                            'capacity' => $room->capacity,
+                        ]);
+
+                    return response()->json([
+                        'status'     => 'false',
+                        'message'    => "La salle est déjà occupée sur ce créneau.",
+                        'free_rooms' => $freeRooms,
+                    ], 422);
+                }
+            }
+        }
 
         Log::info($myUserRequest);
         $author = User::findOrFail($animationUpdate->user_id);
