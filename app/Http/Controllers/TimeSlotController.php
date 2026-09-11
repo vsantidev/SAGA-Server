@@ -180,17 +180,6 @@ class TimeSlotController extends Controller
             }
         }
 
-        // Deuxième passe : convertir les rejected en cascade_cancelled
-        // si l'user a finalement été placé ailleurs
-        foreach ($inscriptions as $inscription) {
-            if (
-                $inscription->status === 'rejected' &&
-                isset($usersPlaced[$inscription->user_id])
-            ) {
-                $inscription->update(['status' => 'cascade_cancelled']);
-            }
-        }
-
         $timeSlot->update([
             'draw_status' => 'drawn',
             'drawn_at'    => now(),
