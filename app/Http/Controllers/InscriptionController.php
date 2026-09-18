@@ -92,12 +92,40 @@ class InscriptionController extends Controller
             ], 409);
         }
 
-        // Créer le vœu
+        // Déterminer le statut selon l'état du tirage
+        $status = 'pending';
+
+        $animation = Animation::findOrFail($id);
+        $timeSlot  = TimeSlot::findOrFail($animation->time_slot_id);
+
+        if ($timeSlot->draw_status === 'drawn') {
+                // Vérifier si l'user est déjà confirmé sur une animation du même créneau
+            $alreadyConfirmed = Inscription::where('user_id', $request->user_id)
+                ->where('status', 'confirmed')
+                ->whereHas('animations', fn($q) => 
+                    $q->where('time_slot_id', $animation->time_slot_id)
+                )
+                ->exists();
+
+            if ($alreadyConfirmed) {
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => 'Vous êtes déjà confirmé sur une animation de ce créneau.',
+                ], 409);
+            }
+
+            $confirmed  = Inscription::where('animation_id', $id)
+                ->where('status', 'confirmed')
+                ->count();
+            $status = ($animation->capacity - $confirmed) > 0 ? 'confirmed' : 'rejected';
+        }
+
+        // Créer le vœu avec le statut selon tirage
         $inscription = Inscription::create([
             'user_id'       => $request->user_id,
             'animation_id'  => $id,
             'weight'        => $request->weight,
-            'status'        => 'pending',
+            'status'        => $status,
             'registered_at' => now(),
         ]);
 
@@ -319,8 +347,14 @@ class InscriptionController extends Controller
         $animation = Animation::findOrFail($request->animation_id);
         $confirmed = $animation->inscriptions()->where('status', 'confirmed')->count();
         $placesLeft = max(0, $animation->capacity - $confirmed);
-        
-        Log::info($placesLeft);
+
+        // 4. Vérifier si l'user est déjà confirmé sur ce créneau
+        $alreadyConfirmedOnSlot = Inscription::where('user_id', $request->user_id)
+            ->where('status', 'confirmed')
+            ->whereHas('animations', fn($q) => 
+                $q->where('time_slot_id', $request->time_slot_id)
+            )
+        ->exists();
 
         return response()->json([
             'status'          => 'true',
@@ -328,6 +362,7 @@ class InscriptionController extends Controller
             'used_priorities' => $usedPriorities,
             'draw_status'     => $timeSlot->draw_status,
             'places_left'     => $timeSlot->draw_status === 'drawn' ? $placesLeft : null,
+            'already_confirmed_on_slot' => $alreadyConfirmedOnSlot, 
         ]);
     }
 }

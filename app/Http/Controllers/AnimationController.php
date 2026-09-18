@@ -102,7 +102,7 @@ class AnimationController extends Controller
         $animations = Animation::with(['type_animation'])
             ->select(
                 'animations.id', 'animations.title', 'animations.content', 'animations.type_animation_id',
-                'animations.registration_date', 'animations.open_time', 'animations.closed_time',
+                'animations.open_time', 'animations.closed_time',
                 'animations.other_time', 'animations.multiple', 'animations.roleplay', 'animations.reflection',
                 'animations.fight', 'animations.picture', 'animations.room_id', 'animations.user_id',
                 'animations.capacity', 'animations.min_capacity', 'animations.validate', 'animations.system'
