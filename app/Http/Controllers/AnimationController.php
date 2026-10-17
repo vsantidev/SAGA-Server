@@ -212,6 +212,7 @@ class AnimationController extends Controller
             'closed_time' => 'required|date',
             'time' => 'required|integer|min:1',
             'capacity' => 'required|integer|min:1',
+            'min_capacity' => 'nullable|integer|min:0|lte:capacity',
             'type_animation_id' => 'required',
             'time_slot_id'     => 'required|exists:time_slots,id',
         ], [
@@ -224,6 +225,9 @@ class AnimationController extends Controller
             'closed_time.required' => 'Merci de renseigner une tranche horaire',
             'time.required' => 'Merci de renseigner la durée de l\'animation',
             'capacity.integer' => 'Merci de renseigner le nombre de joueurs max',
+            'min_capacity.integer' => 'Le nombre de places mini doit être un nombre entier',
+            'min_capacity.min' => 'Le nombre de places mini ne peut pas être négatif',
+            'min_capacity.lte' => 'Le nombre de places mini ne peut pas dépasser le nombre de places maxi',
             'type_animation_id.required' => 'Merci de selectionner un type d\'animation',
             'time_slot_id.required'     => 'Merci de selectionner un créneau'
         ]);
