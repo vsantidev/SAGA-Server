@@ -439,15 +439,6 @@ class AnimationController extends Controller
         //Log::info("---Controller Animation : update Animation |  Request 1---");
         //Log::info($request);
         
-        if($request->hasFile('picture')){
-            $file = $request->file('picture');
-            $extension = $file->getClientOriginalExtension();
-            //$filename = time() .'.'.$extension;
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/animations/'), $filename);
-            //$payload['picture']= 'public/images/'.$filename;
-        }
-
         //Récupération de l'animation
         $myAnimationRequest = json_decode($request->animation, true);
         //Récupération de celui qui post
@@ -456,11 +447,33 @@ class AnimationController extends Controller
         // Récupère par son ID
         $animationUpdate = Animation::findOrFail($myAnimationRequest['id']);
 
+        // Les animations des conventions passées sont consultables mais pas modifiables
+        $evenementActif = Evenement::where('actif', 1)->first();
+        if (!$evenementActif || $animationUpdate->evenement_id != $evenementActif->id) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Animation d\'une convention passée : consultation uniquement.',
+            ], 403);
+        }
+
+        // État final après modification : valeur de la requête, sinon valeur actuelle
+        $finalSlotId      = $myAnimationRequest['time_slot_id'] ?? $animationUpdate->time_slot_id;
+        $finalRoomId      = $myAnimationRequest['room_id'] ?? $animationUpdate->room_id;
+        $finalValidate    = (bool) ($myAnimationRequest['validate'] ?? $animationUpdate->validate);
+        $slotChanged      = $finalSlotId != $animationUpdate->time_slot_id;
+        $roomChanged      = $finalRoomId != $animationUpdate->room_id;
+        $becomesValidated = $finalValidate && !$animationUpdate->validate;
+
+        // Une animation validée doit avoir un créneau
+        if ($finalValidate && empty($finalSlotId)) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Choisissez un créneau avant de valider l\'animation.',
+            ], 422);
+        }
+
         //Controle si chnagement de créneau
-        if (
-            isset($myAnimationRequest['time_slot_id']) &&
-            $animationUpdate->time_slot_id != $myAnimationRequest['time_slot_id']
-        ) {
+        if ($slotChanged) {
             // Verifie les inscrits pour bloquer si changement de créneau
             $nbInscrits = $animationUpdate->inscriptions()->count();
             if ($nbInscrits > 0) {
@@ -469,49 +482,61 @@ class AnimationController extends Controller
                     'message' => "Impossible de changer le créneau : {$nbInscrits} inscrit(s) sont déjà enregistré(s).",
                 ], 422);
             }
+        }
 
-            
-                // Récupère les horaires du nouveau créneau
-                $newSlot = TimeSlot::findOrFail($myAnimationRequest['time_slot_id']);
-                $dateDebut = $newSlot->start_time->format('Y-m-d H:i:s');
-                $dateFin   = $newSlot->end_time->format('Y-m-d H:i:s');
+        // Vérifie la salle dès que le créneau, la salle ou la validation change
+        if (!empty($finalRoomId) && !empty($finalSlotId) && ($slotChanged || $roomChanged || $becomesValidated)) {
+            // Horaires du créneau (sans heure de fin : fin de l'animation)
+            $newSlot = TimeSlot::findOrFail($finalSlotId);
+            $dateDebut = $newSlot->start_time->format('Y-m-d H:i:s');
+            $dateFin   = $newSlot->end_time
+                ? $newSlot->end_time->format('Y-m-d H:i:s')
+                : ($myAnimationRequest['closed_time'] ?? $animationUpdate->closed_time);
 
             // Vérifie si la salle est déjà prise sur ce créneau
-            if (!empty($myAnimationRequest['room_id'])) {
-                $roomTaken = Animation::where('room_id', $myAnimationRequest['room_id'])
-                    ->where('id', '!=', $animationUpdate->id)
-                    ->where('validate', true)
-                    ->where(function ($q) use ($dateDebut, $dateFin) {
-                        $q->where('open_time', '<', $dateFin)
-                        ->where('closed_time', '>', $dateDebut);
-                    })
-                    ->exists();
+            $roomTaken = Animation::where('room_id', $finalRoomId)
+                ->where('id', '!=', $animationUpdate->id)
+                ->where('validate', true)
+                ->where(function ($q) use ($dateDebut, $dateFin) {
+                    $q->where('open_time', '<', $dateFin)
+                    ->where('closed_time', '>', $dateDebut);
+                })
+                ->exists();
 
-                if ($roomTaken) {
-                    // Salles libres — même logique que getRoomAvailable
-                    $freeRooms = Room::where('active', 1)
-                        ->with(['animations' => function ($query) use ($dateDebut, $dateFin) {
-                            $query->where('validate', true)
-                                ->where('open_time', '<', $dateFin)
-                                ->where('closed_time', '>', $dateDebut);
-                        }])
-                        ->get()
-                        ->filter(fn($room) => $room->animations->isEmpty())
-                        ->values()
-                        ->map(fn($room) => [
-                            'id'       => $room->id,
-                            'name'     => $room->name,
-                            'building' => $room->building,
-                            'capacity' => $room->capacity,
-                        ]);
+            if ($roomTaken) {
+                // Salles libres — même logique que getRoomAvailable
+                $freeRooms = Room::where('active', 1)
+                    ->with(['animations' => function ($query) use ($dateDebut, $dateFin) {
+                        $query->where('validate', true)
+                            ->where('open_time', '<', $dateFin)
+                            ->where('closed_time', '>', $dateDebut);
+                    }])
+                    ->get()
+                    ->filter(fn($room) => $room->animations->isEmpty())
+                    ->values()
+                    ->map(fn($room) => [
+                        'id'       => $room->id,
+                        'name'     => $room->name,
+                        'building' => $room->building,
+                        'capacity' => $room->capacity,
+                    ]);
 
-                    return response()->json([
-                        'status'     => 'false',
-                        'message'    => "La salle est déjà occupée sur ce créneau.",
-                        'free_rooms' => $freeRooms,
-                    ], 422);
-                }
+                return response()->json([
+                    'status'     => 'false',
+                    'message'    => "La salle est déjà occupée sur ce créneau.",
+                    'free_rooms' => $freeRooms,
+                ], 422);
             }
+        }
+
+        // Image enregistrée seulement une fois les contrôles passés
+        if($request->hasFile('picture')){
+            $file = $request->file('picture');
+            $extension = $file->getClientOriginalExtension();
+            //$filename = time() .'.'.$extension;
+            $filename = uniqid() . "_" . $file->getClientOriginalName();
+            $file->move(public_path('images/animations/'), $filename);
+            //$payload['picture']= 'public/images/'.$filename;
         }
 
         Log::info($myUserRequest);
@@ -634,11 +659,23 @@ class AnimationController extends Controller
     
     
             $Animation = Animation::findOrFail($request->id);
-    
+
+            $evenementActif = Evenement::where('actif', 1)->first();
+            if (!$evenementActif) {
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => 'Aucune convention active : impossible de dupliquer l\'animation.',
+                ], 422);
+            }
+
             $newAnimation = $Animation->replicate();
 
             //Changement de statut pour permettre a l'orga de modifier des éléments.
             $newAnimation->validate = 0;
+            // La copie va toujours dans la convention active, sans créneau.
+            // La salle est gardée : le conflit est vérifié à l'affectation du créneau (animationUpdate).
+            $newAnimation->evenement_id = $evenementActif->id;
+            $newAnimation->time_slot_id = null;
 
             $newAnimation->save();
             
