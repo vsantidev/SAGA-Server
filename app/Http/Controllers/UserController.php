@@ -92,24 +92,23 @@ class UserController extends Controller
                 ]);
                 
             }elseif($user->type != "admin") {
-                if ($user->picture == '/images/users/img_default_viking.png'){
-                    $user->update([
-                        'type' => 'membre',
-                        'picture' => 'images/users/img_default_esprit.png'
-                    ]);
-                }else{
-                    $user->update([
-                        'type' => 'membre',
-                    ]);
-                }                
+                // 'type' n'est pas dans le $fillable : affectation directe
+                $user->type = 'membre';
+                // Ancien avatar par défaut remplacé par celui de la convention
+                if ($user->picture == 'images/users/img_default_viking.png'){
+                    $user->picture = 'images/users/img_default_esprit.png';
+                }
+                $user->save();
             }
 
             //Log::info($user);
             $evenementActif = Evenement::where('actif', 1)->first();
             if ($evenementActif) {
+                // Une seule ligne par user/convention : les lots ne servent qu'à la création
                 Evenement_user::firstOrCreate([
                     'evenement_id' => $evenementActif->id,
                     'user_id'  => $user->id,
+                ], [
                     'winner_lot_pos' => 0,
                     'winner_lot'     => false,
                 ]);
@@ -132,21 +131,14 @@ class UserController extends Controller
         if ($evenementActif) {
             $evenementId = $evenementActif->id;
         
-            // Récupérer les ID des utilisateurs non présents dans `evenement_users` pour cet `evenement_id`
-            /*$users = User::whereNotIn('id', function($query) use ($evenementId) {
-                $query->select('user_id')
-                    ->from('evenement_users')
-                    ->where('evenement_id', $evenementId);
-            })->get();*/
+            // Utilisateurs non archivés pas encore rattachés à la convention active
+            $users = User::where('type', '!=', 'archive')
+                ->whereNotIn('id', function($query) use ($evenementId) {
+                    $query->select('user_id')
+                        ->from('evenement_users')
+                        ->where('evenement_id', $evenementId);
+                })->get();
 
-            // Récupérer les ID des utilisateurs non présents dans `evenement_users`
-            $users = User::whereNotIn('id', function($query) {
-                $query->select('user_id')
-                      ->from('evenement_users');
-            })->get();
-            
-
-    
             // Préparer les données pour insertion
             $data = $users->map(function($user) use ($evenementId) {
                 return [
