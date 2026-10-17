@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Nette\Utils\Random;
 
@@ -524,40 +525,43 @@ class UserController extends Controller
      */
     public function userUpdateMdp(Request $request) 
     {
-        //Log::info("---User Controller (UpdateMdp | Request 1) ---");
+        // Le mot de passe modifié est celui du compte connecté
+        $myUserRequest = $request->user();
 
-        $myUserRequest = User::findOrFail($request->user_id);
-        //Log::info($myUserRequest->password);
-        //Log::info($myUserRequest->password);
-        
-        if(password_verify($request->oldPassword, $myUserRequest->password)){
-            if($request->newPassword1 == $request->newPassword2){
-
-                $myUserRequest->password = bcrypt($request->newPassword1);
-                Log::info("JOURNAL : ---Controller $myUserRequest->firstname $myUserRequest->lastnameuser : $myUserRequest à MAJ son profil ---");
-                $myUserRequest->save();
-                return response()->json([
-                    'status' => 'true',
-                    'message' => 'mot de passe utilisateur mis à jour avec succès',
-                ]);
-
-            }else{
-                return response()->json([
-                    'status' => 'false',
-                    'message' => 'Confirmation incorrecte : vos mots de passe ne sont pas égaux',
-                ]);
-
-            }
-        }else{
+        $validator = Validator::make($request->all(), [
+            'oldPassword'  => 'required|string',
+            'newPassword1' => 'required|string|min:6|max:72|same:newPassword2',
+        ], [
+            'oldPassword.required'  => 'Merci de saisir votre mot de passe actuel.',
+            'newPassword1.required' => 'Le mot de passe doit faire au moins 6 caractères.',
+            'newPassword1.min'      => 'Le mot de passe doit faire au moins 6 caractères.',
+            'newPassword1.max'      => 'Le mot de passe doit faire au plus 72 caractères.',
+            'newPassword1.same'     => 'Les deux saisies du nouveau mot de passe ne sont pas identiques.',
+        ]);
+        if ($validator->fails()) {
             return response()->json([
-                'status' => 'false',
-                'message' => 'erreur sur l\'ancien mot de passe',
-            ]);
+                'status'  => 'false',
+                'message' => $validator->errors()->first(),
+                'errors'  => $validator->errors(),
+            ], 422);
         }
-        //Log::info($request);
-        //transformation du String en tableau
-        //$myUserRequest = json_decode($request->user, true); 
 
+        if (!Hash::check($request->oldPassword, $myUserRequest->password)) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Ancien mot de passe incorrect.',
+            ], 422);
+        }
+
+        // Le cast 'hashed' du modèle hache le mot de passe à l'enregistrement
+        $myUserRequest->password = $request->newPassword1;
+        $myUserRequest->save();
+        Log::info("JOURNAL : ---Controller $myUserRequest->firstname $myUserRequest->lastname a changé son mot de passe ---");
+
+        return response()->json([
+            'status'  => 'true',
+            'message' => 'Mot de passe mis à jour.',
+        ]);
     }
 
     // =================================================================================

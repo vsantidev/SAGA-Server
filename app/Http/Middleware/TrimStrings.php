@@ -15,5 +15,9 @@ class TrimStrings extends Middleware
         'current_password',
         'password',
         'password_confirmation',
+        // Changement de mot de passe (UserController::userUpdateMdp) : rien n'est retiré, comme au login
+        'oldPassword',
+        'newPassword1',
+        'newPassword2',
     ];
 }

@@ -25,6 +25,13 @@ class AuthController extends Controller
             return $this->lockoutResponse($request);
         }
 
+        // Un mot de passe vide est refusé, même si un ancien compte en a un
+        if (!is_string($request->email) || !is_string($request->password) || $request->password === '') {
+            return response()->json([
+                'message' => 'Merci de saisir votre e-mail et votre mot de passe.',
+            ], 422);
+        }
+
         $user = User::where('email', $request->email)->first();
 
         if ($user && Hash::check($request->password, $user->password)) {
