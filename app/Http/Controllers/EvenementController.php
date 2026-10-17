@@ -215,14 +215,14 @@ class EvenementController extends Controller
         ]);
 
         $winners = Evenement_user::where('evenement_id', $request->evenement_id)
-            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->whereHas('user', fn($q) => $q->where('is_orga', false)->whereNotIn('type', ['admin', 'archive']))
             ->where('winner_lot', true)
             ->orderBy('winner_lot_pos')
             ->with('user:id,firstname,lastname')
             ->get();
 
         $total = Evenement_user::where('evenement_id', $request->evenement_id)
-            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->whereHas('user', fn($q) => $q->where('is_orga', false)->whereNotIn('type', ['admin', 'archive']))
             ->count();
 
         return response()->json([
@@ -240,9 +240,9 @@ class EvenementController extends Controller
             'nb_lots'      => 'required|integer|min:1',
         ]);
 
-        // Récupérer tous les animateurs de l'événement
+        // Participants éligibles : tous les rattachés sauf organisateurs, admins et archivés
         $animateurs = Evenement_user::where('evenement_id', $request->evenement_id)
-            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->whereHas('user', fn($q) => $q->where('is_orga', false)->whereNotIn('type', ['admin', 'archive']))
             ->get();
 
         if ($animateurs->count() < $request->nb_lots) {
@@ -254,7 +254,7 @@ class EvenementController extends Controller
 
         // Reset du tirage précédent
         Evenement_user::where('evenement_id', $request->evenement_id)
-            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->whereHas('user', fn($q) => $q->where('is_orga', false)->whereNotIn('type', ['admin', 'archive']))
             ->update([
                 'winner_lot'     => false,
                 'winner_lot_pos' => 0,
@@ -272,7 +272,7 @@ class EvenementController extends Controller
 
         // Retourner les gagnants
         $winners = Evenement_user::where('evenement_id', $request->evenement_id)
-            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->whereHas('user', fn($q) => $q->where('is_orga', false)->whereNotIn('type', ['admin', 'archive']))
             ->where('winner_lot', true)
             ->orderBy('winner_lot_pos')
             ->with('user:id,firstname,lastname')
@@ -294,7 +294,7 @@ class EvenementController extends Controller
         ]);
 
         Evenement_user::where('evenement_id', $request->evenement_id)
-            ->whereHas('user', fn($q) => $q->where('is_orga', false))
+            ->whereHas('user', fn($q) => $q->where('is_orga', false)->whereNotIn('type', ['admin', 'archive']))
             ->update([
                 'winner_lot'     => false,
                 'winner_lot_pos' => 0,
