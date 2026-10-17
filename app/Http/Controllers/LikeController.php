@@ -81,16 +81,16 @@ class LikeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function showLike(Request $request, Int $id): JsonResponse
+    public function showLike(Request $request): JsonResponse
     {
         //Log::info("---Function Like : Show ---");
         $request->validate([
-            "id" => "required|integer",
+            "id" => "required|integer|exists:animations,id",
         ]);
 
         //Log::info($request);
 
-        $likeTable = Like::select('user_id')->where('animation_id', '=', $id)->get();
+        $likeTable = Like::select('user_id')->where('animation_id', '=', $request->id)->get();
 
         return response()->json([
             'status' => 'true',
