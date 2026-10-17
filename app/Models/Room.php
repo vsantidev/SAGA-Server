@@ -17,7 +17,8 @@ class Room extends Model
         'pmr',
         'description',
         'picture',
-        'active'
+        'active',
+        'site_id'
     ];
 
     // RELATION AVEC LA TABLE SITES

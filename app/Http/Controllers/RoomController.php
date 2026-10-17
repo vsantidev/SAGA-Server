@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Room;
+use App\Models\Evenement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
@@ -94,12 +95,24 @@ class RoomController extends Controller
             'pmr'         => 'nullable|boolean',
             'description' => 'nullable|string',
             'active'      => 'nullable|boolean',
+            'site_id'     => 'nullable|exists:sites,id',
         ]);
 
         $data = $request->only([
             'name', 'building', 'capacity',
             'floor', 'pmr', 'description', 'active',
         ]);
+
+        // site_id et pmr sont obligatoires en base : site de la convention active par défaut
+        $data['site_id'] = $request->site_id ?? Evenement::where('actif', 1)->value('site_id');
+        $data['pmr']     = $request->boolean('pmr');
+
+        if (!$data['site_id']) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Aucune convention active : impossible de déterminer le site de la salle.',
+            ], 422);
+        }
 
         // ── gestion image ──
         if ($request->hasFile('picture')) {
