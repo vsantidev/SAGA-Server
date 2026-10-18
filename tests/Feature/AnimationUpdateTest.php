@@ -164,4 +164,81 @@ class AnimationUpdateTest extends TestCase
 
         $this->assertSame('Animation de test', $animation->fresh()->title);
     }
+
+    // 7 — Règle B : une salle est prise par une animation du même créneau,
+    // même si ses horaires sont faux (cas d'une copie qui a gardé ceux de l'original)
+    public function test_room_used_on_same_slot_with_wrong_times_is_taken(): void
+    {
+        $this->makeAnimation([
+            'room_id'      => $this->room2->id,
+            'time_slot_id' => $this->slot->id,
+            'open_time'    => '2026-11-28 15:00:00',
+            'closed_time'  => '2026-11-28 17:00:00',
+        ], true);
+        $animation = $this->makeAnimation(['room_id' => $this->room1->id, 'time_slot_id' => $this->slot->id], true);
+
+        $response = $this->update($animation, ['room_id' => $this->room2->id])->assertStatus(422);
+
+        $this->assertNotContains($this->room2->id, array_column($response->json('free_rooms'), 'id'));
+        $this->assertEquals($this->room1->id, $animation->fresh()->room_id);
+    }
+
+    // 8 — Horaires recalés : une copie hors du créneau démarre au début du nouveau créneau
+    public function test_times_are_realigned_when_new_slot_does_not_contain_them(): void
+    {
+        $animation = $this->makeAnimation([
+            'room_id'     => $this->room1->id,
+            'open_time'   => '2026-11-28 15:00:00',
+            'closed_time' => '2026-11-28 17:00:00',
+            'time'        => 2,
+        ], false);
+
+        $this->update($animation, ['time_slot_id' => $this->slot->id])->assertStatus(200);
+
+        $animation = $animation->fresh();
+        $this->assertSame('2026-11-28 10:00:00', $animation->open_time);
+        $this->assertSame('2026-11-28 12:00:00', $animation->closed_time);
+    }
+
+    // 9 — Garde-fou : des horaires déjà dans le créneau ne sont pas modifiés
+    public function test_times_inside_new_slot_are_kept(): void
+    {
+        $animation = $this->makeAnimation([
+            'room_id'     => $this->room1->id,
+            'open_time'   => '2026-11-28 11:00:00',
+            'closed_time' => '2026-11-28 12:00:00',
+            'time'        => 1,
+        ], false);
+
+        $this->update($animation, ['time_slot_id' => $this->slot->id])->assertStatus(200);
+
+        $this->assertSame('2026-11-28 11:00:00', $animation->fresh()->open_time);
+    }
+
+    // 10 — Ordre : la salle est vérifiée avec les horaires recalés, pas avec les anciens
+    public function test_room_is_checked_with_realigned_times(): void
+    {
+        $autreCreneau = TimeSlot::create([
+            'evenement_id' => $this->evenement->id,
+            'name'         => 'Créneau chevauchant',
+            'start_time'   => '2026-11-28 11:00:00',
+            'end_time'     => '2026-11-28 13:00:00',
+        ]);
+        $this->makeAnimation([
+            'room_id'      => $this->room2->id,
+            'time_slot_id' => $autreCreneau->id,
+            'open_time'    => '2026-11-28 11:00:00',
+            'closed_time'  => '2026-11-28 13:00:00',
+        ], true);
+        $animation = $this->makeAnimation([
+            'room_id'     => $this->room2->id,
+            'open_time'   => '2026-11-28 15:00:00',
+            'closed_time' => '2026-11-28 17:00:00',
+            'time'        => 2,
+        ], false);
+
+        $this->update($animation, ['time_slot_id' => $this->slot->id])->assertStatus(422);
+
+        $this->assertNull($animation->fresh()->time_slot_id);
+    }
 }

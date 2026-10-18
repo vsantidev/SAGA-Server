@@ -484,32 +484,54 @@ class AnimationController extends Controller
             }
         }
 
+        // Horaires finaux, recalés AVANT la vérification de salle :
+        // si le créneau change et que l'animation ne démarre pas dedans, elle démarre au début du créneau
+        $finalOpen   = $myAnimationRequest['open_time'] ?? $animationUpdate->open_time;
+        $finalClosed = $myAnimationRequest['closed_time'] ?? $animationUpdate->closed_time;
+        $finalOpen   = $finalOpen ? (new DateTime($finalOpen))->format('Y-m-d H:i:s') : null;
+        $finalClosed = $finalClosed ? (new DateTime($finalClosed))->format('Y-m-d H:i:s') : null;
+        $finalSlot   = !empty($finalSlotId) ? TimeSlot::findOrFail($finalSlotId) : null;
+
+        if ($slotChanged && $finalSlot) {
+            $slotStart = $finalSlot->start_time->format('Y-m-d H:i:s');
+            $slotEnd   = $finalSlot->end_time?->format('Y-m-d H:i:s');
+
+            if (!$finalOpen || $finalOpen < $slotStart || ($slotEnd && $finalOpen >= $slotEnd)) {
+                $hours       = intval($myAnimationRequest['time'] ?? $animationUpdate->time);
+                $finalOpen   = $slotStart;
+                $finalClosed = (new DateTime($slotStart))->add(new DateInterval('PT' . $hours . 'H'))->format('Y-m-d H:i:s');
+            }
+        }
+
         // Vérifie la salle dès que le créneau, la salle ou la validation change
-        if (!empty($finalRoomId) && !empty($finalSlotId) && ($slotChanged || $roomChanged || $becomesValidated)) {
-            // Horaires du créneau (sans heure de fin : fin de l'animation)
-            $newSlot = TimeSlot::findOrFail($finalSlotId);
-            $dateDebut = $newSlot->start_time->format('Y-m-d H:i:s');
-            $dateFin   = $newSlot->end_time
-                ? $newSlot->end_time->format('Y-m-d H:i:s')
-                : ($myAnimationRequest['closed_time'] ?? $animationUpdate->closed_time);
+        if (!empty($finalRoomId) && $finalSlot && ($slotChanged || $roomChanged || $becomesValidated)) {
+            // Fenêtre : horaires finaux de l'animation (à défaut, ceux du créneau)
+            $dateDebut = $finalOpen ?? $finalSlot->start_time->format('Y-m-d H:i:s');
+            $dateFin   = $finalClosed ?? $finalSlot->end_time?->format('Y-m-d H:i:s') ?? $dateDebut;
+
+            // Salle occupée : animation validée sur le même créneau, ou dont les horaires chevauchent
+            $occupe = function ($q) use ($finalSlotId, $dateDebut, $dateFin) {
+                $q->where('time_slot_id', $finalSlotId)
+                    ->orWhere(function ($q2) use ($dateDebut, $dateFin) {
+                        $q2->where('open_time', '<', $dateFin)
+                            ->where('closed_time', '>', $dateDebut);
+                    });
+            };
 
             // Vérifie si la salle est déjà prise sur ce créneau
             $roomTaken = Animation::where('room_id', $finalRoomId)
                 ->where('id', '!=', $animationUpdate->id)
                 ->where('validate', true)
-                ->where(function ($q) use ($dateDebut, $dateFin) {
-                    $q->where('open_time', '<', $dateFin)
-                    ->where('closed_time', '>', $dateDebut);
-                })
+                ->where($occupe)
                 ->exists();
 
             if ($roomTaken) {
-                // Salles libres — même logique que getRoomAvailable
+                // Salles libres — même règle d'occupation
                 $freeRooms = Room::where('active', 1)
-                    ->with(['animations' => function ($query) use ($dateDebut, $dateFin) {
+                    ->with(['animations' => function ($query) use ($occupe, $animationUpdate) {
                         $query->where('validate', true)
-                            ->where('open_time', '<', $dateFin)
-                            ->where('closed_time', '>', $dateDebut);
+                            ->where('animations.id', '!=', $animationUpdate->id)
+                            ->where($occupe);
                     }])
                     ->get()
                     ->filter(fn($room) => $room->animations->isEmpty())
@@ -556,8 +578,9 @@ class AnimationController extends Controller
         $animationUpdate->roleplay = $myAnimationRequest['roleplay'];
         $animationUpdate->type_animation_id = $myAnimationRequest['type_animation_id'];
         if(isset($myAnimationRequest['time_slot_id'])){$animationUpdate->time_slot_id = $myAnimationRequest['time_slot_id'];}
-        $animationUpdate->open_time = $myAnimationRequest['open_time'];
-        $animationUpdate->closed_time = $myAnimationRequest['closed_time'];
+        // Horaires finaux (éventuellement recalés sur le créneau)
+        $animationUpdate->open_time = $finalOpen;
+        $animationUpdate->closed_time = $finalClosed;
         if(isset($myAnimationRequest['system'])){$animationUpdate->system = $myAnimationRequest['system'];}
         
         if(isset($myAnimationRequest['validate'])){$animationUpdate->validate = $myAnimationRequest['validate'];}
@@ -577,7 +600,7 @@ class AnimationController extends Controller
 
         // Si le champ "time" a changé, on recalcule "closed_time"
         if ($animationUpdate->isDirty('time')) {
-        $openTime = new DateTime($myAnimationRequest['open_time']);
+        $openTime = new DateTime($finalOpen);
             $hoursToAdd = intval($myAnimationRequest['time']); // ex: 4
             $interval = new DateInterval('PT' . $hoursToAdd . 'H');
             $closedTime = clone $openTime;
