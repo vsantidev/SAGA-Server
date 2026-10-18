@@ -71,8 +71,8 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->prefix('like')->group(function () {
-    // return a page that shows all user
-    Route::get('/animationIndex', [LikeController::class, 'likeShow']);
+    // return the users who liked an animation (?id=animation_id)
+    Route::get('/animationIndex', [LikeController::class, 'showLike']);
     // updates a user
 
 });
