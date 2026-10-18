@@ -129,6 +129,35 @@ class InscriptionController extends Controller
             'registered_at' => now(),
         ]);
 
+        // Inscriptions simultanées après le calcul : les contrôles ci-dessus ont pu laisser
+        // passer deux requêtes à la fois. On revérifie après l'écriture : face à une
+        // inscription validée plus ancienne (id plus petit), la plus récente recule.
+        if ($status === 'confirmed') {
+            $confirmedBefore = Inscription::where('animation_id', $id)
+                ->where('status', 'confirmed')
+                ->where('id', '<', $inscription->id)
+                ->count();
+
+            $confirmedElsewhere = Inscription::where('user_id', $userRegister->id)
+                ->where('status', 'confirmed')
+                ->where('id', '<', $inscription->id)
+                ->whereHas('animations', fn($q) =>
+                    $q->where('time_slot_id', $animation->time_slot_id)
+                )
+                ->exists();
+
+            if ($confirmedBefore >= $animation->capacity || $confirmedElsewhere) {
+                $inscription->delete();
+
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => $confirmedElsewhere
+                        ? 'Vous êtes déjà confirmé sur une animation de ce créneau.'
+                        : 'Plus de place sur cette animation.',
+                ], 409);
+            }
+        }
+
         Log::info("REGISTER: User {$userRegister->lastname} {$userRegister->firstname} registered wish (weight: {$request->weight}) for animation {$id}");
 
         return response()->json([
