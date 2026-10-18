@@ -175,36 +175,46 @@ class EvenementController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     *
+     * Seule une convention inactive, sans animation ni compte rattaché, peut être supprimée ;
+     * ses créneaux partent avec elle (cascade sur time_slots). Sinon : 409 avec un message et les nombres.
      */
     public function destroy(Request $request)
     {
-        //test si l'evenement recu n'a pas d'animation référencée
-        if (!Animation::where('evenement_id', $request->id)->exists()) {
-            // Il n'y a aucune animation pour cet événement -> suppr possible
-
-            $evenement = Evenement::find($request->id);
-            if (!$evenement) {
-                return response()->json([
-                    'message' => 'Événement non trouvé.'
-                ], 404);
-            }
-            $evenement->delete();
-
-            
-            Log::info("JOURNAL : ---Controller EVENT SUPPR: suppr event, pas d'animation référencée, $request->id ---");
-
+        $evenement = Evenement::find($request->id);
+        if (!$evenement) {
             return response()->json([
-                'message' => 'Événement supprimé avec succès.'
-            ], 200);
-
-        } else {
-            // Il y a déjà des animations liées à cet événement - Suppr impossible
-            Log::info("JOURNAL : ---Controller EVENT SUPPR: impossible de suppr event $request->id ---");
-            return response()->json([
-                'message' => 'Impossible de supprimer des animations existentes!'
-            ], 520);
+                'message' => 'Convention introuvable.'
+            ], 404);
         }
-        //
+
+        if ($evenement->actif) {
+            Log::info("JOURNAL : ---Controller EVENT SUPPR: refus, convention active $evenement->id ---");
+            return response()->json([
+                'message' => 'Impossible de supprimer la convention active.'
+            ], 409);
+        }
+
+        $counts = [
+            'animations'   => Animation::where('evenement_id', $evenement->id)->count(),
+            'comptes'      => Evenement_user::where('evenement_id', $evenement->id)->count(),
+        ];
+
+        if (array_sum($counts) > 0) {
+            Log::info("JOURNAL : ---Controller EVENT SUPPR: refus, convention non vide $evenement->id ---", $counts);
+            return response()->json([
+                'message' => "Impossible de supprimer cette convention : elle contient "
+                    . "{$counts['animations']} animation(s) et {$counts['comptes']} compte(s) rattaché(s).",
+                'counts' => $counts,
+            ], 409);
+        }
+
+        $evenement->delete();
+        Log::info("JOURNAL : ---Controller EVENT SUPPR: suppr event sans animation ni compte $evenement->id ---");
+
+        return response()->json([
+            'message' => 'Convention supprimée.'
+        ], 200);
     }
 
     // GET /eventresults
