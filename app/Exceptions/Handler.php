@@ -2,8 +2,10 @@
 
 namespace App\Exceptions;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+
 
 class Handler extends ExceptionHandler
 {
@@ -36,4 +38,16 @@ class Handler extends ExceptionHandler
 
         return redirect()->guest(route('login'));
     }
+
+    public function render($request, Throwable $exception)
+{
+    if ($exception instanceof ValidationException) {
+        return response()->json([
+            'message' => 'Erreur de validation',
+            'errors' => $exception->errors(),
+        ], 422);
+    }
+
+    return parent::render($request, $exception);
+}
 }

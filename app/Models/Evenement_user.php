@@ -15,6 +15,8 @@ class Evenement_user extends Model
         'evenement_id',
         'rewards',
         'masters',
+        'winner_lot',
+        'winner_lot_pos',
         ];
 
     // RELATION AVEC LA TABLE USERS
@@ -28,4 +30,10 @@ class Evenement_user extends Model
     {
         return $this->belongsToMany(Evenement::class);
     }
-}
+
+    // RELATION DIRECTE POUR LE TIRAGE
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+    }
