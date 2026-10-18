@@ -173,8 +173,39 @@ class UserController extends Controller
         $request->validate([
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255',
+        ], [
+            'lastname.required' => 'Merci de renseigner le nom',
+            'firstname.required' => 'Merci de renseigner le prénom',
+            'email.required' => 'Merci de renseigner l\'e-mail',
+            'email.email' => 'L\'e-mail n\'est pas valide',
         ]);
+
+        // Le compte est rattaché à la convention active : la vérifier avant toute écriture
+        $evenementActif = Evenement::where('actif', 1)->first();
+        if (!$evenementActif) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Aucune convention active : activez-en une avant de créer un compte.',
+            ], 422);
+        }
+
+        // Même normalisation que l'import CSV
+        $email = mb_strtolower(trim($request->email));
+
+        // Un participant d'une année précédente existe déjà : il faut le désarchiver, pas le recréer
+        $existingUser = User::where('email', $email)->first();
+        if ($existingUser) {
+            return response()->json([
+                'status'  => 'false',
+                'code'    => 'email_pris',
+                'user_id' => $existingUser->id,
+                'type'    => $existingUser->type,
+                'message' => $existingUser->type === 'archive'
+                    ? 'Ce compte existe déjà et il est archivé. Ouvrez son profil pour le réactiver.'
+                    : 'Un compte existe déjà avec cet e-mail.',
+            ], 409);
+        }
 
         if($request->hasFile('picture')){
             $file = $request->file('picture');
@@ -190,42 +221,31 @@ class UserController extends Controller
 
         //Log::info($request);
 
-        $user = User::create([
-            'lastname' => $request->lastname,
-            'firstname' => $request->firstname,
-            'email' => $request->email,
-            'picture' => "images/users/$filename",
-            'password' => bcrypt(Str::random(12)),
-        ]);
-        //Log::info('USER!');
-        //Log::info($user);
-        $evenementActif = Evenement::where('actif', 1)->first();
-        if ($evenementActif) {
-            $evenementId = $evenementActif->id;
+        // Le compte et son rattachement à la convention sont créés ensemble, ou pas du tout
+        $user = DB::transaction(function () use ($request, $email, $filename, $evenementActif) {
+            $user = User::create([
+                'lastname' => $request->lastname,
+                'firstname' => $request->firstname,
+                'email' => $email,
+                'picture' => "images/users/$filename",
+                'password' => bcrypt(Str::random(12)),
+            ]);
 
-            $token = $user->createToken('remember_token')->plainTextToken;
-            Log::info("JOURNAL : ---Controller USER ADD : Ajout de l'user $request->lastname $request->firstname");
             Evenement_user::create([
-                'evenement_id' => $evenementId,
+                'evenement_id' => $evenementActif->id,
                 'user_id'  => $user->id,
                 'winner_lot_pos' => 0,
             ]);
 
+            return $user;
+        });
 
-            return response()->json([
-                'user' => $user,
-                'token' => $token,
-                'message' => 'création réussie !'
-            ], 201);
-            Log::info($user);
-        
-        }else{
-                // Gère le cas où aucun événement actif n'est trouvé
-                // Tu peux logger ou lancer une exception selon le besoin
-                Log::warning('Aucun événement actif trouvé lors de la création d\'user.');
-        }
+        Log::info("JOURNAL : ---Controller USER ADD : Ajout de l'user $request->lastname $request->firstname");
 
-        
+        return response()->json([
+            'user' => $user,
+            'message' => 'création réussie !'
+        ], 201);
     }
   
     // =================================================================================
