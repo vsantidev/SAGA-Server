@@ -74,9 +74,12 @@ class InscriptionController extends Controller
 
     public function createRegister(Request $request, Int $id): JsonResponse
     {
+        // Priorités 1 à 5, comme dans la présentation aux joueurs
         $request->validate([
             'user_id' => 'required',
-            'weight'  => 'required|integer|min:1|max:10'
+            'weight'  => 'required|integer|min:1|max:5'
+        ], [
+            'weight.*' => 'La priorité doit être un nombre de 1 à 5.',
         ]);
         $userRegister = User::findOrFail($request->user_id);
 
@@ -123,6 +126,24 @@ class InscriptionController extends Controller
 
         // Déterminer le statut selon l'état du tirage
         $status = 'pending';
+
+        // Avant le calcul, une priorité ne sert qu'une fois par créneau
+        // (après le calcul, la priorité n'a plus d'effet)
+        if ($timeSlot->draw_status !== 'drawn') {
+            $priorityUsed = Inscription::where('user_id', $request->user_id)
+                ->where('weight', $request->weight)
+                ->whereHas('animations', fn($q) =>
+                    $q->where('time_slot_id', $animation->time_slot_id)
+                )
+                ->exists();
+
+            if ($priorityUsed) {
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => "Vous avez déjà donné la priorité {$request->weight} à une autre animation de ce créneau.",
+                ], 409);
+            }
+        }
 
         if ($timeSlot->draw_status === 'drawn') {
                 // Vérifier si l'user est déjà confirmé sur une animation du même créneau
