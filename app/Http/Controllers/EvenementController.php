@@ -17,6 +17,27 @@ class EvenementController extends Controller
 {
     //
 
+    // Titre et dates, à la création comme à la modification
+    private static function rules(): array
+    {
+        return [
+            'title'        => 'required|string|max:255',
+            'date_opening' => 'required|date',
+            'date_ending'  => 'required|date|after:date_opening',
+        ];
+    }
+
+    private static function messages(): array
+    {
+        return [
+            'title.*'            => 'Le titre est obligatoire (255 caractères au plus).',
+            'date_opening.*'     => 'La date de début est obligatoire et doit être une date valide.',
+            'date_ending.after'  => 'La date de fin doit être après la date de début.',
+            'date_ending.*'      => 'La date de fin est obligatoire et doit être une date valide.',
+            'actif.*'            => 'Actif doit valoir oui ou non.',
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -41,6 +62,8 @@ class EvenementController extends Controller
      */
     public function create(Request $request)
     {
+                $request->validate(self::rules(), self::messages());
+
                 //Log::info("---Evenements CREATE : Create---");
                 $EvenementCreate = Evenement::create([
                     'actif' => '0',
@@ -92,21 +115,35 @@ class EvenementController extends Controller
         //Log::info("---Evenement Controller (Update | Request 1) ---");
         //Log::info($request);
 
-        $request->validate([
-            'title' => 'required'
-        ]);
+        $request->validate(self::rules() + [
+            'actif' => 'required|boolean',
+        ], self::messages());
 
 
         //Log::info("---Evenement Controller (Update | Request 2 Save SQL) ---");
         $evenementUpdate = Evenement::findOrFail($request->id);
+        $wasActive = (bool) $evenementUpdate->actif;
+        $activate = $request->boolean('actif');
+
+        // Il faut toujours une convention active (accueil, ajout d'utilisateur, import, animations) :
+        // on change de convention active en activant l'autre, pas en désactivant celle-ci
+        if ($wasActive && !$activate) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => "Impossible de désactiver la convention active : activez plutôt la convention suivante.",
+            ], 409);
+        }
+
         //Log::info("avant update");
         //Log::info($evenementUpdate);
         $evenementUpdate->title = $request->title;
         $evenementUpdate->date_opening = $request->date_opening;
         $evenementUpdate->date_ending = $request->date_ending;
-        $evenementUpdate->actif = $request->actif;
+        $evenementUpdate->actif = $activate;
         //Si on active un evenement, l'ensemble des autres evenement se desactive.
-        if ($evenementUpdate->actif =="1")
+        // Seulement au passage d'inactive à active : réenregistrer la convention active
+        // (corriger son titre, ses dates) ne relance pas l'archivage des comptes
+        if ($activate && !$wasActive)
         {
             $evenementId=$evenementUpdate->id;
             //les autres conv se desactivent
