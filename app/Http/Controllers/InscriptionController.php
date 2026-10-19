@@ -92,11 +92,37 @@ class InscriptionController extends Controller
             ], 409);
         }
 
+        $animation = Animation::findOrFail($id);
+
+        // Seules les animations validées, ouvertes aux inscriptions et de la convention active
+        // reçoivent des vœux (l'écran masque déjà le bouton, l'API doit refuser aussi)
+        if (!$animation->validate || !$animation->registration) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => "Cette animation n'est pas ouverte aux inscriptions.",
+            ], 403);
+        }
+        if (!$animation->time_slot_id) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => "Cette animation n'a pas encore de créneau : inscription impossible.",
+            ], 422);
+        }
+        if ($animation->evenement_id != Evenement::where('actif', 1)->value('id')) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => "Cette animation n'appartient pas à la convention en cours.",
+            ], 403);
+        }
+
+        // Verrou du créneau, le même que le calcul : une inscription qui arrive pendant le calcul
+        // attend sa fin, puis suit le chemin « après calcul » au lieu de rester en attente
+        // ($status reste lisible après la transaction)
+        $result = DB::transaction(function () use ($request, $id, $animation, &$status) {
+        $timeSlot = TimeSlot::whereKey($animation->time_slot_id)->lockForUpdate()->firstOrFail();
+
         // Déterminer le statut selon l'état du tirage
         $status = 'pending';
-
-        $animation = Animation::findOrFail($id);
-        $timeSlot  = TimeSlot::findOrFail($animation->time_slot_id);
 
         if ($timeSlot->draw_status === 'drawn') {
                 // Vérifier si l'user est déjà confirmé sur une animation du même créneau
@@ -121,13 +147,19 @@ class InscriptionController extends Controller
         }
 
         // Créer le vœu avec le statut selon tirage
-        $inscription = Inscription::create([
+        return Inscription::create([
             'user_id'       => $request->user_id,
             'animation_id'  => $id,
             'weight'        => $request->weight,
             'status'        => $status,
             'registered_at' => now(),
         ]);
+        });
+
+        if ($result instanceof JsonResponse) {
+            return $result;
+        }
+        $inscription = $result;
 
         Log::info("REGISTER: User {$userRegister->lastname} {$userRegister->firstname} registered wish (weight: {$request->weight}) for animation {$id}");
 
