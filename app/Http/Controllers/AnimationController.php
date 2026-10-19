@@ -55,8 +55,12 @@ class AnimationController extends Controller
             'time_slots.draw_status as slot_draw_status',
             'time_slots.name as slot_name',
             DB::raw('CONCAT(UCASE(LEFT(users.firstname, 1)), LCASE(SUBSTRING(users.firstname, 2)), " ", UPPER(users.lastname)) as author_name'),
-            DB::raw('COUNT(inscriptions.id) as nb_inscrits'),
-            DB::raw('COUNT(inscriptions.id) as nb_inscrits'),
+            // Inscrits selon l'état du créneau : après le calcul, les validés ; avant, les vœux en attente.
+            // Les vœux de comptes supprimés ne comptent pas.
+            DB::raw("COUNT(CASE WHEN inscrits.id IS NOT NULL AND (
+                (time_slots.draw_status = 'drawn' AND inscriptions.status = 'confirmed')
+                OR (COALESCE(time_slots.draw_status, 'open') <> 'drawn' AND inscriptions.status = 'pending')
+            ) THEN 1 END) as nb_inscrits"),
             DB::raw('(
                 SELECT COUNT(*) 
                 FROM evenement_users 
@@ -68,6 +72,7 @@ class AnimationController extends Controller
         ->leftJoin('type_animations', 'animations.type_animation_id', '=', 'type_animations.id')
         ->leftJoin('users', 'animations.user_id', '=', 'users.id')
         ->leftJoin('inscriptions', 'inscriptions.animation_id', '=', 'animations.id')
+        ->leftJoin('users as inscrits', 'inscriptions.user_id', '=', 'inscrits.id')
         ->leftJoin('rooms', 'animations.room_id', '=', 'rooms.id')
         ->leftJoin('time_slots', 'animations.time_slot_id', '=', 'time_slots.id')
         ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
