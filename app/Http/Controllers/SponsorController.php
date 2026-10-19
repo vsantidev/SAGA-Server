@@ -6,10 +6,26 @@ use App\Models\Sponsor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 
 class SponsorController extends Controller
 {
+    // Règles communes à la création et à la mise à jour (colonnes de la table sponsors)
+    private const RULES = [
+        'name' => 'required|string|max:250',
+        'content' => 'required|string',
+        'link' => 'nullable|string|url|max:255',
+    ];
+
+    private const MESSAGES = [
+        'name.required' => 'Merci de renseigner le nom du partenaire',
+        'name.max' => 'Le nom ne doit pas dépasser 250 caractères',
+        'content.required' => 'Merci de renseigner la présentation du partenaire',
+        'link.url' => 'Le lien doit être une adresse complète, commençant par https://',
+        'link.max' => 'Le lien ne doit pas dépasser 255 caractères',
+    ];
+
     /**
      * Display a listing of the resource.
      */
@@ -40,6 +56,9 @@ class SponsorController extends Controller
         //Log::info("---SPONSOR CONTROLLER : Function Create ---");
         //Log::info("---SPONSOR CREATE : Request---");
         //Log::info($request);
+
+        // Champs vérifiés avant toute écriture (une présentation vide finissait en erreur 500)
+        $request->validate(self::RULES, self::MESSAGES);
 
         //Log::info("---SPONSOR CREATE : Picture---");
         if($request->hasFile('picture')){
@@ -121,6 +140,14 @@ class SponsorController extends Controller
         Log::info("---Sponsor Controller (Update | Request 1) ---");
         Log::info($request);
 
+        // Mêmes règles qu'à la création, sur le partenaire envoyé en JSON
+        $mySponsorRequest = json_decode($request->sponsor, true);
+        Validator::make(
+            is_array($mySponsorRequest) ? $mySponsorRequest : [],
+            ['id' => 'required|integer'] + self::RULES,
+            self::MESSAGES
+        )->validate();
+
         if($request->hasFile('picture')){
             $file = $request->file('picture');
             $extension = $file->getClientOriginalExtension();
@@ -130,8 +157,6 @@ class SponsorController extends Controller
             //$payload['picture']= 'public/images/'.$filename;
         }
 
-        //transformation du String en tableau
-        $mySponsorRequest = json_decode($request->sponsor, true); 
         Log::info($mySponsorRequest);
         // Récupère l'utilisateur par son ID
         $sponsorUpdate = Sponsor::findOrFail($mySponsorRequest['id']);
@@ -149,9 +174,9 @@ class SponsorController extends Controller
 
         return response()->json([
             'status' => 'true',
-            'message' => 'Le partenaire a été mise à jour avec succès',
+            'message' => 'Le partenaire a été mis à jour avec succès',
             'sponsor' => $sponsorUpdate,
-        ], 201);
+        ]);
     }
 
     /**
