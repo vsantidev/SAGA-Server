@@ -566,7 +566,6 @@ class AnimationController extends Controller
         }
 
         Log::info($myUserRequest);
-        $author = User::findOrFail($animationUpdate->user_id);
                
         $animationUpdate->title = $myAnimationRequest['title'];
         $animationUpdate->content = $myAnimationRequest['content'];
@@ -598,6 +597,8 @@ class AnimationController extends Controller
         }*/
         $animationUpdate->time = $myAnimationRequest['time'];
         if($request->adminAnimator){$animationUpdate->user_id = $request->adminAnimator;}else{$animationUpdate->user_id = $myAnimationRequest['user_id'];}
+        // Auteur lu après le changement d'animateur : c'est l'animateur final qui est promu
+        $author = User::findOrFail($animationUpdate->user_id);
         $animationUpdate->other_time = $myAnimationRequest['other_time'];
         $animationUpdate->registration = $myAnimationRequest['registration'];
         if($request->hasFile('picture')){$animationUpdate->picture = "images/animations/$filename";}
