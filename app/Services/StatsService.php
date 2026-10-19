@@ -31,6 +31,8 @@ class StatsService
                 'animations.capacity',
             )
             ->where('animations.evenement_id', $evenementActif->id)
+            // Seules les animations validées comptent dans l'offre
+            ->where('animations.validate', 1)
             ->groupBy(
                 'animations.id',
                 'animations.title',
@@ -109,6 +111,7 @@ class StatsService
 
         $animations = DB::table('animations')
             ->where('evenement_id', $evenementActif->id)
+            ->where('validate', 1)
             ->select('capacity', 'open_time')
             ->get();
 
@@ -121,10 +124,11 @@ class StatsService
             if ($hour >= 8 && $hour < 14) $tranche = 'Matin';
             elseif ($hour >= 14 && $hour < 19) $tranche = 'Après-midi';
             elseif ($hour >= 19) $tranche = 'Soir';
-            else continue;
+            else $tranche = 'Nuit'; // de minuit à 8 h : avant, ces animations n'étaient pas comptées
 
             if (!isset($tranchesParJour[$date])) {
                 $tranchesParJour[$date] = [
+                    'Nuit' => ['capacity' => 0],
                     'Matin' => ['capacity' => 0],
                     'Après-midi' => ['capacity' => 0],
                     'Soir' => ['capacity' => 0],
@@ -150,7 +154,7 @@ class StatsService
 
         return [
             'evenement_id' => $evenementActif->id,
-            'evenement_nom' => $evenementActif->name ?? 'Événement actif',
+            'evenement_nom' => $evenementActif->title ?? 'Événement actif',
             'tranches_par_jour' => $tranchesParJour,
             'total_participants' => $totalParticipants,
         ];
