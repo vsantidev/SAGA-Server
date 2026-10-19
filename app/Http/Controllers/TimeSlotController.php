@@ -139,7 +139,10 @@ class TimeSlotController extends Controller
     // POST /time-slots/{id}/draw
     public function draw(Int $id): JsonResponse
     {
-        $timeSlot = TimeSlot::with('animations')->findOrFail($id);
+        // Calcul sous verrou du créneau (le même que l'inscription) : une inscription qui arrive
+        // pendant le calcul attend sa fin au lieu de rester « en attente » sur un créneau calculé
+        $result = DB::transaction(function () use ($id) {
+        $timeSlot = TimeSlot::whereKey($id)->lockForUpdate()->firstOrFail();
 
         if ($timeSlot->draw_status === 'drawn') {
             return response()->json([
@@ -148,8 +151,10 @@ class TimeSlotController extends Controller
             ], 403);
         }
 
-        // Tirage
+        // Tirage : seulement les vœux sur des animations validées et ouvertes aux inscriptions
         $inscriptions = $timeSlot->inscriptions()
+            ->where('animations.validate', 1)
+            ->where('animations.registration', 1)
             ->with('animations')
             ->orderBy('weight')
             ->orderBy('registered_at')
@@ -184,6 +189,14 @@ class TimeSlotController extends Controller
             'draw_status' => 'drawn',
             'drawn_at'    => now(),
         ]);
+
+        return $timeSlot;
+        });
+
+        if ($result instanceof JsonResponse) {
+            return $result;
+        }
+        $timeSlot = $result;
 
         return response()->json([
             'status'  => 'true',
