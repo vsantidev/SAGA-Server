@@ -32,8 +32,10 @@ class Handler extends ExceptionHandler
 
     protected function unauthenticated($request, AuthenticationException $exception)
     {
-        if ($request->expectsJson()) {
-            return response()->json(['error Unauthenticated' => 'Unauthenticated.'], 401);
+        // Toujours du JSON 401 pour l'API : la redirection vers « login » (une route POST)
+        // donnait une 405 en HTML, et l'écran ne savait pas que la session était finie
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'Session expirée ou invalide : reconnectez-vous.'], 401);
         }
 
         return redirect()->guest(route('login'));

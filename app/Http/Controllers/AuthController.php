@@ -147,8 +147,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
-        return response()->json(['Le message de la voix off' => 'Logged out']);
+        // Ne ferme que la session de cet appareil (tokens()->delete() déconnectait tous les appareils)
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Déconnecté.']);
     }
 
     public function getUser(Request $request)
