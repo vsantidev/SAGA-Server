@@ -63,7 +63,7 @@ class InscriptionConcurrenteTest extends TestCase
 
     private function animation(int $capacity): Animation
     {
-        return Animation::create([
+        $animation = Animation::create([
             'title'             => 'TEST concurrence',
             'content'           => 'TEST',
             'capacity'          => $capacity,
@@ -73,6 +73,13 @@ class InscriptionConcurrenteTest extends TestCase
             'type_animation_id' => Type_animation::firstOrFail()->id,
             'time_slot_id'      => $this->timeSlot->id,
         ]);
+        // Animation validée et ouverte aux inscriptions, comme celles que voit un joueur
+        // (posé directement, comme 'validate' qui n'est pas mass-assignable)
+        $animation->validate = true;
+        $animation->registration = 1;
+        $animation->save();
+
+        return $animation;
     }
 
     private function confirmed(User $user, Animation $animation): void
