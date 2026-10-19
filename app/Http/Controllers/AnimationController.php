@@ -165,6 +165,10 @@ class AnimationController extends Controller
             ->join('evenements', 'animations.evenement_id', '=', 'evenements.id')
             ->join('rooms', 'animations.room_id', '=', 'rooms.id')
             ->where('rooms.active', 1) 
+            // Ordre chronologique des créneaux, puis des animations : le calendrier range ses colonnes dans cet ordre
+            ->orderBy('time_slots.start_time')
+            ->orderBy('animations.open_time')
+            ->orderBy('animations.id')
             ->get();
 
         // Likes de l'utilisateur connecté
