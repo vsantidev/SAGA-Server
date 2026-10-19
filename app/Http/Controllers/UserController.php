@@ -75,9 +75,56 @@ class UserController extends Controller
     {
         //Log::info("---UPLOAD CSV---");
 
-        $usersArray = $request->all();
+        // Convention active vérifiée avant toute écriture
+        $evenementActif = Evenement::where('actif', 1)->first();
+        if (!$evenementActif) {
+            return response()->json([
+                'message' => "Aucune convention active : activez-la avant l'import.",
+            ], 422);
+        }
 
+        // Lignes vides ignorées (saut de ligne en fin de fichier, lignes blanches d'Excel)
+        $usersArray = [];
+        $erreurs = [];
+        foreach ($request->all() as $index => $row) {
+            $row = is_array($row) ? array_map(fn($v) => is_string($v) ? trim($v) : $v, $row) : [];
+            if (implode('', array_filter($row, 'is_string')) === '') {
+                continue;
+            }
+            $validator = Validator::make($row, [
+                'lastname'  => 'required|string|max:255',
+                'firstname' => 'required|string|max:255',
+                'email'     => 'required|email|max:255',
+            ], [
+                'lastname.required'  => 'nom manquant',
+                'firstname.required' => 'prénom manquant',
+                'email.required'     => 'e-mail manquant',
+                'email.email'        => 'e-mail invalide',
+            ]);
+            if ($validator->fails()) {
+                // Ligne du fichier : la ligne 1 est l'en-tête
+                $erreurs[] = 'ligne ' . ($index + 2) . ' : ' . implode(', ', $validator->errors()->all());
+                continue;
+            }
+            $usersArray[] = $row;
+        }
 
+        // Une ligne invalide : rien n'est importé, l'admin corrige et relance
+        if ($erreurs) {
+            return response()->json([
+                'message' => "Fichier refusé, rien n'a été importé.",
+                'erreurs' => $erreurs,
+            ], 422);
+        }
+        if (!$usersArray) {
+            return response()->json([
+                'message' => 'Le fichier ne contient aucun utilisateur.',
+            ], 422);
+        }
+
+        $nbCrees = 0;
+
+        DB::transaction(function () use ($usersArray, $evenementActif, &$nbCrees) {
         foreach ($usersArray as $row) {
             //test de la présence d'email    
             $user = User::where('email', strtolower($row['email']))->first();
@@ -91,7 +138,7 @@ class UserController extends Controller
                     'password' => bcrypt(Str::random(12)),
                     'picture' => 'images/users/img_default_esprit.png',
                 ]);
-                
+                $nbCrees++;
             }elseif($user->type != "admin") {
                 // 'type' n'est pas dans le $fillable : affectation directe
                 $user->type = 'membre';
@@ -103,24 +150,23 @@ class UserController extends Controller
             }
 
             //Log::info($user);
-            $evenementActif = Evenement::where('actif', 1)->first();
-            if ($evenementActif) {
-                // Une seule ligne par user/convention : les lots ne servent qu'à la création
-                Evenement_user::firstOrCreate([
-                    'evenement_id' => $evenementActif->id,
-                    'user_id'  => $user->id,
-                ], [
-                    'winner_lot_pos' => 0,
-                    'winner_lot'     => false,
-                ]);
-            } else {
-                // Gère le cas où aucun événement actif n'est trouvé
-                Log::warning('Aucun événement actif trouvé lors de la création d\'Evenement_user.');
-            }
+            // Une seule ligne par user/convention : les lots ne servent qu'à la création
+            Evenement_user::firstOrCreate([
+                'evenement_id' => $evenementActif->id,
+                'user_id'  => $user->id,
+            ], [
+                'winner_lot_pos' => 0,
+                'winner_lot'     => false,
+            ]);
         }
+        });
+
+        $nbExistants = count($usersArray) - $nbCrees;
 
         return response()->json([
-            'message' => "Les utilisateurs ont été importés et associé à l\evenement : $evenementActif->title (si pas de nom de conv....faire maj user-event)",
+            'message'   => "Import terminé pour la convention {$evenementActif->title} : {$nbCrees} compte(s) créé(s), {$nbExistants} compte(s) déjà connu(s) rattaché(s).",
+            'crees'     => $nbCrees,
+            'existants' => $nbExistants,
         ]);
     }
 
