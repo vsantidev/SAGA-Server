@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Animation;
+use App\Models\Inscription;
 use App\Models\User;
 use App\Models\Evenement;
 use App\Models\Evenement_user;
@@ -588,6 +589,21 @@ class UserController extends Controller
         //Log::info($request);
 
         $userDelete = User::findOrFail($request->id);
+
+        // Seul un compte sans activité (créé par erreur ou en double) est supprimé : sinon, l'archiver
+        $counts = [
+            'voeux'      => Inscription::where('user_id', $userDelete->id)->count(),
+            'animations' => Animation::where('user_id', $userDelete->id)->count(),
+        ];
+        if (array_sum($counts) > 0) {
+            Log::info("JOURNAL : ---Controller USER DELETE : refus, compte $userDelete->id avec activité ---", $counts);
+            return response()->json([
+                'status'  => 'false',
+                'message' => "Ce compte a {$counts['voeux']} vœu(x) et {$counts['animations']} animation(s) : archivez-le plutôt.",
+                'counts'  => $counts,
+            ], 409);
+        }
+
         Log::info("JOURNAL : ---Controller USER $userDelete a été supprimé");
         $userDelete->delete();
         

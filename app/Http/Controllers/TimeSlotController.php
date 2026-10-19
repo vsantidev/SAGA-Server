@@ -151,10 +151,12 @@ class TimeSlotController extends Controller
             ], 403);
         }
 
-        // Tirage : seulement les vœux sur des animations validées et ouvertes aux inscriptions
+        // Tirage : seulement les vœux sur des animations validées et ouvertes aux inscriptions,
+        // et de comptes qui existent encore (orphelins d'anciennes suppressions ignorés)
         $inscriptions = $timeSlot->inscriptions()
             ->where('animations.validate', 1)
             ->where('animations.registration', 1)
+            ->whereHas('users')
             ->with('animations')
             ->orderBy('weight')
             ->orderBy('registered_at')
