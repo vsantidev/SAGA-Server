@@ -190,7 +190,7 @@ class InscriptionController extends Controller
                     ->select('animations.id', 'title', 'open_time', 'closed_time', 'capacity', 'min_capacity', 'time_slot_id', 'user_id', 'room_id')
                     ->whereHas('evenements', fn($q2) => $q2->where('actif', 1))
                     ->with([
-                        'timeSlot:id,name,start_time,end_time',
+                        'timeSlot:id,name,start_time,end_time,draw_status',
                         'rooms:id,name,picture',
                         'user:id,firstname,lastname',
                     ]),
@@ -219,6 +219,7 @@ class InscriptionController extends Controller
                     'name'     => $inscription->animations->timeSlot->name,
                     'open_time'=> $inscription->animations->timeSlot->start_time,
                     'end_time' => $inscription->animations->timeSlot->end_time,
+                    'draw_status' => $inscription->animations->timeSlot->draw_status,
                 ] : null,
             ])
             ->filter(fn($item) => $item['animation'] !== null)
@@ -232,7 +233,7 @@ class InscriptionController extends Controller
             ->whereHas('evenements', fn($q) => $q->where('actif', 1))
             ->whereNotIn('id', $alreadyInscritIds)
             ->with([
-                'timeSlot:id,name,start_time,end_time',
+                'timeSlot:id,name,start_time,end_time,draw_status',
                 'rooms:id,name,picture',
                 'user:id,firstname,lastname',
             ])
@@ -261,13 +262,14 @@ class InscriptionController extends Controller
                     'name'     => $animation->timeSlot->name,
                     'open_time'=> $animation->timeSlot->start_time,
                     'end_time' => $animation->timeSlot->end_time,
+                    'draw_status' => $animation->timeSlot->draw_status,
                 ] : null,
             ]);
 
-        // --- 3. Fusion & tri par time_slot ---
+        // --- 3. Fusion & tri par horaire du créneau (les animations sans créneau à la fin) ---
         $result = $inscriptions
             ->concat($animationsAsAnimator)
-            ->sortBy('time_slot.id')
+            ->sortBy(fn($item) => $item['time_slot'] ? $item['time_slot']['open_time']->timestamp : PHP_INT_MAX)
             ->values();
 
         return response()->json([
