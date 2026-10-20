@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Nette\Utils\Random;
 
 class UserController extends Controller
@@ -459,6 +460,26 @@ class UserController extends Controller
         $userUpdate->phone = $myUserRequest['phone'];
         $userUpdate->email = $myUserRequest['email'];
         $userUpdate->presentation = $myUserRequest['presentation'];
+
+        // Contrôle avant l'enregistrement : nom et prénom présents, e-mail valide et libre
+        // (hors ce compte), date de naissance facultative
+        $validator = Validator::make($myUserRequest, [
+            'lastname'  => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'email'     => ['required', 'email', 'max:255', Rule::unique('users')->ignore($userUpdate->id)],
+            'birthday'  => 'nullable|date',
+        ], self::profileMessages());
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => $validator->errors()->first(),
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+        // Le profil part en JSON dans un champ de formulaire : une date vide arrive en chaîne vide
+        if ($userUpdate->birthday === '') {
+            $userUpdate->birthday = null;
+        }
         $userUpdate->save();
 
         //Log::info("---User Controller (Update | Request 3) ---");
@@ -488,8 +509,16 @@ class UserController extends Controller
         //Log::info($request);
         // Verification de présence d'image et gestion :
         //transformation du String en tableau
-        //$myUserRequest = json_decode($request->user, true); 
-    
+        //$myUserRequest = json_decode($request->user, true);
+
+        $request->validate([
+            'lastname'  => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'email'     => ['required', 'email', 'max:255', Rule::unique('users')->ignore($request->id)],
+            'type'      => 'required|in:membre,animateur,admin,archive',
+            'is_orga'   => 'boolean',
+        ], self::profileMessages());
+
         // Récupère l'utilisateur par son ID
         $userUpdate = User::findOrFail($request->id);
         $userUpdate->lastname = $request->lastname;
@@ -505,8 +534,9 @@ class UserController extends Controller
         //Log::info("---User Controller (Update | Request 3) ---");
         //Log::info($userUpdate);
 
+        // Un compte archivé n'est pas rattaché à la convention active (il serait compté dans les stats)
         $evenementActif = Evenement::where('actif', 1)->first();
-        if ($evenementActif) {
+        if ($evenementActif && $userUpdate->type !== 'archive') {
             $evenementId = $evenementActif->id;
 
             $exists = Evenement_user::where('evenement_id', $evenementId)
@@ -612,6 +642,20 @@ class UserController extends Controller
             'message' => 'L\'utilisateur a été supprimé !',
             'User supprimé : ' => $request->id
         ]);
+    }
+
+    // Messages des contrôles du profil (joueur et admin)
+    private static function profileMessages(): array
+    {
+        return [
+            'lastname.*'  => 'Le nom est obligatoire (255 caractères au plus).',
+            'firstname.*' => 'Le prénom est obligatoire (255 caractères au plus).',
+            'email.unique' => 'Cette adresse e-mail est déjà utilisée par un autre compte.',
+            'email.*'     => 'L\'adresse e-mail est obligatoire et doit être valide.',
+            'birthday.*'  => 'La date de naissance n\'est pas une date valide.',
+            'type.*'      => 'Le type doit être membre, animateur, admin ou archive.',
+            'is_orga.*'   => 'Organisateur doit valoir oui ou non.',
+        ];
     }
 
 }
