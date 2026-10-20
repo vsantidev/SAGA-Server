@@ -134,8 +134,9 @@ class UserController extends Controller
             // Si l'utilisateur n'existe pas, le crée
             if (!$user) {
                 $user = User::create([
-                    'lastname' => strtoupper($row['lastname']),
-                    'firstname' => ucfirst(strtolower($row['firstname'])),
+                    // Fonctions multioctets : « Lefèvre » donne « LEFÈVRE », « JOSÉ » donne « José », « jean-pierre » donne « Jean-Pierre »
+                    'lastname' => mb_strtoupper($row['lastname'], 'UTF-8'),
+                    'firstname' => mb_convert_case(mb_strtolower($row['firstname'], 'UTF-8'), MB_CASE_TITLE, 'UTF-8'),
                     'email' => strtolower($row['email']),
                     'password' => bcrypt(Str::random(12)),
                     'picture' => 'images/users/img_default_esprit.png',
