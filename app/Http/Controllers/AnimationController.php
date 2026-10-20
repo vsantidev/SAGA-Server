@@ -18,6 +18,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
 use \DateTime;
 use \DateInterval;
 
@@ -465,6 +466,30 @@ class AnimationController extends Controller
             ], 403);
         }
 
+        // Nombres de places : mêmes règles qu'à la création (un champ vidé arrive en chaîne vide,
+        // que la base refusait avec une erreur 500). Places mini vidées = pas de minimum.
+        if (($myAnimationRequest['min_capacity'] ?? null) === '') {
+            $myAnimationRequest['min_capacity'] = null;
+        }
+        // La comparaison au maxi n'a de sens que si le maxi est un nombre (sinon un seul message suffit)
+        $minRules = 'nullable|integer|min:0' . (is_numeric($myAnimationRequest['capacity'] ?? null) ? '|lte:capacity' : '');
+        $placesValidator = Validator::make($myAnimationRequest, [
+            'capacity'     => 'sometimes|required|integer|min:1',
+            'min_capacity' => $minRules,
+        ], [
+            'capacity.*'           => 'Merci de renseigner le nombre de joueurs max (au moins 1)',
+            'min_capacity.integer' => 'Le nombre de places mini doit être un nombre entier',
+            'min_capacity.min'     => 'Le nombre de places mini ne peut pas être négatif',
+            'min_capacity.lte'     => 'Le nombre de places mini ne peut pas dépasser le nombre de places maxi',
+        ]);
+        if ($placesValidator->fails()) {
+            return response()->json([
+                'status'  => 'false',
+                'message' => $placesValidator->errors()->first(),
+                'errors'  => $placesValidator->errors(),
+            ], 422);
+        }
+
         // État final après modification : valeur de la requête, sinon valeur actuelle
         $finalSlotId      = $myAnimationRequest['time_slot_id'] ?? $animationUpdate->time_slot_id;
         $finalRoomId      = $myAnimationRequest['room_id'] ?? $animationUpdate->room_id;
@@ -579,7 +604,7 @@ class AnimationController extends Controller
         $animationUpdate->multiple = $myAnimationRequest['multiple'];
         $animationUpdate->picture = $myAnimationRequest['picture'];
         if(isset($myAnimationRequest['capacity'])){$animationUpdate->capacity = $myAnimationRequest['capacity'];}
-        if(isset($myAnimationRequest['min_capacity'])){$animationUpdate->min_capacity = $myAnimationRequest['min_capacity'];}
+        if(array_key_exists('min_capacity', $myAnimationRequest)){$animationUpdate->min_capacity = $myAnimationRequest['min_capacity'];}
         if(isset($myAnimationRequest['room_id'])){$animationUpdate->room_id = $myAnimationRequest['room_id'];}
         $animationUpdate->fight = $myAnimationRequest['fight'];
         $animationUpdate->reflection = $myAnimationRequest['reflection'];
