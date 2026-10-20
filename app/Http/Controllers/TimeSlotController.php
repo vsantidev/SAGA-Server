@@ -10,6 +10,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Carbon;
 
 class TimeSlotController extends Controller
 {
@@ -58,6 +60,12 @@ class TimeSlotController extends Controller
             'end_time'     => 'nullable|date|after:start_time',
         ]);
 
+        $this->validateTimes(
+            Evenement::findOrFail($request->evenement_id),
+            $request->start_time,
+            $request->end_time
+        );
+
         $timeSlot = TimeSlot::create([
             'evenement_id' => $request->evenement_id,
             'name'         => $request->name,
@@ -76,13 +84,24 @@ class TimeSlotController extends Controller
     // PUT /time-slots/{id}
     public function update(Request $request, Int $id): JsonResponse
     {
+        // Modification des créneaux réservée aux admins
+        if ($request->user()->type !== 'admin') {
+            return response()->json([
+                'status'  => 'false',
+                'message' => 'Réservé aux admins.',
+            ], 403);
+        }
+
         $timeSlot = TimeSlot::findOrFail($id);
 
+        // drawn n'est posé que par le calcul des inscriptions (draw)
         $request->validate([
             'name'        => 'nullable|string|max:255',
             'start_time'  => 'sometimes|date',
-            'end_time'    => 'nullable|date|after:start_time',
-            'draw_status' => 'sometimes|in:open,closed,drawn',
+            'end_time'    => 'nullable|date',
+            'draw_status' => 'sometimes|in:open,closed',
+        ], [
+            'draw_status.in' => 'Le statut ne peut être que ouvert ou fermé : le passage à « calculé » se fait par le calcul des inscriptions.',
         ]);
 
         // Empêcher de modifier un créneau dont le tirage est déjà fait
@@ -91,6 +110,26 @@ class TimeSlotController extends Controller
                 'status'  => 'false',
                 'message' => 'Cannot modify a time slot that has already been drawn!',
             ], 403);
+        }
+
+        // Horaires (seulement s'ils sont envoyés : ouvrir / fermer ne les touche pas)
+        if ($request->exists('start_time') || $request->exists('end_time')) {
+            // On valide la plage obtenue après fusion avec les valeurs en base
+            $start = $request->input('start_time', $timeSlot->start_time?->format('Y-m-d H:i:s'));
+            $end   = $request->exists('end_time')
+                ? $request->input('end_time')
+                : $timeSlot->end_time?->format('Y-m-d H:i:s');
+            $this->validateTimes($timeSlot->evenement, $start, $end);
+
+            // Pas de déplacement d'un créneau qui a des animations : elles garderaient l'ancienne plage
+            $moved = !$this->sameTime($start, $timeSlot->start_time)
+                || !$this->sameTime($end, $timeSlot->end_time);
+            if ($moved && $timeSlot->animations()->exists()) {
+                return response()->json([
+                    'status'  => 'false',
+                    'message' => "Impossible de changer les horaires d'un créneau qui a des animations.",
+                ], 422);
+            }
         }
 
         $timeSlot->update($request->only([
@@ -105,6 +144,33 @@ class TimeSlotController extends Controller
             'message' => 'Time slot updated successfully!',
             'data'    => $timeSlot
         ]);
+    }
+
+    // Plage d'un créneau : fin après le début, le tout dans les dates de la convention
+    private function validateTimes(Evenement $evenement, $start, $end): void
+    {
+        Validator::make(
+            ['start_time' => $start, 'end_time' => $end],
+            [
+                'start_time' => ['required', 'date', 'after_or_equal:' . $evenement->date_opening, 'before:' . $evenement->date_ending],
+                'end_time'   => ['nullable', 'date', 'after:start_time', 'before_or_equal:' . $evenement->date_ending],
+            ],
+            [
+                'start_time.after_or_equal' => 'Le créneau doit commencer pendant la convention.',
+                'start_time.before'         => 'Le créneau doit commencer pendant la convention.',
+                'end_time.after'            => 'La fin du créneau doit être après son début.',
+                'end_time.before_or_equal'  => 'Le créneau doit finir au plus tard à la fin de la convention.',
+            ]
+        )->validate();
+    }
+
+    private function sameTime($value, ?Carbon $current): bool
+    {
+        if ($value === null || $value === '' || $current === null) {
+            return ($value === null || $value === '') && $current === null;
+        }
+
+        return Carbon::parse($value)->equalTo($current);
     }
 
     // DELETE /time-slots/{id}
