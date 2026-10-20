@@ -1,3 +1,25 @@
+# SAGA-Server
+
+API Laravel de SAGA. L'écran est dans le dépôt SAGA-client.
+
+## Installation locale
+
+Prérequis : PHP 8.1 ou plus (extensions curl, fileinfo, gd, mbstring, openssl, pdo_mysql, zip), Composer et **MySQL 8**. MariaDB ne convient pas : la requête de l'accueil y est refusée (erreur 1055, `ONLY_FULL_GROUP_BY`).
+
+```
+composer install
+cp .env.example .env          # renseigner DB_DATABASE, DB_USERNAME, DB_PASSWORD
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve             # API sur http://127.0.0.1:8000
+```
+
+- `database/seeders/UserSeeder.php` n'est pas versionné. Sans lui, `--seed` crée seulement le compte admin de `DatabaseSeeder` et les données de base (sites, convention, salles, animations d'exemple, types d'animation, partenaires).
+- Pour ne pas envoyer d'e-mails en local : `MAIL_MAILER=log` (les messages vont dans `storage/logs/laravel.log`).
+- Tests : `php artisan test`.
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

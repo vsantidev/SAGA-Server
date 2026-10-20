@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             'type' => 'admin',
         ]);
 
-        $this->call([
+        $seeders = [
             SiteSeeder::class,
             EvenementSeeder::class,
             RoomSeeder::class,
@@ -32,9 +32,15 @@ class DatabaseSeeder extends Seeder
             TypeAnimationSeeder::class,
             InscriptionSeeder::class,
             SponsorSeeder::class,
-            UserSeeder::class,
-            EvenementUserSeeder::class,
-        ]);
+        ];
+
+        // UserSeeder n'est pas versionné (.gitignore) : sans lui, on ne crée ni les comptes ni leurs rattachements.
+        if (class_exists(UserSeeder::class)) {
+            $seeders[] = UserSeeder::class;
+            $seeders[] = EvenementUserSeeder::class;
+        }
+
+        $this->call($seeders);
 
     }
 }
