@@ -17,8 +17,10 @@ class StatsController extends Controller
     {
         $stats = $this->stats->getRawAnimationsStats();
 
+        // Pas d'animation validée (ou pas de convention active) : ce n'est pas une erreur,
+        // l'écran affiche le message au lieu d'une erreur générique
         if ($stats->isEmpty()) {
-            return response()->json(['message' => 'Aucun événement actif trouvé.'], 404);
+            return response()->json(['message' => 'Aucune animation validée pour la convention active.']);
         }
 
         return response()->json($stats);
