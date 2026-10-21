@@ -432,34 +432,21 @@ class UserController extends Controller
      */
     public function userShow(Request $request, Int $id): JsonResponse 
     {
+        // Profil lisible par le compte lui-même ou par un admin
+        $authUser = $request->user();
+        if ($authUser->id !== $id && $authUser->type !== 'admin') {
+            return response()->json([
+                'status' => 'false',
+                'message' => "Vous ne pouvez consulter que votre propre profil.",
+            ], 403);
+        }
 
         // Récupère le user par son ID
-        $userShow = User::find($id);
+        $userShow = User::findOrFail($id);
 
-        //Log::info("---User Controller (Show | Request 1/1) ---");
-        // $userShow = $request->user();
-
-        $userData = [
-            'id' => $userShow->id,
-            'lastname' => $userShow->lastname,
-            'firstname' => $userShow->firstname,
-            'picture' => $userShow->picture,
-            'birthday' => $userShow->birthday,
-            'phone' => $userShow->phone,
-            'email' => $userShow->email,
-            'password' => $userShow->password,
-            'presentation' => $userShow->presentation,
-            'type' => $userShow->type,
-            'is_orga' => $userShow->is_orga,
-        ];
-
-        //Log::info($userData);
-
-        // return response()->json(['success' => $userData]);
         return response()->json([
             'status' => 'true',
             'message' => 'Voici le profil !',
-            // 'User profile : ' => $userData,
             'id' => $userShow->id,
             'lastname' => $userShow->lastname,
             'firstname' => $userShow->firstname,
@@ -467,7 +454,6 @@ class UserController extends Controller
             'birthday' => $userShow->birthday,
             'phone' => $userShow->phone,
             'email' => $userShow->email,
-            'password' => $userShow->password,
             'presentation' => $userShow->presentation,
             'type' => $userShow->type,
             'is_orga' => $userShow->is_orga,
