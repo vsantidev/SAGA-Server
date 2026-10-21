@@ -76,15 +76,15 @@ class InscriptionController extends Controller
     {
         // Priorités 1 à 5, comme dans la présentation aux joueurs
         $request->validate([
-            'user_id' => 'required',
             'weight'  => 'required|integer|min:1|max:5'
         ], [
             'weight.*' => 'La priorité doit être un nombre de 1 à 5.',
         ]);
-        $userRegister = User::findOrFail($request->user_id);
+        // Le vœu est celui du compte connecté
+        $userRegister = $request->user();
 
         // Vérifier que l'user n'a pas déjà un vœu sur cette animation
-        $alreadyRegistered = Inscription::where('user_id', $request->user_id)
+        $alreadyRegistered = Inscription::where('user_id', $userRegister->id)
             ->where('animation_id', $id)
             ->exists();
 
@@ -121,7 +121,7 @@ class InscriptionController extends Controller
         // Verrou du créneau, le même que le calcul : une inscription qui arrive pendant le calcul
         // attend sa fin, puis suit le chemin « après calcul » au lieu de rester en attente
         // ($status reste lisible après la transaction)
-        $result = DB::transaction(function () use ($request, $id, $animation, &$status) {
+        $result = DB::transaction(function () use ($request, $id, $animation, $userRegister, &$status) {
         $timeSlot = TimeSlot::whereKey($animation->time_slot_id)->lockForUpdate()->firstOrFail();
 
         // Déterminer le statut selon l'état du tirage
@@ -130,7 +130,7 @@ class InscriptionController extends Controller
         // Avant le calcul, une priorité ne sert qu'une fois par créneau
         // (après le calcul, la priorité n'a plus d'effet)
         if ($timeSlot->draw_status !== 'drawn') {
-            $priorityUsed = Inscription::where('user_id', $request->user_id)
+            $priorityUsed = Inscription::where('user_id', $userRegister->id)
                 ->where('weight', $request->weight)
                 ->whereHas('animations', fn($q) =>
                     $q->where('time_slot_id', $animation->time_slot_id)
@@ -147,7 +147,7 @@ class InscriptionController extends Controller
 
         if ($timeSlot->draw_status === 'drawn') {
                 // Vérifier si l'user est déjà confirmé sur une animation du même créneau
-            $alreadyConfirmed = Inscription::where('user_id', $request->user_id)
+            $alreadyConfirmed = Inscription::where('user_id', $userRegister->id)
                 ->where('status', 'confirmed')
                 ->whereHas('animations', fn($q) => 
                     $q->where('time_slot_id', $animation->time_slot_id)
@@ -169,7 +169,7 @@ class InscriptionController extends Controller
 
         // Créer le vœu avec le statut selon tirage
         return Inscription::create([
-            'user_id'       => $request->user_id,
+            'user_id'       => $userRegister->id,
             'animation_id'  => $id,
             'weight'        => $request->weight,
             'status'        => $status,
@@ -202,15 +202,20 @@ class InscriptionController extends Controller
         Log::info("---Controller Inscripton : destroy Registration Animation | Connexion---");
         $request->validate([
             "animation_id" => "required|integer",
-            "user_id" => "required|integer",
+            "user_id" => "nullable|integer",
         ]);
+
+        // Compte connecté ; un admin peut désinscrire un joueur de la liste des inscrits
+        $userId = $request->user()->type === 'admin' && $request->filled('user_id')
+            ? $request->user_id
+            : $request->user()->id;
 
         Log::info("---Controller Inscripton : destroy Registration Animation | Request 1---");
         Log::info($request);
 
         // $animationUnsubscribe = Inscription::('user_id',$request->user_id);
         $animationUnsubscribe = Inscription::where('animation_id', $request->animation_id)
-        ->where('user_id', $request->user_id)
+        ->where('user_id', $userId)
         ->delete();
         // $animationUnsubscribe->delete();
 
@@ -377,19 +382,20 @@ class InscriptionController extends Controller
     {
         Log::info($request);
         $request->validate([
-            'user_id'      => 'required|exists:users,id',
             'animation_id' => 'required|exists:animations,id',
             'time_slot_id' => 'required|exists:time_slots,id',
         ]);
+        // Statut du compte connecté
+        $userId = $request->user()->id;
 
         // 1. Inscription de l'user sur cette animation
-        $inscription = Inscription::where('user_id', $request->user_id)
+        $inscription = Inscription::where('user_id', $userId)
             ->where('animation_id', $request->animation_id)
             ->first();
 
         Log::info($inscription);
         // 2. Priorités déjà utilisées sur ce créneau
-        $usedPriorities = Inscription::where('user_id', $request->user_id)
+        $usedPriorities = Inscription::where('user_id', $userId)
             ->whereHas('animations', fn($q) =>
                 $q->where('time_slot_id', $request->time_slot_id)
             )
@@ -404,7 +410,7 @@ class InscriptionController extends Controller
         $placesLeft = max(0, $animation->capacity - $confirmed);
 
         // 4. Vérifier si l'user est déjà confirmé sur ce créneau
-        $alreadyConfirmedOnSlot = Inscription::where('user_id', $request->user_id)
+        $alreadyConfirmedOnSlot = Inscription::where('user_id', $userId)
             ->where('status', 'confirmed')
             ->whereHas('animations', fn($q) => 
                 $q->where('time_slot_id', $request->time_slot_id)

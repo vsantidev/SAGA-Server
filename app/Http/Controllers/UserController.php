@@ -498,8 +498,8 @@ class UserController extends Controller
         //transformation du String en tableau
         $myUserRequest = json_decode($request->user, true); 
     
-        // Récupère l'utilisateur par son ID
-        $userUpdate = User::findOrFail($myUserRequest['id']);
+        // Le profil modifié est celui du compte connecté
+        $userUpdate = $request->user();
         $userUpdate->lastname = $myUserRequest['lastname'];
         $userUpdate->firstname = $myUserRequest['firstname'];
         if($request->hasFile('picture')){$userUpdate->picture = "images/users/$filename";}
