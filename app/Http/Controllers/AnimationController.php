@@ -248,8 +248,7 @@ class AnimationController extends Controller
             $file = $request->file('picture');
             $extension = $file->getClientOriginalExtension();
             //$filename = time() .'.'.$extension;
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/animations/'), $filename);
+            $filename = $this->savePicture($file, 'animations');
             //$payload['picture']= 'public/images/'.$filename;
         }else{
             $filename = 'img_default_conv6.jpg';
@@ -594,8 +593,7 @@ class AnimationController extends Controller
             $file = $request->file('picture');
             $extension = $file->getClientOriginalExtension();
             //$filename = time() .'.'.$extension;
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/animations/'), $filename);
+            $filename = $this->savePicture($file, 'animations');
             //$payload['picture']= 'public/images/'.$filename;
         }
 

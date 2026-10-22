@@ -129,9 +129,11 @@ class RoomController extends Controller
             }
 
             try {
-                $filename = uniqid() . "_" . $file->getClientOriginalName();
-                $file->move(public_path('images/rooms/'), $filename);
+                $filename = $this->savePicture($file, 'rooms');
                 $data['picture'] = 'images/rooms/' . $filename;
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                // Fichier refusé (pas une image, trop lourd) : refus 422 détaillé
+                throw $e;
             } catch (\Exception $e) {
                 Log::error("ROOM CREATE: Erreur déplacement image — " . $e->getMessage());
                 return response()->json([
@@ -209,10 +211,12 @@ class RoomController extends Controller
                     unlink(public_path($room->picture));
                 }
 
-                $filename = uniqid() . "_" . $file->getClientOriginalName();
-                $file->move(public_path('images/rooms/'), $filename);
+                $filename = $this->savePicture($file, 'rooms');
                 $data['picture'] = 'images/rooms/' . $filename;
 
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                // Fichier refusé (pas une image, trop lourd) : refus 422 détaillé
+                throw $e;
             } catch (\Exception $e) {
                 Log::error("ROOM UPDATE: Erreur déplacement image — " . $e->getMessage());
                 return response()->json([
