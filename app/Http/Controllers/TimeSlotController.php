@@ -226,6 +226,8 @@ class TimeSlotController extends Controller
             ->with('animations')
             ->orderBy('weight')
             ->orderBy('registered_at')
+            // registered_at est à la seconde : à égalité, l'identifiant garde l'ordre d'arrivée
+            ->orderBy('inscriptions.id')
             ->get();
 
         $placesLeft  = [];  // animation_id => places restantes

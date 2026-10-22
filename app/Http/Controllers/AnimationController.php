@@ -364,6 +364,8 @@ class AnimationController extends Controller
         )
         ->orderBy('inscriptions.weight')
         ->orderBy('inscriptions.registered_at')
+        // Même ordre que le calcul : à égalité, le premier arrivé
+        ->orderBy('inscriptions.id')
         ->get();
 
     // ~~~~~ SALLE ~~~~~
