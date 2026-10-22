@@ -261,8 +261,7 @@ class UserController extends Controller
             $file = $request->file('picture');
             $extension = $file->getClientOriginalExtension();
             //$filename = time() .'.'.$extension;
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/users/'), $filename);
+            $filename = $this->savePicture($file, 'users');
             //$payload['picture']= 'public/images/'.$filename;
         }else{
 
@@ -490,8 +489,7 @@ class UserController extends Controller
             $file = $request->file('picture');
             $extension = $file->getClientOriginalExtension();
             //$filename = time() .'.'.$extension;
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/users/'), $filename);
+            $filename = $this->savePicture($file, 'users');
             //$payload['picture']= 'public/images/'.$filename;
         }
 

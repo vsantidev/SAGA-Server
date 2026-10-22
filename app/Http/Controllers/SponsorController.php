@@ -64,8 +64,7 @@ class SponsorController extends Controller
         if($request->hasFile('picture')){
             $file = $request->file('picture');
             $extension= $file->getClientOriginalExtension();
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/sponsors/'), $filename);
+            $filename = $this->savePicture($file, 'sponsors');
         }else{
             $filename = 'img_default.jpg';
         }
@@ -152,8 +151,7 @@ class SponsorController extends Controller
             $file = $request->file('picture');
             $extension = $file->getClientOriginalExtension();
             //$filename = time() .'.'.$extension;
-            $filename = uniqid() . "_" . $file->getClientOriginalName();
-            $file->move(public_path('images/sponsors/'), $filename);
+            $filename = $this->savePicture($file, 'sponsors');
             //$payload['picture']= 'public/images/'.$filename;
         }
 
