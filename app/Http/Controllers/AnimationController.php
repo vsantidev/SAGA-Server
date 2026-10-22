@@ -131,7 +131,7 @@ class AnimationController extends Controller
                 'room_picture'           => $room?->picture ?? '',
                 'type_animation_name' => $anim->type_animation?->type ?? '',
                 'author_name'         => $user
-                                            ? ucfirst(strtolower($user->firstname)).' '.strtoupper($user->lastname)
+                                            ? $user->display_name
                                             : '',
                 'evenement_year'      => \Carbon\Carbon::parse($anim->open_time)->year,
             ];
@@ -189,7 +189,7 @@ class AnimationController extends Controller
                 'room_picture'           => $room?->picture ?? '',
                 'type_animation_name' => $anim->type_animation?->type ?? '',
                 'author_name'         => $user
-                                            ? ucfirst(strtolower($user->firstname)).' '.strtoupper($user->lastname)
+                                            ? $user->display_name
                                             : '',
                 'evenement_year'      => \Carbon\Carbon::parse($anim->open_time)->year,
                 'is_liked'            => in_array($anim->id, $likedAnimationIds),

@@ -48,6 +48,17 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    // Nom affiché : « Élodie LEFÈVRE ». Même règle que l'accueil (première lettre du prénom en
+    // majuscule, le reste en minuscules, nom en majuscules), accents compris
+    public function getDisplayNameAttribute(): string
+    {
+        $firstname = (string) $this->firstname;
+
+        return mb_strtoupper(mb_substr($firstname, 0, 1, 'UTF-8'), 'UTF-8')
+            . mb_strtolower(mb_substr($firstname, 1, null, 'UTF-8'), 'UTF-8')
+            . ' ' . mb_strtoupper((string) $this->lastname, 'UTF-8');
+    }
+
     // RELATION AVEC LA TABLE EVENEMENTS
     public function evenements()
     {
