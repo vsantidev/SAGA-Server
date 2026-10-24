@@ -34,6 +34,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendNewPassword'])->middleware('throttle:forgot-password');
 
+// Nouveau mot de passe choisi depuis le lien reçu par e-mail
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ USER ~~~<~~~~~~~~~~~~~~~~~~~~~~~

@@ -57,6 +57,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Adresse de l'écran (SAGA-client) : lien « choisir un nouveau mot de passe » envoyé par e-mail
+    'front_url' => env('FRONT_URL', 'https://saga.contesdautomne.com'),
+
     'asset_url' => env('ASSET_URL'),
 
     /*
