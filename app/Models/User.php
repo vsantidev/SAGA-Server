@@ -48,6 +48,20 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    // Nom affiché : « Élodie LEFÈVRE », « Jean-Christophe LEFÈVRE ». Majuscule à chaque partie
+    // du prénom (après un tiret ou une espace), nom en majuscules, accents compris
+    public function getDisplayNameAttribute(): string
+    {
+        return self::formatDisplayName($this->firstname, $this->lastname);
+    }
+
+    // Même règle pour l'accueil, qui lit le prénom et le nom dans sa requête
+    public static function formatDisplayName(?string $firstname, ?string $lastname): string
+    {
+        return mb_convert_case(mb_strtolower((string) $firstname, 'UTF-8'), MB_CASE_TITLE, 'UTF-8')
+            . ' ' . mb_strtoupper((string) $lastname, 'UTF-8');
+    }
+
     // RELATION AVEC LA TABLE EVENEMENTS
     public function evenements()
     {

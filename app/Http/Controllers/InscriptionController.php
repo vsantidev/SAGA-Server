@@ -264,7 +264,7 @@ class InscriptionController extends Controller
                     'room_name'   => $inscription->animations->rooms?->name ?? '',
                     'animator_id' => $inscription->animations->user_id, 
                     'animator' => $inscription->animations->user
-                        ? ucfirst(strtolower($inscription->animations->user->firstname)) . ' ' . strtoupper($inscription->animations->user->lastname)
+                        ? $inscription->animations->user->display_name
                         : '',
                 ] : null,
                 'time_slot' => $inscription->animations?->timeSlot?->id ? [
@@ -307,7 +307,7 @@ class InscriptionController extends Controller
                     'room_picture'   => $animation->rooms?->picture ?? '',
                     'room_name'   => $animation->rooms?->name ?? '',
                     'animator' => $animation->user
-                        ? ucfirst(strtolower($animation->user->firstname)) . ' ' . strtoupper($animation->user->lastname)
+                        ? $animation->user->display_name
                         : '',
                 ],
                 'time_slot' => $animation->timeSlot?->id ? [
