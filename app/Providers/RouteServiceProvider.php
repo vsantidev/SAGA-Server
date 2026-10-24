@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -25,7 +26,22 @@ class RouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            // Compte connecté : l'écran fait plusieurs requêtes par action (8 pour déposer un vœu)
+            if ($request->user()) {
+                return Limit::perMinute(240)->by('compte:' . $request->user()->id);
+            }
+            // Sans compte (connexion, mot de passe oublié) : toute une salle peut partager
+            // la même adresse (wifi, borne satellite), d'où une limite large par adresse.
+            // Les essais de mot de passe restent bloqués par compte dans AuthController (5 échecs)
+            return Limit::perMinute(300)->by('ip:' . $request->ip());
+        });
+
+        // Mot de passe oublié : il envoie un e-mail et change le mot de passe, on reste strict
+        RateLimiter::for('forgot-password', function (Request $request) {
+            return [
+                Limit::perMinute(3)->by('forgot:' . Str::lower((string) $request->input('email'))),
+                Limit::perMinute(30)->by('forgot-ip:' . $request->ip()),
+            ];
         });
 
         $this->routes(function () {

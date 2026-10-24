@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -43,6 +44,16 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $exception)
 {
+    // Trop de requêtes : message en français, avec le délai d'attente renvoyé par la limite
+    if ($exception instanceof ThrottleRequestsException) {
+        $headers = $exception->getHeaders();
+        $wait = (int) ($headers['Retry-After'] ?? 60);
+        return response()->json([
+            'message' => "Trop de requêtes : patientez {$wait} secondes avant de réessayer.",
+            'retry_after' => $wait,
+        ], 429, $headers);
+    }
+
     if ($exception instanceof ValidationException) {
         return response()->json([
             'message' => 'Erreur de validation',

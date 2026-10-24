@@ -32,7 +32,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ PASSWORD - BUG ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendNewPassword']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendNewPassword'])->middleware('throttle:forgot-password');
 
 
 
