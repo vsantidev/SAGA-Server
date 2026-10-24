@@ -131,4 +131,21 @@ class AuthorNameTest extends TestCase
         Sanctum::actingAs($this->animateur);
         $this->assertSame('Élodie LEFÈVRE', $this->fromInscriptions($this->animateur));
     }
+
+    // Prénom composé : majuscule à chaque partie (après un tiret ou une espace), à l'accueil comme ailleurs
+    public function test_compound_first_name_gets_a_capital_on_each_part(): void
+    {
+        $this->animateur->firstname = 'jean-christophe';
+        $this->animateur->save();
+
+        $home = $this->getJson('/api/animation/animationIndex?param1=' . $this->joueur->id)->json('listeAnimation');
+        $this->assertSame('Jean-Christophe LEFÈVRE', $this->fromList($home, 'author_name'));
+
+        $calendar = $this->getJson('/api/animation/animationListValidate?param1=' . $this->joueur->id)->json('listeAnimation');
+        $this->assertSame('Jean-Christophe LEFÈVRE', $this->fromList($calendar, 'author_name'));
+
+        $this->animateur->firstname = 'MARIE laure';
+        $this->animateur->save();
+        $this->assertSame('Marie Laure LEFÈVRE', $this->fromInscriptions($this->joueur));
+    }
 }

@@ -55,7 +55,9 @@ class AnimationController extends Controller
             'time_slots.start_time as slot_start_time',
             'time_slots.draw_status as slot_draw_status',
             'time_slots.name as slot_name',
-            DB::raw('CONCAT(UCASE(LEFT(users.firstname, 1)), LCASE(SUBSTRING(users.firstname, 2)), " ", UPPER(users.lastname)) as author_name'),
+            // Nom de l'animateur mis en forme plus bas (User::formatDisplayName), comme partout ailleurs
+            'users.firstname as author_firstname',
+            'users.lastname as author_lastname',
             // Inscrits selon l'état du créneau : après le calcul, les validés ; avant, les vœux en attente.
             // Les vœux de comptes supprimés ne comptent pas.
             DB::raw("COUNT(CASE WHEN inscrits.id IS NOT NULL AND (
@@ -89,6 +91,10 @@ class AnimationController extends Controller
     // Applique les likes aux animations
     $Animations->map(function($animation) use ($listeLike) {
         $animation->like = in_array($animation->id, $listeLike) ? "1" : "0";
+        $animation->author_name = $animation->author_firstname === null && $animation->author_lastname === null
+            ? null
+            : User::formatDisplayName($animation->author_firstname, $animation->author_lastname);
+        unset($animation->author_firstname, $animation->author_lastname);
         return $animation;
     });
 
